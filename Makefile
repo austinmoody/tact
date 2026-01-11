@@ -1,4 +1,4 @@
-.PHONY: install run test lint format migrate db-revision docker-build docker-up docker-down
+.PHONY: install run test lint format migrate db-revision docker-build docker-up docker-down tui-build tui-run tui-dev
 
 install:
 	cd backend && uv sync --extra dev
@@ -29,3 +29,12 @@ docker-up:
 
 docker-down:
 	docker compose down
+
+tui-build:
+	cd tui && go build -o tact-tui .
+
+tui-run:
+	cd tui && go run .
+
+tui-dev:
+	cd tui && go run . --api http://localhost:2100
