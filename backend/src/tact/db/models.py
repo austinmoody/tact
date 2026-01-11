@@ -1,10 +1,14 @@
 import uuid
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 
 from sqlalchemy import ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from tact.db.base import Base
+
+
+def utc_now() -> datetime:
+    return datetime.now(UTC)
 
 
 class TimeEntry(Base):
@@ -40,10 +44,10 @@ class TimeEntry(Base):
     corrected_at: Mapped[datetime | None] = mapped_column(default=None)
 
     # Timestamps
-    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=utc_now)
     parsed_at: Mapped[datetime | None] = mapped_column(default=None)
     updated_at: Mapped[datetime] = mapped_column(
-        default=datetime.utcnow, onupdate=datetime.utcnow
+        default=utc_now, onupdate=utc_now
     )
 
 
@@ -56,9 +60,9 @@ class TimeCode(Base):
     keywords: Mapped[str] = mapped_column(Text, default="[]")
     examples: Mapped[str] = mapped_column(Text, default="[]")
     active: Mapped[bool] = mapped_column(default=True)
-    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(
-        default=datetime.utcnow, onupdate=datetime.utcnow
+        default=utc_now, onupdate=utc_now
     )
 
 
@@ -69,9 +73,9 @@ class WorkType(Base):
     name: Mapped[str] = mapped_column(nullable=False)
     description: Mapped[str | None] = mapped_column(Text, default=None)
     active: Mapped[bool] = mapped_column(default=True)
-    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(
-        default=datetime.utcnow, onupdate=datetime.utcnow
+        default=utc_now, onupdate=utc_now
     )
 
 
@@ -81,5 +85,5 @@ class Config(Base):
     key: Mapped[str] = mapped_column(primary_key=True)
     value: Mapped[str] = mapped_column(Text, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
-        default=datetime.utcnow, onupdate=datetime.utcnow
+        default=utc_now, onupdate=utc_now
     )
