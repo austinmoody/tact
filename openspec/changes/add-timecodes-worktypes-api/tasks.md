@@ -7,7 +7,7 @@
 ## 2. Time Codes Routes
 
 - [x] 2.1 Create `backend/src/tact/routes/time_codes.py`
-- [x] 2.2 Implement POST `/time-codes` - create time code
+- [x] 2.2 Implement POST `/time-codes` - create time code (user-specified ID)
 - [x] 2.3 Implement GET `/time-codes` - list time codes (with optional `active` filter)
 - [x] 2.4 Implement GET `/time-codes/{id}` - get single time code
 - [x] 2.5 Implement PUT `/time-codes/{id}` - update time code
@@ -17,7 +17,7 @@
 ## 3. Work Types Routes
 
 - [x] 3.1 Create `backend/src/tact/routes/work_types.py`
-- [x] 3.2 Implement POST `/work-types` - create work type
+- [x] 3.2 Implement POST `/work-types` - create work type (auto-generated slug ID from name)
 - [x] 3.3 Implement GET `/work-types` - list work types (with optional `active` filter)
 - [x] 3.4 Implement GET `/work-types/{id}` - get single work type
 - [x] 3.5 Implement PUT `/work-types/{id}` - update work type
@@ -42,7 +42,7 @@ Steps to independently verify the implementation:
 
 2. **Test Time Codes CRUD:**
    ```bash
-   # Create
+   # Create (user specifies ID)
    curl -X POST http://localhost:2100/time-codes \
      -H "Content-Type: application/json" \
      -d '{"id": "PROJ-001", "name": "Project Alpha", "description": "Main project"}'
@@ -68,15 +68,29 @@ Steps to independently verify the implementation:
 
 3. **Test Work Types CRUD:**
    ```bash
-   # Create
+   # Create (ID auto-generated from name: "Code Review" → "code-review")
    curl -X POST http://localhost:2100/work-types \
      -H "Content-Type: application/json" \
-     -d '{"id": "dev", "name": "Development"}'
+     -d '{"name": "Code Review"}'
+   # Response will include id="code-review"
 
    # List
    curl http://localhost:2100/work-types
 
-   # Get/Update/Delete follow same pattern as time-codes
+   # Get single (using generated slug)
+   curl http://localhost:2100/work-types/code-review
+
+   # Update
+   curl -X PUT http://localhost:2100/work-types/code-review \
+     -H "Content-Type: application/json" \
+     -d '{"name": "Code Reviews"}'
+
+   # Delete (soft)
+   curl -X DELETE http://localhost:2100/work-types/code-review
+
+   # Verify inactive
+   curl http://localhost:2100/work-types/code-review
+   # Should show active=false
    ```
 
 4. **Run tests:**

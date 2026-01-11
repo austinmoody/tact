@@ -16,9 +16,7 @@ def test_config_create_and_query(db_session):
 
 
 def test_work_type_create_and_query(db_session):
-    work_type = WorkType(
-        id="dev", name="Development", description="Software development"
-    )
+    work_type = WorkType(id="dev", name="Development")
     db_session.add(work_type)
     db_session.commit()
 

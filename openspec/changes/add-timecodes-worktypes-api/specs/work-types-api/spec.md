@@ -6,18 +6,18 @@ REST API for managing work types used to categorize the type of work performed.
 
 ### Requirement: Create Work Type
 
-The API SHALL allow creating a new work type via POST request.
+The API SHALL allow creating a new work type via POST request. The ID is auto-generated as a URL-friendly slug from the name (e.g., "Code Review" → "code-review").
 
 #### Scenario: Successful creation
 
-- Given: A valid work type payload with id and name
+- Given: A valid work type payload with name
 - When: POST `/work-types` is called
-- Then: The work type is created with `active=true`
+- Then: The work type is created with `active=true` and auto-generated slug ID
 - And: HTTP 201 is returned with the created work type
 
-#### Scenario: Duplicate ID
+#### Scenario: Duplicate slug
 
-- Given: A work type with the same ID already exists
+- Given: A work type that generates the same slug already exists
 - When: POST `/work-types` is called
 - Then: HTTP 409 Conflict is returned
 
@@ -43,8 +43,8 @@ The API SHALL return a single work type by ID.
 
 #### Scenario: Work type exists
 
-- Given: A work type with ID "dev" exists
-- When: GET `/work-types/dev` is called
+- Given: A work type with ID "development" exists
+- When: GET `/work-types/development` is called
 - Then: The work type is returned
 
 #### Scenario: Work type not found
@@ -59,8 +59,8 @@ The API SHALL allow updating an existing work type.
 
 #### Scenario: Successful update
 
-- Given: A work type with ID "dev" exists
-- When: PUT `/work-types/dev` is called with updated fields
+- Given: A work type with ID "development" exists
+- When: PUT `/work-types/development` is called with updated fields
 - Then: The work type is updated
 - And: HTTP 200 is returned with the updated work type
 
@@ -76,8 +76,8 @@ The API SHALL soft-delete a work type by setting active to false.
 
 #### Scenario: Successful soft-delete
 
-- Given: An active work type with ID "dev" exists
-- When: DELETE `/work-types/dev` is called
+- Given: An active work type with ID "development" exists
+- When: DELETE `/work-types/development` is called
 - Then: The work type's `active` field is set to false
 - And: HTTP 200 is returned
 
