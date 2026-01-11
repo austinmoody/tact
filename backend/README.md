@@ -90,3 +90,8 @@ make docker-down
 | `/work-types/{id}` | GET | Get a single work type |
 | `/work-types/{id}` | PUT | Update a work type |
 | `/work-types/{id}` | DELETE | Soft-delete a work type (sets `active=false`) |
+| `/entries` | GET | List entries (filters: `status`, `time_code_id`, `work_type_id`, `from_date`, `to_date`, `limit`, `offset`) |
+| `/entries` | POST | Create an entry (`raw_text` required, `entry_date` optional - defaults to today) |
+| `/entries/{id}` | GET | Get a single entry |
+| `/entries/{id}` | PATCH | Update an entry (sets `manually_corrected=true`) |
+| `/entries/{id}` | DELETE | Hard-delete an entry (returns 204) |
