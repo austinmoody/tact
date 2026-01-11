@@ -53,33 +53,42 @@ def client():
 def test_create_work_type(client):
     response = client.post(
         "/work-types",
-        json={"id": "dev", "name": "Development", "description": "Coding work"},
+        json={"name": "Development"},
     )
     assert response.status_code == 201
     data = response.json()
-    assert data["id"] == "dev"
+    assert data["id"] == "development"
     assert data["name"] == "Development"
     assert data["active"] is True
 
 
-def test_create_work_type_without_description(client):
+def test_create_work_type_slug_generation(client):
     response = client.post(
         "/work-types",
-        json={"id": "meeting", "name": "Meeting"},
+        json={"name": "Code Review"},
     )
     assert response.status_code == 201
-    assert response.json()["description"] is None
+    data = response.json()
+    assert data["id"] == "code-review"
+    assert data["name"] == "Code Review"
 
 
 def test_create_duplicate_work_type(client):
-    client.post("/work-types", json={"id": "dev", "name": "Development"})
-    response = client.post("/work-types", json={"id": "dev", "name": "Another"})
+    client.post("/work-types", json={"name": "Development"})
+    response = client.post("/work-types", json={"name": "Development"})
+    assert response.status_code == 409
+
+
+def test_create_duplicate_work_type_same_slug(client):
+    # "DevOps" and "DEVOPS" both generate "devops" slug
+    client.post("/work-types", json={"name": "DevOps"})
+    response = client.post("/work-types", json={"name": "DEVOPS"})
     assert response.status_code == 409
 
 
 def test_list_work_types(client):
-    client.post("/work-types", json={"id": "dev", "name": "Development"})
-    client.post("/work-types", json={"id": "meeting", "name": "Meeting"})
+    client.post("/work-types", json={"name": "Development"})
+    client.post("/work-types", json={"name": "Meeting"})
     response = client.get("/work-types")
     assert response.status_code == 200
     data = response.json()
@@ -87,22 +96,22 @@ def test_list_work_types(client):
 
 
 def test_list_work_types_filter_active(client):
-    client.post("/work-types", json={"id": "dev", "name": "Development"})
-    client.post("/work-types", json={"id": "meeting", "name": "Meeting"})
+    client.post("/work-types", json={"name": "Development"})
+    client.post("/work-types", json={"name": "Meeting"})
     client.delete("/work-types/meeting")
 
     response = client.get("/work-types?active=true")
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
-    assert data[0]["id"] == "dev"
+    assert data[0]["id"] == "development"
 
 
 def test_get_work_type(client):
-    client.post("/work-types", json={"id": "dev", "name": "Development"})
-    response = client.get("/work-types/dev")
+    client.post("/work-types", json={"name": "Development"})
+    response = client.get("/work-types/development")
     assert response.status_code == 200
-    assert response.json()["id"] == "dev"
+    assert response.json()["id"] == "development"
 
 
 def test_get_work_type_not_found(client):
@@ -111,8 +120,8 @@ def test_get_work_type_not_found(client):
 
 
 def test_update_work_type(client):
-    client.post("/work-types", json={"id": "dev", "name": "Original"})
-    response = client.put("/work-types/dev", json={"name": "Updated"})
+    client.post("/work-types", json={"name": "Original"})
+    response = client.put("/work-types/original", json={"name": "Updated"})
     assert response.status_code == 200
     assert response.json()["name"] == "Updated"
 
@@ -123,13 +132,13 @@ def test_update_work_type_not_found(client):
 
 
 def test_delete_work_type(client):
-    client.post("/work-types", json={"id": "dev", "name": "Development"})
-    response = client.delete("/work-types/dev")
+    client.post("/work-types", json={"name": "Development"})
+    response = client.delete("/work-types/development")
     assert response.status_code == 200
     assert response.json()["active"] is False
 
     # Verify it's still there but inactive
-    get_response = client.get("/work-types/dev")
+    get_response = client.get("/work-types/development")
     assert get_response.json()["active"] is False
 
 

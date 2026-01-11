@@ -80,3 +80,13 @@ make docker-down
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/health` | GET | Health check - returns `{"status": "healthy"}` |
+| `/time-codes` | GET | List all time codes (optional `?active=true/false` filter) |
+| `/time-codes` | POST | Create a time code (user-specified ID) |
+| `/time-codes/{id}` | GET | Get a single time code |
+| `/time-codes/{id}` | PUT | Update a time code |
+| `/time-codes/{id}` | DELETE | Soft-delete a time code (sets `active=false`) |
+| `/work-types` | GET | List all work types (optional `?active=true/false` filter) |
+| `/work-types` | POST | Create a work type (ID auto-generated from name as slug) |
+| `/work-types/{id}` | GET | Get a single work type |
+| `/work-types/{id}` | PUT | Update a work type |
+| `/work-types/{id}` | DELETE | Soft-delete a work type (sets `active=false`) |

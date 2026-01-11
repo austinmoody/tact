@@ -1,3 +1,5 @@
+import re
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
@@ -8,19 +10,28 @@ from tact.schemas.work_type import WorkTypeCreate, WorkTypeResponse, WorkTypeUpd
 router = APIRouter(prefix="/work-types", tags=["work-types"])
 
 
+def slugify(name: str) -> str:
+    """Convert a name to a URL-friendly slug."""
+    slug = name.lower()
+    slug = re.sub(r"[^\w\s-]", "", slug)  # Remove special characters
+    slug = re.sub(r"[\s_]+", "-", slug)  # Replace spaces/underscores with hyphens
+    slug = re.sub(r"-+", "-", slug)  # Collapse multiple hyphens
+    return slug.strip("-")
+
+
 @router.post("", response_model=WorkTypeResponse, status_code=201)
 def create_work_type(
     data: WorkTypeCreate,
     session: Session = Depends(get_session),
 ) -> WorkTypeResponse:
-    existing = session.query(WorkType).filter(WorkType.id == data.id).first()
+    work_type_id = slugify(data.name)
+    existing = session.query(WorkType).filter(WorkType.id == work_type_id).first()
     if existing:
         raise HTTPException(status_code=409, detail="Work type already exists")
 
     work_type = WorkType(
-        id=data.id,
+        id=work_type_id,
         name=data.name,
-        description=data.description,
     )
     session.add(work_type)
     session.commit()
@@ -63,8 +74,6 @@ def update_work_type(
 
     if data.name is not None:
         work_type.name = data.name
-    if data.description is not None:
-        work_type.description = data.description
     if data.active is not None:
         work_type.active = data.active
 
