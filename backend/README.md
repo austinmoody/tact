@@ -39,6 +39,27 @@ make lint    # Check for issues
 make format  # Auto-format code
 ```
 
+## Database
+
+The backend uses SQLite with Alembic for migrations. The database is automatically created and migrated on application startup.
+
+### Configuration
+
+Set the database path via environment variable:
+
+```bash
+export TACT_DB_PATH=/path/to/tact.db
+```
+
+Default: `./data/tact.db`
+
+### Manual migration commands
+
+```bash
+make migrate                    # Run pending migrations
+make db-revision msg="add foo"  # Create new migration
+```
+
 ## Docker
 
 ### Build and run

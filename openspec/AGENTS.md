@@ -54,7 +54,8 @@ Track these steps as TODOs and complete them one by one.
 4. **Implement tasks sequentially** - Complete in order
 5. **Confirm completion** - Ensure every item in `tasks.md` is finished before updating statuses
 6. **Update checklist** - After all work is done, set every task to `- [x]` so the list reflects reality
-7. **Approval gate** - Do not start implementation until the proposal is reviewed and approved
+7. **Provide verification steps** - Share the Verification section from tasks.md so the user can independently confirm the implementation
+8. **Approval gate** - Do not start implementation until the proposal is reviewed and approved
 
 ### Stage 3: Archiving Changes
 After deployment, create separate PR to:
@@ -202,7 +203,15 @@ If multiple capabilities are affected, create multiple delta files under `change
 - [ ] 1.2 Implement API endpoint
 - [ ] 1.3 Add frontend component
 - [ ] 1.4 Write tests
+
+## Verification
+Steps for the user to independently verify the implementation:
+1. [Command or action to verify feature works]
+2. [Command to check expected output/state]
+3. [Any manual checks if applicable]
 ```
+
+The Verification section is required and should include concrete commands or steps the user can run to confirm the implementation works as expected.
 
 5. **Create design.md when needed:**
 Create `design.md` if any of the following apply; otherwise omit it:
@@ -441,7 +450,7 @@ Only add complexity with:
 
 ### File Purposes
 - `proposal.md` - Why and what
-- `tasks.md` - Implementation steps
+- `tasks.md` - Implementation steps and verification commands
 - `design.md` - Technical decisions
 - `spec.md` - Requirements and behavior
 
