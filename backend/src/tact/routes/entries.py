@@ -99,3 +99,34 @@ def delete_entry(
     session.delete(entry)
     session.commit()
     return Response(status_code=204)
+
+
+@router.post("/{entry_id}/reparse", response_model=EntryResponse)
+def reparse_entry(
+    entry_id: str,
+    session: Session = Depends(get_session),
+) -> EntryResponse:
+    """Reset an entry to pending status for re-parsing."""
+    entry = session.query(TimeEntry).filter(TimeEntry.id == entry_id).first()
+    if not entry:
+        raise HTTPException(status_code=404, detail="Entry not found")
+
+    # Clear parsed fields
+    entry.duration_minutes = None
+    entry.work_type_id = None
+    entry.time_code_id = None
+    entry.description = None
+    entry.confidence_duration = None
+    entry.confidence_work_type = None
+    entry.confidence_time_code = None
+    entry.confidence_overall = None
+    entry.parsed_at = None
+    entry.parse_error = None
+
+    # Reset status
+    entry.status = "pending"
+    entry.manually_corrected = False
+
+    session.commit()
+    session.refresh(entry)
+    return EntryResponse.model_validate(entry)

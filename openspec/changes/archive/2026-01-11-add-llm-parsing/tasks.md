@@ -1,66 +1,66 @@
 ## 1. Provider Abstraction
 
-- [ ] 1.1 Create `backend/src/tact/llm/__init__.py`
-- [ ] 1.2 Create `backend/src/tact/llm/provider.py` with:
+- [x] 1.1 Create `backend/src/tact/llm/__init__.py`
+- [x] 1.2 Create `backend/src/tact/llm/provider.py` with:
   - `ParseResult` dataclass (fields + confidence scores)
   - `ParseContext` dataclass (time_codes, work_types lists)
   - `LLMProvider` abstract base class
-- [ ] 1.3 Create `backend/src/tact/llm/prompts.py` with system prompt template
+- [x] 1.3 Create `backend/src/tact/llm/prompts.py` with system prompt template
 
 ## 2. Ollama Provider
 
-- [ ] 2.1 Create `backend/src/tact/llm/ollama.py` with `OllamaProvider` class
-- [ ] 2.2 Implement HTTP calls to Ollama API (`/api/generate`)
-- [ ] 2.3 Implement JSON response parsing with error handling
-- [ ] 2.4 Add configuration support (`TACT_OLLAMA_URL`, `TACT_OLLAMA_MODEL`)
+- [x] 2.1 Create `backend/src/tact/llm/ollama.py` with `OllamaProvider` class
+- [x] 2.2 Implement HTTP calls to Ollama API (`/api/generate`)
+- [x] 2.3 Implement JSON response parsing with error handling
+- [x] 2.4 Add configuration support (`TACT_OLLAMA_URL`, `TACT_OLLAMA_MODEL`)
 
 ## 3. Entry Parser
 
-- [ ] 3.1 Create `backend/src/tact/llm/parser.py` with `EntryParser` class
-- [ ] 3.2 Implement `parse_entry(entry, session)` method:
+- [x] 3.1 Create `backend/src/tact/llm/parser.py` with `EntryParser` class
+- [x] 3.2 Implement `parse_entry(entry, session)` method:
   - Fetch active time codes and work types
   - Build context for LLM
   - Call provider
   - Update entry with results
-- [ ] 3.3 Add provider factory based on `TACT_LLM_PROVIDER` config
+- [x] 3.3 Add provider factory based on `TACT_LLM_PROVIDER` config
 
 ## 4. Background Worker
 
-- [ ] 4.1 Create `backend/src/tact/worker/__init__.py`
-- [ ] 4.2 Create `backend/src/tact/worker/parser_worker.py`:
+- [x] 4.1 Create `backend/src/tact/worker/__init__.py`
+- [x] 4.2 Create `backend/src/tact/worker/parser_worker.py`:
   - Query pending entries
   - Parse each entry
   - Handle errors gracefully
   - Sleep for `TACT_PARSER_INTERVAL`
-- [ ] 4.3 Integrate worker startup in `main.py` lifespan
+- [x] 4.3 Integrate worker startup in `main.py` lifespan
 
 ## 5. Reparse Endpoint
 
-- [ ] 5.1 Add `POST /entries/{id}/reparse` to entries router
-- [ ] 5.2 Implement endpoint logic (clear fields, set pending)
+- [x] 5.1 Add `POST /entries/{id}/reparse` to entries router
+- [x] 5.2 Implement endpoint logic (clear fields, set pending)
 
 ## 6. Docker Integration
 
-- [ ] 6.1 Add Ollama service to `docker-compose.yml` with profile
-- [ ] 6.2 Update README with Ollama setup instructions
+- [x] 6.1 Add Ollama service to `docker-compose.yml` with profile
+- [x] 6.2 Update README with Ollama setup instructions
 
 ## 7. Testing
 
-- [ ] 7.1 Create `backend/tests/test_llm_parser.py` with unit tests:
+- [x] 7.1 Create `backend/tests/test_llm_parser.py` with unit tests:
   - Test prompt generation
   - Test response parsing
   - Test error handling
-- [ ] 7.2 Create `backend/tests/test_reparse.py` with endpoint tests
-- [ ] 7.3 Verify `make test` passes
-- [ ] 7.4 Verify `make lint` passes
+- [x] 7.2 Create `backend/tests/test_reparse.py` with endpoint tests
+- [x] 7.3 Verify `make test` passes
+- [x] 7.4 Verify `make lint` passes
 
 ## 8. Anthropic Provider
 
-- [ ] 8.1 Add `anthropic` dependency to pyproject.toml
-- [ ] 8.2 Create `backend/src/tact/llm/anthropic.py` with `AnthropicProvider` class
-- [ ] 8.3 Implement Anthropic API calls (Messages API)
-- [ ] 8.4 Add configuration support (`TACT_ANTHROPIC_API_KEY`, `TACT_ANTHROPIC_MODEL`)
-- [ ] 8.5 Add tests for Anthropic provider
+- [x] 8.1 Add `anthropic` dependency to pyproject.toml
+- [x] 8.2 Create `backend/src/tact/llm/anthropic.py` with `AnthropicProvider` class
+- [x] 8.3 Implement Anthropic API calls (Messages API)
+- [x] 8.4 Add configuration support (`TACT_ANTHROPIC_API_KEY`, `TACT_ANTHROPIC_MODEL`)
+- [x] 8.5 Add tests for Anthropic provider
 
 ## Verification
 
@@ -70,8 +70,9 @@
    ollama pull llama3.2:3b
    ollama serve
 
-   # Or with Docker
-   docker compose --profile ollama up -d
+   # Or with Docker (starts both API and Ollama)
+   make docker-up
+   docker compose exec ollama ollama pull llama3.2:3b
    ```
 
 2. **Start the backend:**

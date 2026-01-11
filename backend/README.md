@@ -95,3 +95,67 @@ make docker-down
 | `/entries/{id}` | GET | Get a single entry |
 | `/entries/{id}` | PATCH | Update an entry (sets `manually_corrected=true`) |
 | `/entries/{id}` | DELETE | Hard-delete an entry (returns 204) |
+| `/entries/{id}/reparse` | POST | Reset entry to pending for re-parsing |
+
+## LLM Integration
+
+The backend uses an LLM to parse time entries. It supports two providers:
+
+### Ollama (Local)
+
+1. **Install Ollama:**
+   ```bash
+   # macOS
+   brew install ollama
+
+   # Or download from https://ollama.ai
+   ```
+
+2. **Pull a model:**
+   ```bash
+   ollama pull llama3.2:3b
+   ```
+
+3. **Start Ollama:**
+   ```bash
+   ollama serve
+   ```
+
+4. **Configure (optional):**
+   ```bash
+   export TACT_LLM_PROVIDER=ollama           # Default
+   export TACT_OLLAMA_URL=http://localhost:11434  # Default
+   export TACT_OLLAMA_MODEL=llama3.2:3b      # Default
+   ```
+
+### Anthropic (Cloud)
+
+1. **Get an API key** from https://console.anthropic.com
+
+2. **Configure:**
+   ```bash
+   export TACT_LLM_PROVIDER=anthropic
+   export TACT_ANTHROPIC_API_KEY=sk-ant-...
+   export TACT_ANTHROPIC_MODEL=claude-3-haiku-20240307  # Default
+   ```
+
+### Docker with Ollama
+
+Both the API and Ollama start together:
+
+```bash
+make docker-up
+docker compose exec ollama ollama pull llama3.2:3b
+```
+
+### Configuration Reference
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `TACT_LLM_PROVIDER` | `ollama` | Provider: `ollama` or `anthropic` |
+| `TACT_OLLAMA_URL` | `http://localhost:11434` | Ollama API URL |
+| `TACT_OLLAMA_MODEL` | `llama3.2:3b` | Ollama model name |
+| `TACT_ANTHROPIC_API_KEY` | (none) | Anthropic API key |
+| `TACT_ANTHROPIC_MODEL` | `claude-3-haiku-20240307` | Anthropic model |
+| `TACT_PARSER_INTERVAL` | `10` | Seconds between parse cycles |
+| `TACT_DISABLE_WORKER` | `false` | Set to `true` to disable background parsing |

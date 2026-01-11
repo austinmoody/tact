@@ -6,6 +6,9 @@ from tact.db.base import engine
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+# Alias for external use
+SessionFactory = SessionLocal
+
 # Allow tests to override this
 _session_factory: Callable[[], Session] = SessionLocal
 
