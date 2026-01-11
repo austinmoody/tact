@@ -1,3 +1,8 @@
+from tact.schemas.entry import (
+    EntryCreate,
+    EntryResponse,
+    EntryUpdate,
+)
 from tact.schemas.time_code import (
     TimeCodeCreate,
     TimeCodeResponse,
@@ -10,6 +15,9 @@ from tact.schemas.work_type import (
 )
 
 __all__ = [
+    "EntryCreate",
+    "EntryResponse",
+    "EntryUpdate",
     "TimeCodeCreate",
     "TimeCodeResponse",
     "TimeCodeUpdate",

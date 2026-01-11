@@ -1,40 +1,43 @@
-.PHONY: install run test lint format migrate db-revision docker-build docker-up docker-down tui-build tui-run tui-dev
+.PHONY: help install run test lint format migrate db-revision docker-build docker-up docker-down tui-build tui-run tui-dev
 
-install:
+help: ## Show this help
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
+
+install: ## Install backend dependencies
 	cd backend && uv sync --extra dev
 
-run:
+run: ## Run backend API (port 2100)
 	cd backend && uv run uvicorn tact.main:app --reload --port 2100
 
-test:
+test: ## Run backend tests
 	cd backend && uv run pytest
 
-lint:
+lint: ## Check code with ruff
 	cd backend && uv run ruff check src tests
 
-format:
+format: ## Format code with ruff
 	cd backend && uv run ruff format src tests
 
-migrate:
+migrate: ## Run database migrations
 	cd backend && uv run alembic upgrade head
 
-db-revision:
+db-revision: ## Create migration (usage: make db-revision msg="description")
 	cd backend && uv run alembic revision --autogenerate -m "$(msg)"
 
-docker-build:
+docker-build: ## Build Docker images
 	docker compose build
 
-docker-up:
+docker-up: ## Start Docker containers
 	docker compose up -d
 
-docker-down:
+docker-down: ## Stop Docker containers
 	docker compose down
 
-tui-build:
+tui-build: ## Build TUI binary
 	cd tui && go build -o tact-tui .
 
-tui-run:
+tui-run: ## Run TUI
 	cd tui && go run .
 
-tui-dev:
+tui-dev: ## Run TUI (dev mode, localhost:2100)
 	cd tui && go run . --api http://localhost:2100

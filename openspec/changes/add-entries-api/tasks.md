@@ -1,40 +1,40 @@
 ## 1. Schemas
 
-- [ ] 1.1 Create `backend/src/tact/schemas/entry.py` with Pydantic models:
+- [x] 1.1 Create `backend/src/tact/schemas/entry.py` with Pydantic models:
   - `EntryCreate` (raw_text required, entry_date optional)
   - `EntryUpdate` (all fields optional for PATCH)
   - `EntryResponse` (full entry representation)
-- [ ] 1.2 Export schemas from `backend/src/tact/schemas/__init__.py`
+- [x] 1.2 Export schemas from `backend/src/tact/schemas/__init__.py`
 
 ## 2. Entries Routes
 
-- [ ] 2.1 Create `backend/src/tact/routes/entries.py`
-- [ ] 2.2 Implement POST `/entries` - create entry (status=pending, entry_date defaults to today)
-- [ ] 2.3 Implement GET `/entries` - list entries with filters:
+- [x] 2.1 Create `backend/src/tact/routes/entries.py`
+- [x] 2.2 Implement POST `/entries` - create entry (status=pending, entry_date defaults to today)
+- [x] 2.3 Implement GET `/entries` - list entries with filters:
   - `status` filter
   - `time_code_id` filter
   - `work_type_id` filter
   - `from_date` / `to_date` range filter
   - `limit` / `offset` pagination
-- [ ] 2.4 Implement GET `/entries/{id}` - get single entry
-- [ ] 2.5 Implement PATCH `/entries/{id}` - update entry (sets manually_corrected=true)
-- [ ] 2.6 Implement DELETE `/entries/{id}` - hard delete entry (returns 204)
-- [ ] 2.7 Register router in main.py
+- [x] 2.4 Implement GET `/entries/{id}` - get single entry
+- [x] 2.5 Implement PATCH `/entries/{id}` - update entry (sets manually_corrected=true)
+- [x] 2.6 Implement DELETE `/entries/{id}` - hard delete entry (returns 204)
+- [x] 2.7 Register router in main.py
 
 ## 3. Testing
 
-- [ ] 3.1 Create `backend/tests/test_entries.py` with tests for:
+- [x] 3.1 Create `backend/tests/test_entries.py` with tests for:
   - Create entry (raw_text only, with entry_date, missing raw_text)
   - List entries (all, with each filter, pagination)
   - Get single entry (exists, not found)
   - Update entry (success, sets manually_corrected, not found)
   - Delete entry (success, not found)
-- [ ] 3.2 Verify `make test` passes
-- [ ] 3.3 Verify `make lint` passes
+- [x] 3.2 Verify `make test` passes
+- [x] 3.3 Verify `make lint` passes
 
 ## 4. Documentation
 
-- [ ] 4.1 Update backend/README.md with entries endpoints
+- [x] 4.1 Update backend/README.md with entries endpoints
 
 ## Verification
 
