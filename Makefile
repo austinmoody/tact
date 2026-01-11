@@ -1,4 +1,4 @@
-.PHONY: install run test lint format docker-build docker-up docker-down
+.PHONY: install run test lint format migrate db-revision docker-build docker-up docker-down
 
 install:
 	cd backend && uv sync --extra dev
@@ -14,6 +14,12 @@ lint:
 
 format:
 	cd backend && uv run ruff format src tests
+
+migrate:
+	cd backend && uv run alembic upgrade head
+
+db-revision:
+	cd backend && uv run alembic revision --autogenerate -m "$(msg)"
 
 docker-build:
 	docker compose build
