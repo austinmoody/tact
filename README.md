@@ -8,6 +8,7 @@
 
 - **backend/** - FastAPI REST API (Python)
 - **tui/** - Terminal UI dashboard (Go/Bubbletea)
+- **mcp/** - MCP server for AI assistants (Python)
 
 ## Quick Start
 
@@ -18,6 +19,47 @@ make run
 # In another terminal, run the TUI
 make tui-run
 ```
+
+## MCP Server
+
+The MCP (Model Context Protocol) server exposes the Tact API to AI assistants like Claude Desktop, Goose, and GitHub Copilot for natural language time tracking.
+
+### Setup
+
+```bash
+# Start the API
+docker compose up -d api
+
+# Build the MCP server
+make docker-build
+```
+
+### Claude Desktop Configuration
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "tact": {
+      "command": "docker",
+      "args": [
+        "run", "-i", "--rm",
+        "--network", "tact_default",
+        "-e", "TACT_API_URL=http://api:2100",
+        "tact-mcp"
+      ]
+    }
+  }
+}
+```
+
+Once configured, you can ask Claude things like:
+- "Log 2 hours of development work on Project Alpha"
+- "Show me my time entries for this week"
+- "List all active time codes"
+
+See [mcp/README.md](mcp/README.md) for full documentation including Goose/VS Code configuration and troubleshooting.
 
 ## TUI
 
