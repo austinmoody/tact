@@ -276,7 +276,7 @@ Config:
 
 ## Important Constraints
 
-- **No JavaScript** - backend must be Python, any future UI must avoid JS frameworks
+- **No JavaScript/TypeScript/Node.js** - This project explicitly avoids the JavaScript ecosystem. Backend is Python, TUI is Go, and any other components must use languages other than JavaScript/TypeScript.
 - **Single user focus** - no auth/multi-tenancy needed initially
 - **Local-first** - designed to run via `docker compose up` on a personal machine
 - **Portable data** - SQLite file can be easily backed up or moved
