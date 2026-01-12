@@ -1,3 +1,4 @@
+import logging
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
@@ -6,6 +7,8 @@ from sqlalchemy.orm import Session
 from tact.db.models import TimeEntry
 from tact.db.session import get_session
 from tact.schemas.entry import EntryCreate, EntryResponse, EntryUpdate
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/entries", tags=["entries"])
 
@@ -23,6 +26,7 @@ def create_entry(
     session.add(entry)
     session.commit()
     session.refresh(entry)
+    logger.info("Created entry %s: %s", entry.id, data.raw_text[:50])
     return EntryResponse.model_validate(entry)
 
 
@@ -52,6 +56,19 @@ def list_entries(
 
     query = query.offset(offset).limit(limit)
     entries = query.all()
+
+    filters = {
+        k: v
+        for k, v in [
+            ("status", status),
+            ("time_code_id", time_code_id),
+            ("work_type_id", work_type_id),
+            ("from_date", from_date),
+            ("to_date", to_date),
+        ]
+        if v is not None
+    }
+    logger.info("Listed entries: filters=%s count=%d", filters, len(entries))
     return [EntryResponse.model_validate(e) for e in entries]
 
 
@@ -63,6 +80,7 @@ def get_entry(
     entry = session.query(TimeEntry).filter(TimeEntry.id == entry_id).first()
     if not entry:
         raise HTTPException(status_code=404, detail="Entry not found")
+    logger.info("Retrieved entry %s", entry_id)
     return EntryResponse.model_validate(entry)
 
 
@@ -84,6 +102,7 @@ def update_entry(
 
     session.commit()
     session.refresh(entry)
+    logger.info("Updated entry %s: fields=%s", entry_id, list(update_data.keys()))
     return EntryResponse.model_validate(entry)
 
 
@@ -98,6 +117,7 @@ def delete_entry(
 
     session.delete(entry)
     session.commit()
+    logger.info("Deleted entry %s", entry_id)
     return Response(status_code=204)
 
 
@@ -129,4 +149,5 @@ def reparse_entry(
 
     session.commit()
     session.refresh(entry)
+    logger.info("Reparse requested for entry %s", entry_id)
     return EntryResponse.model_validate(entry)

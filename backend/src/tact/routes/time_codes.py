@@ -1,4 +1,5 @@
 import json
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -6,6 +7,8 @@ from sqlalchemy.orm import Session
 from tact.db.models import TimeCode
 from tact.db.session import get_session
 from tact.schemas.time_code import TimeCodeCreate, TimeCodeResponse, TimeCodeUpdate
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/time-codes", tags=["time-codes"])
 
@@ -43,6 +46,7 @@ def create_time_code(
     session.add(time_code)
     session.commit()
     session.refresh(time_code)
+    logger.info("Created time code %s", data.id)
     return _model_to_response(time_code)
 
 
@@ -55,6 +59,7 @@ def list_time_codes(
     if active is not None:
         query = query.filter(TimeCode.active == active)
     time_codes = query.all()
+    logger.info("Listed time codes: active=%s count=%d", active, len(time_codes))
     return [_model_to_response(tc) for tc in time_codes]
 
 
@@ -66,6 +71,7 @@ def get_time_code(
     time_code = session.query(TimeCode).filter(TimeCode.id == time_code_id).first()
     if not time_code:
         raise HTTPException(status_code=404, detail="Time code not found")
+    logger.info("Retrieved time code %s", time_code_id)
     return _model_to_response(time_code)
 
 
@@ -92,6 +98,7 @@ def update_time_code(
 
     session.commit()
     session.refresh(time_code)
+    logger.info("Updated time code %s", time_code_id)
     return _model_to_response(time_code)
 
 
@@ -107,4 +114,5 @@ def delete_time_code(
     time_code.active = False
     session.commit()
     session.refresh(time_code)
+    logger.info("Deleted time code %s", time_code_id)
     return _model_to_response(time_code)
