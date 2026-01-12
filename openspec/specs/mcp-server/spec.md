@@ -1,7 +1,8 @@
 # mcp-server Specification
 
 ## Purpose
-TBD - created by archiving change add-mcp-server. Update Purpose after archive.
+
+This specification defines an MCP (Model Context Protocol) server that exposes the Tact API to MCP-compatible AI clients like Claude Desktop, Goose, and GitHub Copilot, enabling natural language time tracking from chat interfaces.
 ## Requirements
 ### Requirement: MCP Server Core
 

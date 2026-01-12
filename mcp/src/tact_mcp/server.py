@@ -2,7 +2,6 @@
 
 import asyncio
 import json
-import os
 from datetime import date
 from typing import Any
 
@@ -403,8 +402,10 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
             return json_response(result)
 
         elif name == "update_entry":
-            entry_id = arguments.pop("entry_id")
-            updates = {k: v for k, v in arguments.items() if v is not None}
+            entry_id = arguments["entry_id"]
+            updates = {
+                k: v for k, v in arguments.items() if k != "entry_id" and v is not None
+            }
             result = client.update_entry(entry_id, **updates)
             return json_response(result)
 
@@ -436,8 +437,12 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
             return json_response(result)
 
         elif name == "update_time_code":
-            time_code_id = arguments.pop("time_code_id")
-            updates = {k: v for k, v in arguments.items() if v is not None}
+            time_code_id = arguments["time_code_id"]
+            updates = {
+                k: v
+                for k, v in arguments.items()
+                if k != "time_code_id" and v is not None
+            }
             result = client.update_time_code(time_code_id, **updates)
             return json_response(result)
 
@@ -459,8 +464,12 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
             return json_response(result)
 
         elif name == "update_work_type":
-            work_type_id = arguments.pop("work_type_id")
-            updates = {k: v for k, v in arguments.items() if v is not None}
+            work_type_id = arguments["work_type_id"]
+            updates = {
+                k: v
+                for k, v in arguments.items()
+                if k != "work_type_id" and v is not None
+            }
             result = client.update_work_type(work_type_id, **updates)
             return json_response(result)
 
