@@ -25,7 +25,7 @@ db-revision: ## Create migration (usage: make db-revision msg="description")
 	cd backend && uv run alembic revision --autogenerate -m "$(msg)"
 
 docker-build: ## Build Docker images
-	docker compose build
+	docker compose --profile tools build
 
 docker-up: ## Start Docker containers
 	docker compose up -d

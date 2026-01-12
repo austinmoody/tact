@@ -20,5 +20,16 @@ services:
     volumes:
       - ollama_data:/root/.ollama
 
+  mcp:
+    build:
+      context: ./mcp
+      dockerfile: Dockerfile
+    profiles:
+      - tools
+    environment:
+      - TACT_API_URL=http://api:2100
+    depends_on:
+      - api
+
 volumes:
   ollama_data:
