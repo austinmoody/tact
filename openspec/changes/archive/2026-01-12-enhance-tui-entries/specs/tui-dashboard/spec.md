@@ -8,7 +8,9 @@ The TUI SHALL display recent entries on the home screen with quick access to ent
 
 - Given: The TUI is running and connected to the backend
 - When: Entries are fetched successfully
-- Then: The last 5 entries are displayed with raw text, status, and date
+- Then: The last 15 entries are displayed grouped by date
+- And: Each entry shows raw text and status
+- And: Date headers separate entries by day
 
 #### Scenario: Empty entries list
 
@@ -161,7 +163,7 @@ The TUI SHALL allow viewing, adding, editing, and deactivating time codes.
 
 - Given: A time code is selected
 - When: e is pressed
-- Then: An edit modal opens with name, description, and keywords fields
+- Then: An edit modal opens with name, description, keywords, and examples fields
 
 #### Scenario: Save time code edits
 
@@ -231,8 +233,3 @@ The TUI SHALL allow viewing, adding, editing, and deactivating work types.
 - When: Esc is pressed
 - Then: The home screen is displayed
 
-## REMOVED Requirements
-
-### Requirement: Dashboard Display (Original)
-
-The original split-pane layout showing time codes and work types is replaced by the entry-focused home screen.
