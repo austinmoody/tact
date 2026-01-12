@@ -1,6 +1,10 @@
 package ui
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"strings"
+
+	"github.com/charmbracelet/lipgloss"
+)
 
 var (
 	// Colors
@@ -45,6 +49,16 @@ var (
 	statusStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.AdaptiveColor{Light: "#A49FA5", Dark: "#777777"})
 
+	// Entry status styles
+	statusParsedStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("#73F59F"))
+
+	statusPendingStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("#FFD93D"))
+
+	statusFailedStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("#FF6B6B"))
+
 	// Error style
 	errorStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#FF6B6B")).
@@ -59,4 +73,62 @@ var (
 			Bold(true).
 			Foreground(highlight).
 			MarginBottom(1)
+
+	// Modal styles
+	modalStyle = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(highlight).
+			Padding(1, 2)
+
+	modalTitleStyle = lipgloss.NewStyle().
+			Bold(true).
+			Foreground(highlight).
+			MarginBottom(1)
+
+	// Input field style
+	inputStyle = lipgloss.NewStyle().
+			Border(lipgloss.NormalBorder()).
+			BorderForeground(subtle).
+			Padding(0, 1)
+
+	focusedInputStyle = lipgloss.NewStyle().
+				Border(lipgloss.NormalBorder()).
+				BorderForeground(highlight).
+				Padding(0, 1)
+
+	// Label style
+	labelStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.AdaptiveColor{Light: "#A49FA5", Dark: "#AAAAAA"})
+
+	// Active/Inactive status styles
+	activeStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#73F59F"))
+
+	inactiveStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#777777"))
 )
+
+// Helper function to render a modal overlay
+func renderModalOverlay(background, modal string, width, height int) string {
+	// Simple overlay - just center the modal
+	modalWidth := lipgloss.Width(modal)
+	modalHeight := lipgloss.Height(modal)
+
+	// Calculate padding
+	paddingLeft := max(0, (width-modalWidth)/2)
+	paddingTop := max(0, (height-modalHeight)/3)
+
+	// Build the overlay
+	var b strings.Builder
+	for i := 0; i < paddingTop; i++ {
+		b.WriteString("\n")
+	}
+	lines := strings.Split(modal, "\n")
+	for _, line := range lines {
+		b.WriteString(strings.Repeat(" ", paddingLeft))
+		b.WriteString(line)
+		b.WriteString("\n")
+	}
+
+	return b.String()
+}
