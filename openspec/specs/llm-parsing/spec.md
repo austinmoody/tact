@@ -3,9 +3,7 @@
 ## Purpose
 
 Provides LLM-based parsing of time entry raw text into structured fields (duration, time code, work type, description) with confidence scores.
-
 ## Requirements
-
 ### Requirement: Provider Abstraction
 
 The system SHALL support multiple LLM providers through a common interface.
@@ -24,33 +22,34 @@ The system SHALL support multiple LLM providers through a common interface.
 
 ### Requirement: Parse Entry Fields
 
-The LLM SHALL extract structured fields from raw entry text.
+The LLM SHALL extract structured fields from raw entry text using RAG-retrieved context.
 
-#### Scenario: Full extraction
+#### Scenario: Context-aware matching
 
-- Given: Raw text "2h coding on Project Alpha"
-- And: Time code "PROJ-001" exists with keyword "alpha"
-- And: Work type "development" exists
+- Given: Raw text "2h APHL meeting about UI"
+- And: Context document exists: "ALL meetings with APHL go to FEDS-163 regardless of topic"
+- And: Context document exists: "ALL UI work goes to FEDS-167"
 - When: The entry is parsed
-- Then: duration_minutes is set to 120
-- And: time_code_id is set to "PROJ-001"
-- And: work_type_id is set to "development"
-- And: description is generated
+- Then: Relevant context is retrieved via vector similarity
+- And: time_code_id is set to "FEDS-163" (APHL rule overrides UI)
+- And: The LLM uses context to make the disambiguation
 
-#### Scenario: Partial extraction
+#### Scenario: Acronym expansion
 
-- Given: Raw text "meeting with team"
-- And: No duration is specified
+- Given: Raw text "1h IZG deployment"
+- And: Project context exists: "IZG = IZ Gateway"
+- And: Time code context exists for FEDS-163: "ALL deployments go to this code"
 - When: The entry is parsed
-- Then: duration_minutes is null
-- And: confidence_duration is low (< 0.5)
+- Then: The LLM understands IZG refers to IZ Gateway
+- And: time_code_id is set to "FEDS-163"
 
-#### Scenario: Vague input
+#### Scenario: No relevant context
 
-- Given: Raw text with minimal information (e.g., "stuff")
+- Given: Raw text "30m general admin work"
+- And: No specific context matches this entry
 - When: The entry is parsed
-- Then: Fields that cannot be determined are null
-- And: confidence_overall is very low (< 0.3)
+- Then: The LLM falls back to time code descriptions and keywords
+- And: A reasonable match is made based on available information
 
 ### Requirement: Confidence Scores
 
@@ -124,6 +123,51 @@ The system SHALL handle parsing errors gracefully.
 - When: The worker attempts to parse an entry
 - Then: status is set to "failed"
 - And: parse_error contains the error message
+
+### Requirement: RAG Context Retrieval
+
+The parser SHALL retrieve relevant context documents before calling the LLM.
+
+#### Scenario: Retrieve similar context
+
+- Given: An entry "2h security scan review"
+- And: Context documents exist with various content
+- When: The parser prepares the LLM prompt
+- Then: The entry text is embedded using the same model as context docs
+- And: Top-k most similar context chunks are retrieved
+- And: Retrieved chunks are included in the LLM prompt
+
+#### Scenario: Context includes source
+
+- Given: Context is retrieved for an entry
+- When: The LLM prompt is built
+- Then: Each context chunk is labeled with its source (project or time code)
+- And: The LLM can see which time code each rule applies to
+
+#### Scenario: Empty context store
+
+- Given: No context documents exist in the system
+- When: An entry is parsed
+- Then: Parsing proceeds without RAG context
+- And: The LLM uses only time code descriptions and keywords
+
+### Requirement: Local Embeddings
+
+The system SHALL generate embeddings locally without external API calls.
+
+#### Scenario: Embed entry text
+
+- Given: An entry is submitted for parsing
+- When: The parser retrieves context
+- Then: The entry text is embedded using a local model
+- And: No external embedding API is called
+
+#### Scenario: Embed context document
+
+- Given: A context document is created
+- When: The document is saved
+- Then: The content is embedded using a local model
+- And: The embedding is stored with the document
 
 ## Configuration
 

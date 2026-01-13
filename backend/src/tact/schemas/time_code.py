@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 class TimeCodeCreate(BaseModel):
     id: str
+    project_id: str
     name: str
     description: str
     keywords: list[str] = []
@@ -12,6 +13,7 @@ class TimeCodeCreate(BaseModel):
 
 
 class TimeCodeUpdate(BaseModel):
+    project_id: str | None = None
     name: str | None = None
     description: str | None = None
     keywords: list[str] | None = None
@@ -21,6 +23,7 @@ class TimeCodeUpdate(BaseModel):
 
 class TimeCodeResponse(BaseModel):
     id: str
+    project_id: str
     name: str
     description: str
     keywords: list[str]

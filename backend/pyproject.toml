@@ -10,6 +10,8 @@ dependencies = [
     "alembic>=1.13",
     "httpx>=0.27.0",
     "anthropic>=0.39.0",
+    "sqlite-vec>=0.1.0",
+    "sentence-transformers>=3.0.0",
 ]
 
 [project.optional-dependencies]

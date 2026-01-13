@@ -36,11 +36,22 @@ class WorkTypeInfo:
 
 
 @dataclass
+class RAGContext:
+    """RAG-retrieved context for parsing."""
+
+    content: str
+    project_id: str | None
+    time_code_id: str | None
+    similarity: float
+
+
+@dataclass
 class ParseContext:
     """Context provided to the LLM for parsing."""
 
     time_codes: list[TimeCodeInfo]
     work_types: list[WorkTypeInfo]
+    rag_contexts: list[RAGContext] | None = None
 
 
 class LLMProvider(ABC):

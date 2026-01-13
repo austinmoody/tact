@@ -6,7 +6,14 @@ from datetime import UTC, datetime
 from sqlalchemy.orm import Session
 
 from tact.db.models import TimeCode, TimeEntry, WorkType
-from tact.llm.provider import LLMProvider, ParseContext, TimeCodeInfo, WorkTypeInfo
+from tact.llm.provider import (
+    LLMProvider,
+    ParseContext,
+    RAGContext,
+    TimeCodeInfo,
+    WorkTypeInfo,
+)
+from tact.rag.retrieval import retrieve_similar_contexts
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +50,9 @@ class EntryParser:
         Returns:
             True if parsing succeeded, False otherwise
         """
-        context = self._build_context(session)
+        # Retrieve RAG context before building parse context
+        rag_contexts = self._retrieve_rag_context(entry.raw_text, session)
+        context = self._build_context(session, rag_contexts)
 
         logger.info(f"Parsing entry {entry.id}: {entry.raw_text[:50]}...")
 
@@ -76,8 +85,36 @@ class EntryParser:
 
         return True
 
-    def _build_context(self, session: Session) -> ParseContext:
-        """Build parsing context from active time codes and work types."""
+    def _retrieve_rag_context(
+        self, raw_text: str, session: Session
+    ) -> list[RAGContext] | None:
+        """Retrieve relevant context documents for the entry text."""
+        try:
+            similar = retrieve_similar_contexts(raw_text, session, top_k=5)
+            if not similar:
+                return None
+
+            rag_contexts = [
+                RAGContext(
+                    content=ctx.content,
+                    project_id=ctx.project_id,
+                    time_code_id=ctx.time_code_id,
+                    similarity=ctx.similarity,
+                )
+                for ctx in similar
+            ]
+            logger.info(
+                "Retrieved %d RAG context documents for entry", len(rag_contexts)
+            )
+            return rag_contexts
+        except Exception as e:
+            logger.warning("Failed to retrieve RAG context: %s", e)
+            return None
+
+    def _build_context(
+        self, session: Session, rag_contexts: list[RAGContext] | None = None
+    ) -> ParseContext:
+        """Build parsing context from active time codes, work types, and RAG context."""
         time_codes = session.query(TimeCode).filter(TimeCode.active.is_(True)).all()
         work_types = session.query(WorkType).filter(WorkType.active.is_(True)).all()
 
@@ -94,4 +131,5 @@ class EntryParser:
             work_types=[
                 WorkTypeInfo(id=wt.id, name=wt.name) for wt in work_types
             ],
+            rag_contexts=rag_contexts,
         )

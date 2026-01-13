@@ -2,7 +2,7 @@ from tact.llm.provider import ParseContext
 
 SYSTEM_PROMPT_TEMPLATE = """You are a time entry parser. \
 Your job is to extract structured information from natural language time entries.
-
+{rag_context_text}
 Available Time Codes:
 {time_codes_text}
 
@@ -15,6 +15,8 @@ Instructions:
 3. Match to a work_type_id from the available list
 4. Generate a clean description of the work done
 5. Provide confidence scores (0.0 to 1.0) for each field
+6. IMPORTANT: If matching context rules are provided above, follow them carefully - \
+they contain project-specific categorization rules that override generic matching
 
 Respond with ONLY valid JSON in this exact format:
 {{
@@ -33,7 +35,16 @@ Do not include any text outside the JSON object."""
 
 
 def build_system_prompt(context: ParseContext) -> str:
-    """Build the system prompt with available time codes and work types."""
+    """Build the system prompt with available time codes, work types, and RAG context."""
+    # Build RAG context section
+    rag_context_text = ""
+    if context.rag_contexts:
+        rag_lines = ["\nMatching Context Rules:"]
+        for rc in context.rag_contexts:
+            source = f"(time_code: {rc.time_code_id})" if rc.time_code_id else f"(project: {rc.project_id})"
+            rag_lines.append(f"- {source}: {rc.content}")
+        rag_context_text = "\n".join(rag_lines) + "\n"
+
     time_codes_text = "\n".join(
         f"- {tc.id}: {tc.name} - {tc.description} "
         f"(keywords: {', '.join(tc.keywords)})"
@@ -49,6 +60,7 @@ def build_system_prompt(context: ParseContext) -> str:
         work_types_text = "(none defined)"
 
     return SYSTEM_PROMPT_TEMPLATE.format(
+        rag_context_text=rag_context_text,
         time_codes_text=time_codes_text,
         work_types_text=work_types_text,
     )
