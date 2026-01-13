@@ -3,7 +3,7 @@ package ui
 import (
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 type menuItem struct {
@@ -30,9 +30,9 @@ func (m *MenuModal) Init() tea.Cmd {
 	return nil
 }
 
-func (m *MenuModal) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *MenuModal) Update(msg tea.Msg) (*MenuModal, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch {
 		case matchesKey(msg, keys.Escape):
 			return m, func() tea.Msg { return ModalCloseMsg{} }

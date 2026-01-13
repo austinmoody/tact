@@ -1,6 +1,6 @@
 package ui
 
-import "github.com/charmbracelet/bubbletea"
+import tea "charm.land/bubbletea/v2"
 
 type keyMap struct {
 	Up         []string
@@ -27,7 +27,7 @@ var keys = keyMap{
 	Left:     []string{"h", "left"},
 	Right:    []string{"l", "right"},
 	Enter:    []string{"enter"},
-	Escape:   []string{"esc"},
+	Escape:   []string{"esc", "escape"},
 	Tab:      []string{"tab"},
 	ShiftTab: []string{"shift+tab"},
 	Refresh:  []string{"r"},
@@ -41,8 +41,9 @@ var keys = keyMap{
 }
 
 func matchesKey(msg tea.KeyMsg, bindings []string) bool {
+	keyStr := msg.String()
 	for _, binding := range bindings {
-		if msg.String() == binding {
+		if keyStr == binding {
 			return true
 		}
 	}

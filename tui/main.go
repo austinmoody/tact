@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 
 	"tact-tui/api"
 	"tact-tui/ui"
@@ -29,7 +29,7 @@ func main() {
 	client := api.NewClient(url)
 	app := ui.NewApp(client)
 
-	p := tea.NewProgram(app, tea.WithAltScreen())
+	p := tea.NewProgram(app)
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)

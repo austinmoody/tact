@@ -1,7 +1,7 @@
 package ui
 
 import (
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 
 	"tact-tui/api"
 	"tact-tui/model"
@@ -90,13 +90,19 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return a, nil
 
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		// Handle modal input first
 		if a.modal != ModalNone {
 			return a.updateModal(msg)
 		}
 		// Handle screen input
 		return a.updateScreen(msg)
+
+	case tea.PasteMsg:
+		// Route paste events to modal if one is open
+		if a.modal != ModalNone {
+			return a.updateModalPaste(msg)
+		}
 
 	// Handle modal result messages
 	case EntryCreatedMsg:
@@ -146,24 +152,24 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, a.workTypes.Refresh()
 
 	case OpenTimeCodeAddMsg:
-		a.timeCodeEdit = NewTimeCodeEditModal(a.client, nil)
+		a.timeCodeEdit = NewTimeCodeEditModal(a.client, nil, a.width)
 		a.modal = ModalTimeCodeAdd
 		return a, a.timeCodeEdit.Init()
 
 	case OpenTimeCodeEditMsg:
 		a.selectedTimeCode = msg.TimeCode
-		a.timeCodeEdit = NewTimeCodeEditModal(a.client, msg.TimeCode)
+		a.timeCodeEdit = NewTimeCodeEditModal(a.client, msg.TimeCode, a.width)
 		a.modal = ModalTimeCodeEdit
 		return a, a.timeCodeEdit.Init()
 
 	case OpenWorkTypeAddMsg:
-		a.workTypeEdit = NewWorkTypeEditModal(a.client, nil)
+		a.workTypeEdit = NewWorkTypeEditModal(a.client, nil, a.width)
 		a.modal = ModalWorkTypeAdd
 		return a, a.workTypeEdit.Init()
 
 	case OpenWorkTypeEditMsg:
 		a.selectedWorkType = msg.WorkType
-		a.workTypeEdit = NewWorkTypeEditModal(a.client, msg.WorkType)
+		a.workTypeEdit = NewWorkTypeEditModal(a.client, msg.WorkType, a.width)
 		a.modal = ModalWorkTypeEdit
 		return a, a.workTypeEdit.Init()
 	}
@@ -172,7 +178,28 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return a.propagateToScreen(msg)
 }
 
-func (a *App) updateModal(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (a *App) updateModalPaste(msg tea.PasteMsg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+
+	switch a.modal {
+	case ModalNewEntry:
+		if a.entryInput != nil {
+			_, cmd = a.entryInput.Update(msg)
+		}
+	case ModalTimeCodeAdd, ModalTimeCodeEdit:
+		if a.timeCodeEdit != nil {
+			_, cmd = a.timeCodeEdit.Update(msg)
+		}
+	case ModalWorkTypeAdd, ModalWorkTypeEdit:
+		if a.workTypeEdit != nil {
+			_, cmd = a.workTypeEdit.Update(msg)
+		}
+	}
+
+	return a, cmd
+}
+
+func (a *App) updateModal(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch a.modal {
@@ -199,7 +226,7 @@ func (a *App) updateModal(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return a, cmd
 }
 
-func (a *App) updateScreen(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (a *App) updateScreen(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	// Global quit
 	if matchesKey(msg, keys.Quit) {
 		return a, tea.Quit
@@ -217,10 +244,10 @@ func (a *App) updateScreen(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return a, nil
 }
 
-func (a *App) updateHomeScreen(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (a *App) updateHomeScreen(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch {
 	case matchesKey(msg, keys.NewEntry):
-		a.entryInput = NewEntryInputModal(a.client)
+		a.entryInput = NewEntryInputModal(a.client, a.width)
 		a.modal = ModalNewEntry
 		return a, a.entryInput.Init()
 
@@ -242,7 +269,7 @@ func (a *App) updateHomeScreen(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	}
 }
 
-func (a *App) updateTimeCodesScreen(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (a *App) updateTimeCodesScreen(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch {
 	case matchesKey(msg, keys.Escape):
 		a.screen = ScreenHome
@@ -253,7 +280,7 @@ func (a *App) updateTimeCodesScreen(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	}
 }
 
-func (a *App) updateWorkTypesScreen(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (a *App) updateWorkTypesScreen(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch {
 	case matchesKey(msg, keys.Escape):
 		a.screen = ScreenHome
@@ -279,7 +306,7 @@ func (a *App) propagateToScreen(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return a, cmd
 }
 
-func (a *App) View() string {
+func (a *App) View() tea.View {
 	// Render current screen
 	var screenView string
 	switch a.screen {
@@ -291,12 +318,15 @@ func (a *App) View() string {
 		screenView = a.workTypes.View()
 	}
 
-	// Render modal overlay if active
+	// Build the view with alt screen enabled
+	var v tea.View
 	if a.modal != ModalNone {
-		return a.renderWithModal(screenView)
+		v = tea.NewView(a.renderWithModal(screenView))
+	} else {
+		v = tea.NewView(screenView)
 	}
-
-	return screenView
+	v.AltScreen = true
+	return v
 }
 
 func (a *App) renderWithModal(screenView string) string {

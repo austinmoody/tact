@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"tact-tui/api"
 	"tact-tui/model"
@@ -63,9 +63,9 @@ func (s *WorkTypesScreen) SelectedWorkType() *model.WorkType {
 	return &s.workTypes[s.cursor]
 }
 
-func (s *WorkTypesScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (s *WorkTypesScreen) Update(msg tea.Msg) (*WorkTypesScreen, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		return s.handleKeyPress(msg)
 
 	case workTypesMsg:
@@ -85,7 +85,7 @@ func (s *WorkTypesScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return s, nil
 }
 
-func (s *WorkTypesScreen) handleKeyPress(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (s *WorkTypesScreen) handleKeyPress(msg tea.KeyPressMsg) (*WorkTypesScreen, tea.Cmd) {
 	switch {
 	case matchesKey(msg, keys.Up):
 		if s.cursor > 0 {
