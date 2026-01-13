@@ -8,8 +8,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 
 from tact.db.migrations import run_migrations
+from tact.routes.context import router as context_router
 from tact.routes.entries import router as entries_router
 from tact.routes.health import router as health_router
+from tact.routes.projects import router as projects_router
 from tact.routes.time_codes import router as time_codes_router
 from tact.routes.work_types import router as work_types_router
 from tact.worker import start_parser_worker
@@ -100,6 +102,8 @@ async def log_requests(request: Request, call_next):
 
 
 app.include_router(health_router)
+app.include_router(context_router)
 app.include_router(entries_router)
+app.include_router(projects_router)
 app.include_router(time_codes_router)
 app.include_router(work_types_router)

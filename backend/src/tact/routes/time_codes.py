@@ -4,7 +4,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from tact.db.models import TimeCode
+from tact.db.models import Project, TimeCode
 from tact.db.session import get_session
 from tact.schemas.time_code import TimeCodeCreate, TimeCodeResponse, TimeCodeUpdate
 
@@ -17,6 +17,7 @@ def _model_to_response(time_code: TimeCode) -> TimeCodeResponse:
     """Convert SQLAlchemy model to response, parsing JSON fields."""
     return TimeCodeResponse(
         id=time_code.id,
+        project_id=time_code.project_id,
         name=time_code.name,
         description=time_code.description,
         keywords=json.loads(time_code.keywords),
@@ -36,8 +37,13 @@ def create_time_code(
     if existing:
         raise HTTPException(status_code=409, detail="Time code already exists")
 
+    project = session.query(Project).filter(Project.id == data.project_id).first()
+    if not project:
+        raise HTTPException(status_code=400, detail="Project not found")
+
     time_code = TimeCode(
         id=data.id,
+        project_id=data.project_id,
         name=data.name,
         description=data.description,
         keywords=json.dumps(data.keywords),
@@ -53,13 +59,21 @@ def create_time_code(
 @router.get("", response_model=list[TimeCodeResponse])
 def list_time_codes(
     active: bool | None = Query(None),
+    project_id: str | None = Query(None),
     session: Session = Depends(get_session),
 ) -> list[TimeCodeResponse]:
     query = session.query(TimeCode)
     if active is not None:
         query = query.filter(TimeCode.active == active)
+    if project_id is not None:
+        query = query.filter(TimeCode.project_id == project_id)
     time_codes = query.all()
-    logger.info("Listed time codes: active=%s count=%d", active, len(time_codes))
+    logger.info(
+        "Listed time codes: active=%s project_id=%s count=%d",
+        active,
+        project_id,
+        len(time_codes),
+    )
     return [_model_to_response(tc) for tc in time_codes]
 
 
@@ -85,6 +99,11 @@ def update_time_code(
     if not time_code:
         raise HTTPException(status_code=404, detail="Time code not found")
 
+    if data.project_id is not None:
+        project = session.query(Project).filter(Project.id == data.project_id).first()
+        if not project:
+            raise HTTPException(status_code=400, detail="Project not found")
+        time_code.project_id = data.project_id
     if data.name is not None:
         time_code.name = data.name
     if data.description is not None:

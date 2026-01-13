@@ -1,7 +1,17 @@
+from tact.schemas.context import (
+    ContextCreate,
+    ContextResponse,
+    ContextUpdate,
+)
 from tact.schemas.entry import (
     EntryCreate,
     EntryResponse,
     EntryUpdate,
+)
+from tact.schemas.project import (
+    ProjectCreate,
+    ProjectResponse,
+    ProjectUpdate,
 )
 from tact.schemas.time_code import (
     TimeCodeCreate,
@@ -15,9 +25,15 @@ from tact.schemas.work_type import (
 )
 
 __all__ = [
+    "ContextCreate",
+    "ContextResponse",
+    "ContextUpdate",
     "EntryCreate",
     "EntryResponse",
     "EntryUpdate",
+    "ProjectCreate",
+    "ProjectResponse",
+    "ProjectUpdate",
     "TimeCodeCreate",
     "TimeCodeResponse",
     "TimeCodeUpdate",

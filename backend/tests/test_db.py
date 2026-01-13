@@ -1,6 +1,6 @@
 from datetime import date
 
-from tact.db.models import Config, TimeCode, TimeEntry, WorkType
+from tact.db.models import Config, Project, TimeCode, TimeEntry, WorkType
 
 
 def test_config_create_and_query(db_session):
@@ -28,8 +28,14 @@ def test_work_type_create_and_query(db_session):
 
 
 def test_time_code_create_and_query(db_session):
+    # Create project first (time codes require a project)
+    project = Project(id="IZG", name="IZ Gateway")
+    db_session.add(project)
+    db_session.commit()
+
     time_code = TimeCode(
         id="PROJ-001",
+        project_id="IZG",
         name="Project Alpha",
         description="Main project",
         keywords='["alpha", "main"]',
@@ -41,16 +47,19 @@ def test_time_code_create_and_query(db_session):
     result = db_session.query(TimeCode).filter_by(id="PROJ-001").first()
     assert result is not None
     assert result.id == "PROJ-001"
+    assert result.project_id == "IZG"
     assert result.name == "Project Alpha"
     assert result.active is True
 
 
 def test_time_entry_create_and_query(db_session):
-    # First create the referenced work_type and time_code
+    # First create the referenced project, work_type and time_code
+    project = Project(id="IZG", name="IZ Gateway")
     work_type = WorkType(id="dev", name="Development")
     time_code = TimeCode(
-        id="PROJ-001", name="Project Alpha", description="Main project"
+        id="PROJ-001", project_id="IZG", name="Project Alpha", description="Main project"
     )
+    db_session.add(project)
     db_session.add(work_type)
     db_session.add(time_code)
     db_session.commit()

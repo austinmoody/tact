@@ -7,34 +7,31 @@ TBD - created by archiving change add-timecodes-worktypes-api. Update Purpose af
 
 The API SHALL allow creating a new time code via POST request.
 
-#### Scenario: Successful creation
+#### Scenario: Successful creation with project
 
-- Given: A valid time code payload with id, name, and description
+- Given: A valid time code payload with id, name, description, and project_id
+- And: The referenced project exists
 - When: POST `/time-codes` is called
 - Then: The time code is created with `active=true`
+- And: The time code is associated with the specified project
 - And: HTTP 201 is returned with the created time code
 
-#### Scenario: Duplicate ID
+#### Scenario: Project not found
 
-- Given: A time code with the same ID already exists
+- Given: A time code payload references a non-existent project_id
 - When: POST `/time-codes` is called
-- Then: HTTP 409 Conflict is returned
+- Then: HTTP 400 Bad Request is returned
+- And: Error message indicates project not found
 
 ### Requirement: List Time Codes
 
 The API SHALL return all time codes with optional filtering.
 
-#### Scenario: List all time codes
+#### Scenario: Filter by project
 
-- Given: Multiple time codes exist
-- When: GET `/time-codes` is called
-- Then: All time codes are returned
-
-#### Scenario: Filter by active status
-
-- Given: Both active and inactive time codes exist
-- When: GET `/time-codes?active=true` is called
-- Then: Only active time codes are returned
+- Given: Time codes exist for multiple projects
+- When: GET `/time-codes?project_id=IZG` is called
+- Then: Only time codes for project "IZG" are returned
 
 ### Requirement: Get Single Time Code
 
@@ -56,18 +53,13 @@ The API SHALL return a single time code by ID.
 
 The API SHALL allow updating an existing time code.
 
-#### Scenario: Successful update
+#### Scenario: Change project association
 
-- Given: A time code with ID "PROJ-001" exists
-- When: PUT `/time-codes/PROJ-001` is called with updated fields
-- Then: The time code is updated
-- And: HTTP 200 is returned with the updated time code
-
-#### Scenario: Update non-existent time code
-
-- Given: No time code with ID "UNKNOWN" exists
-- When: PUT `/time-codes/UNKNOWN` is called
-- Then: HTTP 404 is returned
+- Given: A time code with ID "FEDS-163" exists in project "IZG"
+- And: Project "OTHER" exists
+- When: PUT `/time-codes/FEDS-163` is called with `project_id: "OTHER"`
+- Then: The time code is moved to project "OTHER"
+- And: HTTP 200 is returned
 
 ### Requirement: Delete Time Code
 
