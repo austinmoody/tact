@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 
 	"tact-tui/api"
 	"tact-tui/model"
@@ -28,7 +28,7 @@ func (m *EntryDetailModal) Init() tea.Cmd {
 	return nil
 }
 
-func (m *EntryDetailModal) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *EntryDetailModal) Update(msg tea.Msg) (*EntryDetailModal, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {

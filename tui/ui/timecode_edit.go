@@ -3,8 +3,8 @@ package ui
 import (
 	"strings"
 
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
 
 	"tact-tui/api"
 	"tact-tui/model"
@@ -14,6 +14,7 @@ type TimeCodeEditModal struct {
 	client   *api.Client
 	timeCode *model.TimeCode // nil for add mode
 	isEdit   bool
+	width    int
 
 	// Input fields
 	idInput          textinput.Model
@@ -29,35 +30,37 @@ type TimeCodeEditModal struct {
 	err    error
 }
 
-func NewTimeCodeEditModal(client *api.Client, tc *model.TimeCode) *TimeCodeEditModal {
+func NewTimeCodeEditModal(client *api.Client, tc *model.TimeCode, width int) *TimeCodeEditModal {
 	isEdit := tc != nil
+	inputWidth := calculateInputWidth(width)
 
 	idInput := textinput.New()
 	idInput.Placeholder = "ABC123"
 	idInput.CharLimit = 50
-	idInput.Width = 40
+	idInput.SetWidth(inputWidth)
 
 	nameInput := textinput.New()
 	nameInput.Placeholder = "Time Code Name"
 	nameInput.CharLimit = 100
-	nameInput.Width = 40
+	nameInput.SetWidth(inputWidth)
 
 	descriptionInput := textinput.New()
 	descriptionInput.Placeholder = "Optional description"
 	descriptionInput.CharLimit = 500
-	descriptionInput.Width = 40
+	descriptionInput.SetWidth(inputWidth)
 
 	keywordsInput := textinput.New()
 	keywordsInput.Placeholder = "keyword1, keyword2, keyword3"
 	keywordsInput.CharLimit = 500
-	keywordsInput.Width = 40
+	keywordsInput.SetWidth(inputWidth)
 
 	examplesInput := textinput.New()
 	examplesInput.Placeholder = "2h on project, 30m meeting"
 	examplesInput.CharLimit = 500
-	examplesInput.Width = 40
+	examplesInput.SetWidth(inputWidth)
 
-	inputCount := 2 // Add mode: just ID and Name
+	// Both add and edit modes now have all fields
+	inputCount := 5 // Add mode: ID, Name, Description, Keywords, Examples
 	if isEdit {
 		// In edit mode, ID is readonly so we have: name, description, keywords, examples
 		inputCount = 4
@@ -81,6 +84,7 @@ func NewTimeCodeEditModal(client *api.Client, tc *model.TimeCode) *TimeCodeEditM
 		client:           client,
 		timeCode:         tc,
 		isEdit:           isEdit,
+		width:            width,
 		idInput:          idInput,
 		nameInput:        nameInput,
 		descriptionInput: descriptionInput,
@@ -95,26 +99,24 @@ func (m *TimeCodeEditModal) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (m *TimeCodeEditModal) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *TimeCodeEditModal) Update(msg tea.Msg) (*TimeCodeEditModal, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		// Handle navigation and consume arrow keys to prevent control chars in input
-		switch msg.Type {
-		case tea.KeyUp, tea.KeyShiftUp, tea.KeyCtrlUp:
+	case tea.KeyPressMsg:
+		switch msg.Key().Code {
+		case tea.KeyUp:
 			m.prevInput()
 			return m, nil
-		case tea.KeyDown, tea.KeyShiftDown, tea.KeyCtrlDown:
+		case tea.KeyDown:
 			m.nextInput()
 			return m, nil
-		case tea.KeyLeft, tea.KeyRight, tea.KeyShiftLeft, tea.KeyShiftRight:
-			// Allow left/right for cursor movement within text - pass to focused input only
-		case tea.KeyEsc:
+		case tea.KeyEscape:
 			return m, func() tea.Msg { return ModalCloseMsg{} }
 		case tea.KeyTab:
-			m.nextInput()
-			return m, nil
-		case tea.KeyShiftTab:
-			m.prevInput()
+			if msg.Key().Mod&tea.ModShift != 0 {
+				m.prevInput()
+			} else {
+				m.nextInput()
+			}
 			return m, nil
 		case tea.KeyEnter:
 			if !m.saving {
@@ -123,24 +125,9 @@ func (m *TimeCodeEditModal) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		}
-
-		// Also check string representation for terminals that send raw sequences
-		keyStr := msg.String()
-		if keyStr == "up" {
-			m.prevInput()
-			return m, nil
-		}
-		if keyStr == "down" {
-			m.nextInput()
-			return m, nil
-		}
-		// Consume any escape sequences that slipped through
-		if len(keyStr) > 1 && keyStr[0] == '\x1b' {
-			return m, nil
-		}
 	}
 
-	// Update only the focused input to avoid passing keys to all inputs
+	// Update only the focused input
 	var cmd tea.Cmd
 	if m.isEdit {
 		switch m.focusIndex {
@@ -159,6 +146,12 @@ func (m *TimeCodeEditModal) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.idInput, cmd = m.idInput.Update(msg)
 		case 1:
 			m.nameInput, cmd = m.nameInput.Update(msg)
+		case 2:
+			m.descriptionInput, cmd = m.descriptionInput.Update(msg)
+		case 3:
+			m.keywordsInput, cmd = m.keywordsInput.Update(msg)
+		case 4:
+			m.examplesInput, cmd = m.examplesInput.Update(msg)
 		}
 	}
 
@@ -186,7 +179,6 @@ func (m *TimeCodeEditModal) updateFocus() {
 	m.examplesInput.Blur()
 
 	if m.isEdit {
-		// In edit mode: name(0), description(1), keywords(2), examples(3)
 		switch m.focusIndex {
 		case 0:
 			m.nameInput.Focus()
@@ -198,12 +190,17 @@ func (m *TimeCodeEditModal) updateFocus() {
 			m.examplesInput.Focus()
 		}
 	} else {
-		// In add mode: id(0), name(1)
 		switch m.focusIndex {
 		case 0:
 			m.idInput.Focus()
 		case 1:
 			m.nameInput.Focus()
+		case 2:
+			m.descriptionInput.Focus()
+		case 3:
+			m.keywordsInput.Focus()
+		case 4:
+			m.examplesInput.Focus()
 		}
 	}
 }
@@ -211,11 +208,10 @@ func (m *TimeCodeEditModal) updateFocus() {
 func (m *TimeCodeEditModal) save() tea.Cmd {
 	return func() tea.Msg {
 		if m.isEdit {
-			// Update existing time code
 			name := m.nameInput.Value()
 			desc := m.descriptionInput.Value()
 			keywords := parseKeywords(m.keywordsInput.Value())
-			examples := parseKeywords(m.examplesInput.Value()) // Same parsing as keywords
+			examples := parseKeywords(m.examplesInput.Value())
 
 			updates := api.TimeCodeUpdate{
 				Name:        &name,
@@ -230,14 +226,17 @@ func (m *TimeCodeEditModal) save() tea.Cmd {
 			return TimeCodeUpdatedMsg{}
 		}
 
-		// Create new time code
 		id := m.idInput.Value()
 		name := m.nameInput.Value()
 		if id == "" || name == "" {
-			return timeCodeEditErrMsg{err: nil} // Validation error
+			return timeCodeEditErrMsg{err: nil}
 		}
 
-		_, err := m.client.CreateTimeCode(id, name, "")
+		desc := m.descriptionInput.Value()
+		keywords := parseKeywords(m.keywordsInput.Value())
+		examples := parseKeywords(m.examplesInput.Value())
+
+		_, err := m.client.CreateTimeCode(id, name, desc, keywords, examples)
 		if err != nil {
 			return timeCodeEditErrMsg{err}
 		}
@@ -300,35 +299,47 @@ func (m *TimeCodeEditModal) View() string {
 	b.WriteString(style.Render(m.nameInput.View()))
 	b.WriteString("\n\n")
 
-	// Additional fields (edit mode only)
+	// Description field
+	b.WriteString(labelStyle.Render("Description:"))
+	b.WriteString("\n")
+	descIdx := 2
 	if m.isEdit {
-		b.WriteString(labelStyle.Render("Description:"))
-		b.WriteString("\n")
-		style := inputStyle
-		if m.focusIndex == 1 {
-			style = focusedInputStyle
-		}
-		b.WriteString(style.Render(m.descriptionInput.View()))
-		b.WriteString("\n\n")
-
-		b.WriteString(labelStyle.Render("Keywords (comma separated):"))
-		b.WriteString("\n")
-		style = inputStyle
-		if m.focusIndex == 2 {
-			style = focusedInputStyle
-		}
-		b.WriteString(style.Render(m.keywordsInput.View()))
-		b.WriteString("\n\n")
-
-		b.WriteString(labelStyle.Render("Examples (comma separated):"))
-		b.WriteString("\n")
-		style = inputStyle
-		if m.focusIndex == 3 {
-			style = focusedInputStyle
-		}
-		b.WriteString(style.Render(m.examplesInput.View()))
-		b.WriteString("\n\n")
+		descIdx = 1
 	}
+	style = inputStyle
+	if m.focusIndex == descIdx {
+		style = focusedInputStyle
+	}
+	b.WriteString(style.Render(m.descriptionInput.View()))
+	b.WriteString("\n\n")
+
+	// Keywords field
+	b.WriteString(labelStyle.Render("Keywords (comma separated):"))
+	b.WriteString("\n")
+	keywordsIdx := 3
+	if m.isEdit {
+		keywordsIdx = 2
+	}
+	style = inputStyle
+	if m.focusIndex == keywordsIdx {
+		style = focusedInputStyle
+	}
+	b.WriteString(style.Render(m.keywordsInput.View()))
+	b.WriteString("\n\n")
+
+	// Examples field
+	b.WriteString(labelStyle.Render("Examples (comma separated):"))
+	b.WriteString("\n")
+	examplesIdx := 4
+	if m.isEdit {
+		examplesIdx = 3
+	}
+	style = inputStyle
+	if m.focusIndex == examplesIdx {
+		style = focusedInputStyle
+	}
+	b.WriteString(style.Render(m.examplesInput.View()))
+	b.WriteString("\n\n")
 
 	// Error
 	if m.err != nil {
@@ -340,7 +351,7 @@ func (m *TimeCodeEditModal) View() string {
 	if m.saving {
 		b.WriteString(statusStyle.Render("Saving..."))
 	} else {
-		b.WriteString(helpStyle.Render("[Tab] Next Field  [Enter] Save  [Esc] Cancel"))
+		b.WriteString(helpStyle.Render("[Tab] Next  [Enter] Save  [Esc] Cancel"))
 	}
 
 	return modalStyle.Render(b.String())

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"tact-tui/api"
 	"tact-tui/model"
@@ -63,9 +63,9 @@ func (s *TimeCodesScreen) SelectedTimeCode() *model.TimeCode {
 	return &s.timeCodes[s.cursor]
 }
 
-func (s *TimeCodesScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (s *TimeCodesScreen) Update(msg tea.Msg) (*TimeCodesScreen, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		return s.handleKeyPress(msg)
 
 	case timeCodesMsg:
@@ -85,7 +85,7 @@ func (s *TimeCodesScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return s, nil
 }
 
-func (s *TimeCodesScreen) handleKeyPress(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (s *TimeCodesScreen) handleKeyPress(msg tea.KeyPressMsg) (*TimeCodesScreen, tea.Cmd) {
 	switch {
 	case matchesKey(msg, keys.Up):
 		if s.cursor > 0 {

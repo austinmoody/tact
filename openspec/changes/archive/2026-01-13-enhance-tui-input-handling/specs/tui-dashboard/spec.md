@@ -2,24 +2,6 @@
 
 ## MODIFIED Requirements
 
-### Requirement: Text Input Handling
-
-The TUI SHALL sanitize text input to prevent control character insertion.
-
-#### Scenario: Paste text with control characters
-
-- Given: A text input field is focused
-- When: Text containing control characters is pasted (Ctrl+V)
-- Then: Control characters (0x00-0x1F, 0x7F except whitespace) are filtered
-- And: Only printable characters appear in the input
-
-#### Scenario: Arrow key navigation in text field
-
-- Given: A text input field is focused with text entered
-- When: Left or right arrow key is pressed
-- Then: The cursor moves within the text
-- And: No control characters are inserted into the input
-
 ### Requirement: Time Codes Management
 
 The TUI SHALL allow viewing, adding, editing, and deactivating time codes.
@@ -39,6 +21,24 @@ The TUI SHALL allow viewing, adding, editing, and deactivating time codes.
 - And: The list is refreshed
 
 ## ADDED Requirements
+
+### Requirement: Text Input Handling
+
+The TUI SHALL handle text input without inserting control characters.
+
+#### Scenario: Paste text into input field
+
+- Given: A text input field is focused
+- When: Text is pasted (Ctrl+V or terminal paste)
+- Then: The text appears in the input field
+- And: No control characters are inserted
+
+#### Scenario: Arrow key navigation in text field
+
+- Given: A text input field is focused with text entered
+- When: Left or right arrow key is pressed
+- Then: The cursor moves within the text
+- And: No control characters are inserted into the input
 
 ### Requirement: Responsive Form Layout
 

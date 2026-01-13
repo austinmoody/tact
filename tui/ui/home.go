@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"tact-tui/api"
 	"tact-tui/model"
@@ -67,9 +67,9 @@ func (h *Home) SelectedEntry() *model.Entry {
 	return &h.entries[h.cursor]
 }
 
-func (h *Home) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (h *Home) Update(msg tea.Msg) (*Home, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		return h.handleKeyPress(msg)
 
 	case entriesMsg:
@@ -93,7 +93,7 @@ func (h *Home) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return h, nil
 }
 
-func (h *Home) handleKeyPress(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (h *Home) handleKeyPress(msg tea.KeyPressMsg) (*Home, tea.Cmd) {
 	switch {
 	case matchesKey(msg, keys.Up):
 		if h.cursor > 0 {

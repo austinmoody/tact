@@ -3,8 +3,8 @@ package ui
 import (
 	"strings"
 
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
 
 	"tact-tui/api"
 )
@@ -14,18 +14,22 @@ type EntryInputModal struct {
 	textInput textinput.Model
 	err       error
 	saving    bool
+	width     int
 }
 
-func NewEntryInputModal(client *api.Client) *EntryInputModal {
+func NewEntryInputModal(client *api.Client, width int) *EntryInputModal {
+	inputWidth := calculateInputWidth(width)
+
 	ti := textinput.New()
 	ti.Placeholder = "2h meeting with client ABC123"
 	ti.Focus()
 	ti.CharLimit = 500
-	ti.Width = 50
+	ti.SetWidth(inputWidth)
 
 	return &EntryInputModal{
 		client:    client,
 		textInput: ti,
+		width:     width,
 	}
 }
 
@@ -33,29 +37,17 @@ func (m *EntryInputModal) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (m *EntryInputModal) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *EntryInputModal) Update(msg tea.Msg) (*EntryInputModal, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		// Handle keys directly by type to prevent control characters
-		switch msg.Type {
-		case tea.KeyUp, tea.KeyDown, tea.KeyShiftUp, tea.KeyShiftDown, tea.KeyCtrlUp, tea.KeyCtrlDown:
-			return m, nil
-		case tea.KeyEsc:
+	case tea.KeyPressMsg:
+		switch msg.Key().Code {
+		case tea.KeyEscape:
 			return m, func() tea.Msg { return ModalCloseMsg{} }
 		case tea.KeyEnter:
 			if m.textInput.Value() != "" && !m.saving {
 				m.saving = true
 				return m, m.createEntry()
 			}
-			return m, nil
-		}
-
-		// Consume any escape sequences that slipped through
-		keyStr := msg.String()
-		if keyStr == "up" || keyStr == "down" {
-			return m, nil
-		}
-		if len(keyStr) > 1 && keyStr[0] == '\x1b' {
 			return m, nil
 		}
 	}
@@ -86,8 +78,8 @@ func (m *EntryInputModal) View() string {
 	b.WriteString(labelStyle.Render("Enter time entry (e.g. '2h meeting ABC123'):"))
 	b.WriteString("\n")
 
-	inputStyle := focusedInputStyle
-	b.WriteString(inputStyle.Render(m.textInput.View()))
+	style := focusedInputStyle
+	b.WriteString(style.Render(m.textInput.View()))
 	b.WriteString("\n\n")
 
 	if m.err != nil {

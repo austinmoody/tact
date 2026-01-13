@@ -3,14 +3,14 @@ package ui
 import (
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 )
 
 var (
-	// Colors
-	subtle    = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#383838"}
-	highlight = lipgloss.AdaptiveColor{Light: "#874BFD", Dark: "#7D56F4"}
-	special   = lipgloss.AdaptiveColor{Light: "#43BF6D", Dark: "#73F59F"}
+	// Colors (dark theme)
+	subtle    = lipgloss.Color("#383838")
+	highlight = lipgloss.Color("#7D56F4")
+	special   = lipgloss.Color("#73F59F")
 
 	// Title style
 	titleStyle = lipgloss.NewStyle().
@@ -47,7 +47,7 @@ var (
 
 	// Status bar style
 	statusStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.AdaptiveColor{Light: "#A49FA5", Dark: "#777777"})
+			Foreground(lipgloss.Color("#777777"))
 
 	// Entry status styles
 	statusParsedStyle = lipgloss.NewStyle().
@@ -66,7 +66,7 @@ var (
 
 	// Help style
 	helpStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.AdaptiveColor{Light: "#A49FA5", Dark: "#626262"})
+			Foreground(lipgloss.Color("#626262"))
 
 	// Header style for panes
 	headerStyle = lipgloss.NewStyle().
@@ -98,7 +98,7 @@ var (
 
 	// Label style
 	labelStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.AdaptiveColor{Light: "#A49FA5", Dark: "#AAAAAA"})
+			Foreground(lipgloss.Color("#AAAAAA"))
 
 	// Active/Inactive status styles
 	activeStyle = lipgloss.NewStyle().
@@ -107,6 +107,23 @@ var (
 	inactiveStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#777777"))
 )
+
+// calculateInputWidth determines input field width based on terminal width.
+// Returns a width between 30 and 80 characters.
+func calculateInputWidth(termWidth int) int {
+	// Modal padding: 2 chars each side, border: 1 each side, internal padding: ~4
+	margins := 12
+	available := termWidth - margins
+
+	// Clamp between 30 and 80
+	if available < 30 {
+		return 30
+	}
+	if available > 80 {
+		return 80
+	}
+	return available
+}
 
 // Helper function to render a modal overlay
 func renderModalOverlay(background, modal string, width, height int) string {

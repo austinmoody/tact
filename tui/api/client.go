@@ -132,9 +132,11 @@ func (c *Client) ReparseEntry(id string) (*model.Entry, error) {
 // Time Code mutation methods
 
 type TimeCodeCreate struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description,omitempty"`
+	Keywords    []string `json:"keywords,omitempty"`
+	Examples    []string `json:"examples,omitempty"`
 }
 
 type TimeCodeUpdate struct {
@@ -144,8 +146,14 @@ type TimeCodeUpdate struct {
 	Examples    []string `json:"examples,omitempty"`
 }
 
-func (c *Client) CreateTimeCode(id, name, description string) (*model.TimeCode, error) {
-	body := TimeCodeCreate{ID: id, Name: name, Description: description}
+func (c *Client) CreateTimeCode(id, name, description string, keywords, examples []string) (*model.TimeCode, error) {
+	body := TimeCodeCreate{
+		ID:          id,
+		Name:        name,
+		Description: description,
+		Keywords:    keywords,
+		Examples:    examples,
+	}
 	jsonBody, err := json.Marshal(body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
