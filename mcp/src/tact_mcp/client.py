@@ -162,32 +162,6 @@ class TactClient:
         response = self._client.delete(f"/work-types/{work_type_id}")
         return self._handle_response(response)
 
-    # --- Reports ---
-
-    def get_summary(
-        self,
-        time_code_id: str | None = None,
-        work_type_id: str | None = None,
-        from_date: date | None = None,
-        to_date: date | None = None,
-    ) -> dict[str, Any]:
-        """Get time summary report.
-
-        Note: The reports endpoint may not exist yet in the API.
-        This is a placeholder for future implementation.
-        """
-        params: dict[str, Any] = {}
-        if time_code_id:
-            params["time_code_id"] = time_code_id
-        if work_type_id:
-            params["work_type_id"] = work_type_id
-        if from_date:
-            params["from_date"] = from_date.isoformat()
-        if to_date:
-            params["to_date"] = to_date.isoformat()
-        response = self._client.get("/reports/summary", params=params)
-        return self._handle_response(response)
-
     # --- Projects ---
 
     def list_projects(self, active_only: bool | None = None) -> list[dict[str, Any]]:

@@ -349,32 +349,6 @@ async def list_tools() -> list[Tool]:
                 "required": ["work_type_id"],
             },
         ),
-        # Report tools
-        Tool(
-            name="get_summary",
-            description="Get time summary report",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "time_code_id": {
-                        "type": "string",
-                        "description": "Filter by time code",
-                    },
-                    "work_type_id": {
-                        "type": "string",
-                        "description": "Filter by work type",
-                    },
-                    "from_date": {
-                        "type": "string",
-                        "description": "Start date (YYYY-MM-DD)",
-                    },
-                    "to_date": {
-                        "type": "string",
-                        "description": "End date (YYYY-MM-DD)",
-                    },
-                },
-            },
-        ),
         # Project tools
         Tool(
             name="list_projects",
@@ -683,22 +657,6 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
 
         elif name == "delete_work_type":
             result = client.delete_work_type(arguments["work_type_id"])
-            return json_response(result)
-
-        # Report tools
-        elif name == "get_summary":
-            from_date = None
-            to_date = None
-            if arguments.get("from_date"):
-                from_date = date.fromisoformat(arguments["from_date"])
-            if arguments.get("to_date"):
-                to_date = date.fromisoformat(arguments["to_date"])
-            result = client.get_summary(
-                time_code_id=arguments.get("time_code_id"),
-                work_type_id=arguments.get("work_type_id"),
-                from_date=from_date,
-                to_date=to_date,
-            )
             return json_response(result)
 
         # Project tools
