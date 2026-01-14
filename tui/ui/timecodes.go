@@ -114,6 +114,12 @@ func (s *TimeCodesScreen) handleKeyPress(msg tea.KeyPressMsg) (*TimeCodesScreen,
 		}
 		return s, nil
 
+	case matchesKey(msg, keys.Context):
+		if tc := s.SelectedTimeCode(); tc != nil {
+			return s, func() tea.Msg { return OpenTimeCodeContextMsg{TimeCode: tc} }
+		}
+		return s, nil
+
 	case matchesKey(msg, keys.Refresh):
 		return s, s.Refresh()
 	}
@@ -167,7 +173,7 @@ func (s *TimeCodesScreen) View() string {
 
 	// Help bar at bottom
 	b.WriteString("\n")
-	help := helpStyle.Render("[a] Add  [e] Edit  [d] Delete  [r] Refresh  [Esc] Back")
+	help := helpStyle.Render("[a] Add  [e] Edit  [d] Delete  [c] Context  [r] Refresh  [Esc] Back")
 	b.WriteString(help)
 
 	return b.String()

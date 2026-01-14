@@ -19,6 +19,7 @@ type MenuModal struct {
 func NewMenuModal() *MenuModal {
 	return &MenuModal{
 		items: []menuItem{
+			{key: "projects", label: "Projects"},
 			{key: "timecodes", label: "Time Codes"},
 			{key: "worktypes", label: "Work Types"},
 		},
