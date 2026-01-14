@@ -35,13 +35,16 @@ Do not include any text outside the JSON object."""
 
 
 def build_system_prompt(context: ParseContext) -> str:
-    """Build the system prompt with available time codes, work types, and RAG context."""
+    """Build the system prompt with time codes, work types, and RAG context."""
     # Build RAG context section
     rag_context_text = ""
     if context.rag_contexts:
         rag_lines = ["\nMatching Context Rules:"]
         for rc in context.rag_contexts:
-            source = f"(time_code: {rc.time_code_id})" if rc.time_code_id else f"(project: {rc.project_id})"
+            if rc.time_code_id:
+                source = f"(time_code: {rc.time_code_id})"
+            else:
+                source = f"(project: {rc.project_id})"
             rag_lines.append(f"- {source}: {rc.content}")
         rag_context_text = "\n".join(rag_lines) + "\n"
 

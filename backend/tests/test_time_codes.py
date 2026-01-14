@@ -95,11 +95,21 @@ def test_create_time_code_project_not_found(client):
 def test_create_duplicate_time_code(client, project):
     client.post(
         "/time-codes",
-        json={"id": "PROJ-001", "project_id": "IZG", "name": "Project", "description": "Desc"},
+        json={
+            "id": "PROJ-001",
+            "project_id": "IZG",
+            "name": "Project",
+            "description": "Desc",
+        },
     )
     response = client.post(
         "/time-codes",
-        json={"id": "PROJ-001", "project_id": "IZG", "name": "Another", "description": "Desc"},
+        json={
+            "id": "PROJ-001",
+            "project_id": "IZG",
+            "name": "Another",
+            "description": "Desc",
+        },
     )
     assert response.status_code == 409
 
@@ -107,11 +117,21 @@ def test_create_duplicate_time_code(client, project):
 def test_list_time_codes(client, project):
     client.post(
         "/time-codes",
-        json={"id": "PROJ-001", "project_id": "IZG", "name": "Project 1", "description": "Desc 1"},
+        json={
+            "id": "PROJ-001",
+            "project_id": "IZG",
+            "name": "Project 1",
+            "description": "Desc 1",
+        },
     )
     client.post(
         "/time-codes",
-        json={"id": "PROJ-002", "project_id": "IZG", "name": "Project 2", "description": "Desc 2"},
+        json={
+            "id": "PROJ-002",
+            "project_id": "IZG",
+            "name": "Project 2",
+            "description": "Desc 2",
+        },
     )
     response = client.get("/time-codes")
     assert response.status_code == 200
@@ -122,11 +142,21 @@ def test_list_time_codes(client, project):
 def test_list_time_codes_filter_active(client, project):
     client.post(
         "/time-codes",
-        json={"id": "PROJ-001", "project_id": "IZG", "name": "Active", "description": "Desc"},
+        json={
+            "id": "PROJ-001",
+            "project_id": "IZG",
+            "name": "Active",
+            "description": "Desc",
+        },
     )
     client.post(
         "/time-codes",
-        json={"id": "PROJ-002", "project_id": "IZG", "name": "Will be inactive", "description": "Desc"},
+        json={
+            "id": "PROJ-002",
+            "project_id": "IZG",
+            "name": "Will be inactive",
+            "description": "Desc",
+        },
     )
     client.delete("/time-codes/PROJ-002")
 
@@ -145,11 +175,21 @@ def test_list_time_codes_filter_by_project(client):
     # Create time codes in each project
     client.post(
         "/time-codes",
-        json={"id": "IZG-001", "project_id": "IZG", "name": "IZG Code", "description": "Desc"},
+        json={
+            "id": "IZG-001",
+            "project_id": "IZG",
+            "name": "IZG Code",
+            "description": "Desc",
+        },
     )
     client.post(
         "/time-codes",
-        json={"id": "TESTME-001", "project_id": "TESTME", "name": "TestMe Code", "description": "Desc"},
+        json={
+            "id": "TESTME-001",
+            "project_id": "TESTME",
+            "name": "TestMe Code",
+            "description": "Desc",
+        },
     )
 
     # Filter by project
@@ -163,7 +203,12 @@ def test_list_time_codes_filter_by_project(client):
 def test_get_time_code(client, project):
     client.post(
         "/time-codes",
-        json={"id": "PROJ-001", "project_id": "IZG", "name": "Project", "description": "Desc"},
+        json={
+            "id": "PROJ-001",
+            "project_id": "IZG",
+            "name": "Project",
+            "description": "Desc",
+        },
     )
     response = client.get("/time-codes/PROJ-001")
     assert response.status_code == 200
@@ -180,7 +225,12 @@ def test_get_time_code_not_found(client):
 def test_update_time_code(client, project):
     client.post(
         "/time-codes",
-        json={"id": "PROJ-001", "project_id": "IZG", "name": "Original", "description": "Desc"},
+        json={
+            "id": "PROJ-001",
+            "project_id": "IZG",
+            "name": "Original",
+            "description": "Desc",
+        },
     )
     response = client.put(
         "/time-codes/PROJ-001",
@@ -198,7 +248,12 @@ def test_update_time_code_change_project(client):
     # Create time code in first project
     client.post(
         "/time-codes",
-        json={"id": "PROJ-001", "project_id": "IZG", "name": "Original", "description": "Desc"},
+        json={
+            "id": "PROJ-001",
+            "project_id": "IZG",
+            "name": "Original",
+            "description": "Desc",
+        },
     )
 
     # Move to second project
@@ -213,7 +268,12 @@ def test_update_time_code_change_project(client):
 def test_update_time_code_invalid_project(client, project):
     client.post(
         "/time-codes",
-        json={"id": "PROJ-001", "project_id": "IZG", "name": "Original", "description": "Desc"},
+        json={
+            "id": "PROJ-001",
+            "project_id": "IZG",
+            "name": "Original",
+            "description": "Desc",
+        },
     )
     response = client.put(
         "/time-codes/PROJ-001",
@@ -231,7 +291,12 @@ def test_update_time_code_not_found(client):
 def test_delete_time_code(client, project):
     client.post(
         "/time-codes",
-        json={"id": "PROJ-001", "project_id": "IZG", "name": "Project", "description": "Desc"},
+        json={
+            "id": "PROJ-001",
+            "project_id": "IZG",
+            "name": "Project",
+            "description": "Desc",
+        },
     )
     response = client.delete("/time-codes/PROJ-001")
     assert response.status_code == 200
