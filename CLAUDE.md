@@ -16,3 +16,7 @@ Use `@/openspec/AGENTS.md` to learn:
 Keep this managed block so 'openspec update' can refresh the instructions.
 
 <!-- OPENSPEC:END -->
+
+## Git Workflow
+
+- **Do not commit or push without explicit user approval.** After completing code changes, wait for the user to request a commit before staging, committing, or pushing.

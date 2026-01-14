@@ -6,14 +6,6 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from tact.db.base import Base
-from tact.db.models import (
-    Config,
-    ContextDocument,
-    Project,
-    TimeCode,
-    TimeEntry,
-    WorkType,
-)
 from tact.db.session import get_session
 from tact.routes.context import router as context_router
 from tact.routes.projects import router as projects_router

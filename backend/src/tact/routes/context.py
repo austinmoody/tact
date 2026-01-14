@@ -13,7 +13,11 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["context"])
 
 
-@router.post("/projects/{project_id}/context", response_model=ContextResponse, status_code=201)
+@router.post(
+    "/projects/{project_id}/context",
+    response_model=ContextResponse,
+    status_code=201,
+)
 def add_project_context(
     project_id: str,
     data: ContextCreate,
@@ -53,7 +57,11 @@ def list_project_context(
     return [ContextResponse.model_validate(c) for c in contexts]
 
 
-@router.post("/time-codes/{time_code_id}/context", response_model=ContextResponse, status_code=201)
+@router.post(
+    "/time-codes/{time_code_id}/context",
+    response_model=ContextResponse,
+    status_code=201,
+)
 def add_time_code_context(
     time_code_id: str,
     data: ContextCreate,
@@ -89,7 +97,9 @@ def list_time_code_context(
         .filter(ContextDocument.time_code_id == time_code_id)
         .all()
     )
-    logger.info("Listed %d context documents for time code %s", len(contexts), time_code_id)
+    logger.info(
+        "Listed %d context documents for time code %s", len(contexts), time_code_id
+    )
     return [ContextResponse.model_validate(c) for c in contexts]
 
 
@@ -98,7 +108,11 @@ def get_context(
     context_id: str,
     session: Session = Depends(get_session),
 ) -> ContextResponse:
-    context = session.query(ContextDocument).filter(ContextDocument.id == context_id).first()
+    context = (
+        session.query(ContextDocument)
+        .filter(ContextDocument.id == context_id)
+        .first()
+    )
     if not context:
         raise HTTPException(status_code=404, detail="Context document not found")
     logger.info("Retrieved context %s", context_id)
@@ -111,7 +125,11 @@ def update_context(
     data: ContextUpdate,
     session: Session = Depends(get_session),
 ) -> ContextResponse:
-    context = session.query(ContextDocument).filter(ContextDocument.id == context_id).first()
+    context = (
+        session.query(ContextDocument)
+        .filter(ContextDocument.id == context_id)
+        .first()
+    )
     if not context:
         raise HTTPException(status_code=404, detail="Context document not found")
 
@@ -130,7 +148,11 @@ def delete_context(
     context_id: str,
     session: Session = Depends(get_session),
 ) -> ContextResponse:
-    context = session.query(ContextDocument).filter(ContextDocument.id == context_id).first()
+    context = (
+        session.query(ContextDocument)
+        .filter(ContextDocument.id == context_id)
+        .first()
+    )
     if not context:
         raise HTTPException(status_code=404, detail="Context document not found")
 

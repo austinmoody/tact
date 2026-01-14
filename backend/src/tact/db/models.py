@@ -69,7 +69,9 @@ class TimeCode(Base):
 
     id: Mapped[str] = mapped_column(primary_key=True)
     # Nullable for backwards compatibility - all time codes should have a project
-    project_id: Mapped[str | None] = mapped_column(ForeignKey("projects.id"), default="default")
+    project_id: Mapped[str | None] = mapped_column(
+        ForeignKey("projects.id"), default="default"
+    )
     name: Mapped[str] = mapped_column(nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     keywords: Mapped[str] = mapped_column(Text, default="[]")
