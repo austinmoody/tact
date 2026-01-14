@@ -174,6 +174,10 @@ async def list_tools() -> list[Tool]:
                         "type": "boolean",
                         "description": "Only return active time codes",
                     },
+                    "project_id": {
+                        "type": "string",
+                        "description": "Filter by project ID",
+                    },
                 },
             },
         ),
@@ -219,6 +223,11 @@ async def list_tools() -> list[Tool]:
                         "items": {"type": "string"},
                         "description": "Example entries that map to this code",
                     },
+                    "project_id": {
+                        "type": "string",
+                        "description": "Project ID (defaults to 'default')",
+                        "default": "default",
+                    },
                 },
                 "required": ["id", "name"],
             },
@@ -246,6 +255,10 @@ async def list_tools() -> list[Tool]:
                         "description": "Example entries",
                     },
                     "active": {"type": "boolean", "description": "Active status"},
+                    "project_id": {
+                        "type": "string",
+                        "description": "Project ID to reassign time code",
+                    },
                 },
                 "required": ["time_code_id"],
             },
@@ -362,6 +375,198 @@ async def list_tools() -> list[Tool]:
                 },
             },
         ),
+        # Project tools
+        Tool(
+            name="list_projects",
+            description="List all projects",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "active_only": {
+                        "type": "boolean",
+                        "description": "Only return active projects",
+                    },
+                },
+            },
+        ),
+        Tool(
+            name="get_project",
+            description="Get a single project by ID",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "project_id": {
+                        "type": "string",
+                        "description": "Project ID",
+                    },
+                },
+                "required": ["project_id"],
+            },
+        ),
+        Tool(
+            name="create_project",
+            description="Create a new project",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Unique project ID (e.g., 'izg')",
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Display name",
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Project description",
+                    },
+                },
+                "required": ["id", "name"],
+            },
+        ),
+        Tool(
+            name="update_project",
+            description="Update a project",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "project_id": {
+                        "type": "string",
+                        "description": "Project ID",
+                    },
+                    "name": {"type": "string", "description": "Display name"},
+                    "description": {"type": "string", "description": "Description"},
+                    "active": {"type": "boolean", "description": "Active status"},
+                },
+                "required": ["project_id"],
+            },
+        ),
+        Tool(
+            name="delete_project",
+            description="Deactivate a project (soft delete)",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "project_id": {
+                        "type": "string",
+                        "description": "Project ID",
+                    },
+                },
+                "required": ["project_id"],
+            },
+        ),
+        # Context tools
+        Tool(
+            name="list_project_context",
+            description="List all context documents for a project",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "project_id": {
+                        "type": "string",
+                        "description": "Project ID",
+                    },
+                },
+                "required": ["project_id"],
+            },
+        ),
+        Tool(
+            name="list_time_code_context",
+            description="List all context documents for a time code",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "time_code_id": {
+                        "type": "string",
+                        "description": "Time code ID",
+                    },
+                },
+                "required": ["time_code_id"],
+            },
+        ),
+        Tool(
+            name="create_project_context",
+            description="Create a new context document for a project (used for RAG-enhanced parsing)",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "project_id": {
+                        "type": "string",
+                        "description": "Project ID",
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "Context content text",
+                    },
+                },
+                "required": ["project_id", "content"],
+            },
+        ),
+        Tool(
+            name="create_time_code_context",
+            description="Create a new context document for a time code (used for RAG-enhanced parsing)",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "time_code_id": {
+                        "type": "string",
+                        "description": "Time code ID",
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "Context content text",
+                    },
+                },
+                "required": ["time_code_id", "content"],
+            },
+        ),
+        Tool(
+            name="get_context",
+            description="Get a single context document by ID",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "context_id": {
+                        "type": "string",
+                        "description": "Context document ID (UUID)",
+                    },
+                },
+                "required": ["context_id"],
+            },
+        ),
+        Tool(
+            name="update_context",
+            description="Update a context document (regenerates embedding)",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "context_id": {
+                        "type": "string",
+                        "description": "Context document ID (UUID)",
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "New context content text",
+                    },
+                },
+                "required": ["context_id", "content"],
+            },
+        ),
+        Tool(
+            name="delete_context",
+            description="Delete a context document",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "context_id": {
+                        "type": "string",
+                        "description": "Context document ID (UUID)",
+                    },
+                },
+                "required": ["context_id"],
+            },
+        ),
     ]
 
 
@@ -419,7 +624,9 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
 
         # Time Code tools
         elif name == "list_time_codes":
-            result = client.list_time_codes(arguments.get("active_only"))
+            result = client.list_time_codes(
+                arguments.get("active_only"), arguments.get("project_id")
+            )
             return json_response(result)
 
         elif name == "get_time_code":
@@ -433,6 +640,7 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
                 description=arguments.get("description", ""),
                 keywords=arguments.get("keywords"),
                 examples=arguments.get("examples"),
+                project_id=arguments.get("project_id", "default"),
             )
             return json_response(result)
 
@@ -491,6 +699,72 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
                 from_date=from_date,
                 to_date=to_date,
             )
+            return json_response(result)
+
+        # Project tools
+        elif name == "list_projects":
+            result = client.list_projects(arguments.get("active_only"))
+            return json_response(result)
+
+        elif name == "get_project":
+            result = client.get_project(arguments["project_id"])
+            return json_response(result)
+
+        elif name == "create_project":
+            result = client.create_project(
+                id=arguments["id"],
+                name=arguments["name"],
+                description=arguments.get("description", ""),
+            )
+            return json_response(result)
+
+        elif name == "update_project":
+            project_id = arguments["project_id"]
+            updates = {
+                k: v
+                for k, v in arguments.items()
+                if k != "project_id" and v is not None
+            }
+            result = client.update_project(project_id, **updates)
+            return json_response(result)
+
+        elif name == "delete_project":
+            result = client.delete_project(arguments["project_id"])
+            return json_response(result)
+
+        # Context tools
+        elif name == "list_project_context":
+            result = client.list_project_context(arguments["project_id"])
+            return json_response(result)
+
+        elif name == "list_time_code_context":
+            result = client.list_time_code_context(arguments["time_code_id"])
+            return json_response(result)
+
+        elif name == "create_project_context":
+            result = client.create_project_context(
+                arguments["project_id"], arguments["content"]
+            )
+            return json_response(result)
+
+        elif name == "create_time_code_context":
+            result = client.create_time_code_context(
+                arguments["time_code_id"], arguments["content"]
+            )
+            return json_response(result)
+
+        elif name == "get_context":
+            result = client.get_context(arguments["context_id"])
+            return json_response(result)
+
+        elif name == "update_context":
+            result = client.update_context(
+                arguments["context_id"], arguments["content"]
+            )
+            return json_response(result)
+
+        elif name == "delete_context":
+            result = client.delete_context(arguments["context_id"])
             return json_response(result)
 
         else:

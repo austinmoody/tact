@@ -84,11 +84,15 @@ class TactClient:
 
     # --- Time Codes ---
 
-    def list_time_codes(self, active_only: bool | None = None) -> list[dict[str, Any]]:
+    def list_time_codes(
+        self, active_only: bool | None = None, project_id: str | None = None
+    ) -> list[dict[str, Any]]:
         """List all time codes."""
         params = {}
         if active_only is not None:
             params["active"] = active_only
+        if project_id is not None:
+            params["project_id"] = project_id
         response = self._client.get("/time-codes", params=params)
         return self._handle_response(response)
 
@@ -104,6 +108,7 @@ class TactClient:
         description: str = "",
         keywords: list[str] | None = None,
         examples: list[str] | None = None,
+        project_id: str = "default",
     ) -> dict[str, Any]:
         """Create a new time code."""
         data = {
@@ -112,6 +117,7 @@ class TactClient:
             "description": description,
             "keywords": keywords or [],
             "examples": examples or [],
+            "project_id": project_id,
         }
         response = self._client.post("/time-codes", json=data)
         return self._handle_response(response)
@@ -180,4 +186,82 @@ class TactClient:
         if to_date:
             params["to_date"] = to_date.isoformat()
         response = self._client.get("/reports/summary", params=params)
+        return self._handle_response(response)
+
+    # --- Projects ---
+
+    def list_projects(self, active_only: bool | None = None) -> list[dict[str, Any]]:
+        """List all projects."""
+        params = {}
+        if active_only is not None:
+            params["active"] = active_only
+        response = self._client.get("/projects", params=params)
+        return self._handle_response(response)
+
+    def get_project(self, project_id: str) -> dict[str, Any]:
+        """Get a single project by ID."""
+        response = self._client.get(f"/projects/{project_id}")
+        return self._handle_response(response)
+
+    def create_project(
+        self, id: str, name: str, description: str = ""
+    ) -> dict[str, Any]:
+        """Create a new project."""
+        data = {"id": id, "name": name, "description": description}
+        response = self._client.post("/projects", json=data)
+        return self._handle_response(response)
+
+    def update_project(self, project_id: str, **updates: Any) -> dict[str, Any]:
+        """Update a project."""
+        response = self._client.put(f"/projects/{project_id}", json=updates)
+        return self._handle_response(response)
+
+    def delete_project(self, project_id: str) -> dict[str, Any]:
+        """Deactivate a project (soft delete)."""
+        response = self._client.delete(f"/projects/{project_id}")
+        return self._handle_response(response)
+
+    # --- Context Documents ---
+
+    def list_project_context(self, project_id: str) -> list[dict[str, Any]]:
+        """List all context documents for a project."""
+        response = self._client.get(f"/projects/{project_id}/context")
+        return self._handle_response(response)
+
+    def create_project_context(
+        self, project_id: str, content: str
+    ) -> dict[str, Any]:
+        """Create a new context document for a project."""
+        response = self._client.post(
+            f"/projects/{project_id}/context", json={"content": content}
+        )
+        return self._handle_response(response)
+
+    def list_time_code_context(self, time_code_id: str) -> list[dict[str, Any]]:
+        """List all context documents for a time code."""
+        response = self._client.get(f"/time-codes/{time_code_id}/context")
+        return self._handle_response(response)
+
+    def create_time_code_context(
+        self, time_code_id: str, content: str
+    ) -> dict[str, Any]:
+        """Create a new context document for a time code."""
+        response = self._client.post(
+            f"/time-codes/{time_code_id}/context", json={"content": content}
+        )
+        return self._handle_response(response)
+
+    def get_context(self, context_id: str) -> dict[str, Any]:
+        """Get a single context document by ID."""
+        response = self._client.get(f"/context/{context_id}")
+        return self._handle_response(response)
+
+    def update_context(self, context_id: str, content: str) -> dict[str, Any]:
+        """Update a context document."""
+        response = self._client.put(f"/context/{context_id}", json={"content": content})
+        return self._handle_response(response)
+
+    def delete_context(self, context_id: str) -> dict[str, Any]:
+        """Delete a context document."""
+        response = self._client.delete(f"/context/{context_id}")
         return self._handle_response(response)
