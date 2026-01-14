@@ -133,6 +133,7 @@ func (c *Client) ReparseEntry(id string) (*model.Entry, error) {
 
 type TimeCodeCreate struct {
 	ID          string   `json:"id"`
+	ProjectID   string   `json:"project_id"`
 	Name        string   `json:"name"`
 	Description string   `json:"description,omitempty"`
 	Keywords    []string `json:"keywords,omitempty"`
@@ -140,15 +141,17 @@ type TimeCodeCreate struct {
 }
 
 type TimeCodeUpdate struct {
+	ProjectID   *string  `json:"project_id,omitempty"`
 	Name        *string  `json:"name,omitempty"`
 	Description *string  `json:"description,omitempty"`
 	Keywords    []string `json:"keywords,omitempty"`
 	Examples    []string `json:"examples,omitempty"`
 }
 
-func (c *Client) CreateTimeCode(id, name, description string, keywords, examples []string) (*model.TimeCode, error) {
+func (c *Client) CreateTimeCode(id, projectID, name, description string, keywords, examples []string) (*model.TimeCode, error) {
 	body := TimeCodeCreate{
 		ID:          id,
+		ProjectID:   projectID,
 		Name:        name,
 		Description: description,
 		Keywords:    keywords,

@@ -100,11 +100,11 @@ func (s *TimeCodesScreen) handleKeyPress(msg tea.KeyPressMsg) (*TimeCodesScreen,
 		return s, nil
 
 	case matchesKey(msg, keys.Add):
-		return s, func() tea.Msg { return OpenTimeCodeAddMsg{} }
+		return s, s.openAddModal()
 
 	case matchesKey(msg, keys.Edit):
 		if tc := s.SelectedTimeCode(); tc != nil {
-			return s, func() tea.Msg { return OpenTimeCodeEditMsg{TimeCode: tc} }
+			return s, s.openEditModal(tc)
 		}
 		return s, nil
 
@@ -125,6 +125,26 @@ func (s *TimeCodesScreen) handleKeyPress(msg tea.KeyPressMsg) (*TimeCodesScreen,
 	}
 
 	return s, nil
+}
+
+func (s *TimeCodesScreen) openAddModal() tea.Cmd {
+	return func() tea.Msg {
+		projects, err := s.client.FetchProjects()
+		if err != nil {
+			return timeCodesErrMsg{err}
+		}
+		return OpenTimeCodeAddMsg{Projects: projects}
+	}
+}
+
+func (s *TimeCodesScreen) openEditModal(tc *model.TimeCode) tea.Cmd {
+	return func() tea.Msg {
+		projects, err := s.client.FetchProjects()
+		if err != nil {
+			return timeCodesErrMsg{err}
+		}
+		return OpenTimeCodeEditMsg{TimeCode: tc, Projects: projects}
+	}
 }
 
 func (s *TimeCodesScreen) deleteTimeCode(id string) tea.Cmd {
@@ -187,17 +207,22 @@ func (s *TimeCodesScreen) renderTimeCodeLine(index int, tc model.TimeCode) strin
 		style = selectedItemStyle
 	}
 
-	// Show ID, Name, and active status
+	// Show ID, Name, Project, and active status
 	status := ""
 	if !tc.Active {
 		status = inactiveStyle.Render(" [inactive]")
 	}
 
 	name := tc.Name
-	if len(name) > 30 {
-		name = name[:27] + "..."
+	if len(name) > 25 {
+		name = name[:22] + "..."
 	}
 
-	line := fmt.Sprintf("%s%-10s  %-30s%s", cursor, tc.ID, name, status)
+	projectID := tc.ProjectID
+	if len(projectID) > 10 {
+		projectID = projectID[:7] + "..."
+	}
+
+	line := fmt.Sprintf("%s%-10s  %-25s  %-10s%s", cursor, tc.ID, name, projectID, status)
 	return style.Render(line)
 }
