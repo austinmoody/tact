@@ -43,9 +43,19 @@
 - Task 4 depends on Task 2 (need API methods for context)
 - Task 5 depends on Tasks 3 and 4 (integrate context into screens)
 
+## 6. Add Project Selection to Time Code Edit
+
+- [x] 6.1 Update API client `CreateTimeCode` to accept `projectID` parameter
+- [x] 6.2 Update API client `TimeCodeUpdate` struct to include `ProjectID` field
+- [x] 6.3 Create project selector component for the edit modal
+- [x] 6.4 Integrate project selector into `TimeCodeEditModal` (add/edit modes)
+- [x] 6.5 Fetch available projects when opening the modal
+- [x] 6.6 Test creating and editing time codes with project selection
+
 ## Notes
 
 - Follow existing patterns from TimeCodesScreen and WorkTypesScreen
 - Context edit uses `bubbles/textarea` for multi-line input
 - Ctrl+S saves context (Enter adds newlines in textarea)
 - All screens should support the existing key bindings (j/k, up/down, etc.)
+- Project selector uses up/down to navigate, shows project name with ID

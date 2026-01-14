@@ -18,6 +18,7 @@ type TimeCodeEditModal struct {
 
 	// Input fields
 	idInput          textinput.Model
+	projectSelector  *ProjectSelector
 	nameInput        textinput.Model
 	descriptionInput textinput.Model
 	keywordsInput    textinput.Model
@@ -30,7 +31,7 @@ type TimeCodeEditModal struct {
 	err    error
 }
 
-func NewTimeCodeEditModal(client *api.Client, tc *model.TimeCode, width int) *TimeCodeEditModal {
+func NewTimeCodeEditModal(client *api.Client, tc *model.TimeCode, projects []model.Project, width int) *TimeCodeEditModal {
 	isEdit := tc != nil
 	inputWidth := calculateInputWidth(width)
 
@@ -38,6 +39,15 @@ func NewTimeCodeEditModal(client *api.Client, tc *model.TimeCode, width int) *Ti
 	idInput.Placeholder = "ABC123"
 	idInput.CharLimit = 50
 	idInput.SetWidth(inputWidth)
+
+	// Initialize project selector with current project if editing
+	selectedProjectID := ""
+	if isEdit && tc.ProjectID != "" {
+		selectedProjectID = tc.ProjectID
+	} else if len(projects) > 0 {
+		selectedProjectID = projects[0].ID
+	}
+	projectSelector := NewProjectSelector(projects, selectedProjectID, inputWidth)
 
 	nameInput := textinput.New()
 	nameInput.Placeholder = "Time Code Name"
@@ -59,11 +69,11 @@ func NewTimeCodeEditModal(client *api.Client, tc *model.TimeCode, width int) *Ti
 	examplesInput.CharLimit = 500
 	examplesInput.SetWidth(inputWidth)
 
-	// Both add and edit modes now have all fields
-	inputCount := 5 // Add mode: ID, Name, Description, Keywords, Examples
+	// Add mode: ID, Project, Name, Description, Keywords, Examples (6 fields)
+	// Edit mode: Project, Name, Description, Keywords, Examples (5 fields, ID readonly)
+	inputCount := 6
 	if isEdit {
-		// In edit mode, ID is readonly so we have: name, description, keywords, examples
-		inputCount = 4
+		inputCount = 5
 		idInput.SetValue(tc.ID)
 		nameInput.SetValue(tc.Name)
 		if tc.Description != "" {
@@ -75,7 +85,7 @@ func NewTimeCodeEditModal(client *api.Client, tc *model.TimeCode, width int) *Ti
 		if len(tc.Examples) > 0 {
 			examplesInput.SetValue(strings.Join(tc.Examples, ", "))
 		}
-		nameInput.Focus()
+		projectSelector.Focus()
 	} else {
 		idInput.Focus()
 	}
@@ -86,6 +96,7 @@ func NewTimeCodeEditModal(client *api.Client, tc *model.TimeCode, width int) *Ti
 		isEdit:           isEdit,
 		width:            width,
 		idInput:          idInput,
+		projectSelector:  projectSelector,
 		nameInput:        nameInput,
 		descriptionInput: descriptionInput,
 		keywordsInput:    keywordsInput,
@@ -104,9 +115,19 @@ func (m *TimeCodeEditModal) Update(msg tea.Msg) (*TimeCodeEditModal, tea.Cmd) {
 	case tea.KeyPressMsg:
 		switch msg.Key().Code {
 		case tea.KeyUp:
+			// If project selector is focused, let it handle up/down for selection
+			if m.projectSelector.Focused() {
+				m.projectSelector, _ = m.projectSelector.Update(msg)
+				return m, nil
+			}
 			m.prevInput()
 			return m, nil
 		case tea.KeyDown:
+			// If project selector is focused, let it handle up/down for selection
+			if m.projectSelector.Focused() {
+				m.projectSelector, _ = m.projectSelector.Update(msg)
+				return m, nil
+			}
 			m.nextInput()
 			return m, nil
 		case tea.KeyEscape:
@@ -125,25 +146,23 @@ func (m *TimeCodeEditModal) Update(msg tea.Msg) (*TimeCodeEditModal, tea.Cmd) {
 			}
 			return m, nil
 		}
+
+		// Let project selector handle j/k for navigation when focused
+		if m.projectSelector.Focused() {
+			if msg.String() == "j" || msg.String() == "k" {
+				m.projectSelector, _ = m.projectSelector.Update(msg)
+				return m, nil
+			}
+		}
 	}
 
 	// Update only the focused input
 	var cmd tea.Cmd
 	if m.isEdit {
+		// Edit mode: Project, Name, Description, Keywords, Examples
 		switch m.focusIndex {
 		case 0:
-			m.nameInput, cmd = m.nameInput.Update(msg)
-		case 1:
-			m.descriptionInput, cmd = m.descriptionInput.Update(msg)
-		case 2:
-			m.keywordsInput, cmd = m.keywordsInput.Update(msg)
-		case 3:
-			m.examplesInput, cmd = m.examplesInput.Update(msg)
-		}
-	} else {
-		switch m.focusIndex {
-		case 0:
-			m.idInput, cmd = m.idInput.Update(msg)
+			m.projectSelector, cmd = m.projectSelector.Update(msg)
 		case 1:
 			m.nameInput, cmd = m.nameInput.Update(msg)
 		case 2:
@@ -151,6 +170,22 @@ func (m *TimeCodeEditModal) Update(msg tea.Msg) (*TimeCodeEditModal, tea.Cmd) {
 		case 3:
 			m.keywordsInput, cmd = m.keywordsInput.Update(msg)
 		case 4:
+			m.examplesInput, cmd = m.examplesInput.Update(msg)
+		}
+	} else {
+		// Add mode: ID, Project, Name, Description, Keywords, Examples
+		switch m.focusIndex {
+		case 0:
+			m.idInput, cmd = m.idInput.Update(msg)
+		case 1:
+			m.projectSelector, cmd = m.projectSelector.Update(msg)
+		case 2:
+			m.nameInput, cmd = m.nameInput.Update(msg)
+		case 3:
+			m.descriptionInput, cmd = m.descriptionInput.Update(msg)
+		case 4:
+			m.keywordsInput, cmd = m.keywordsInput.Update(msg)
+		case 5:
 			m.examplesInput, cmd = m.examplesInput.Update(msg)
 		}
 	}
@@ -173,26 +208,17 @@ func (m *TimeCodeEditModal) prevInput() {
 
 func (m *TimeCodeEditModal) updateFocus() {
 	m.idInput.Blur()
+	m.projectSelector.Blur()
 	m.nameInput.Blur()
 	m.descriptionInput.Blur()
 	m.keywordsInput.Blur()
 	m.examplesInput.Blur()
 
 	if m.isEdit {
+		// Edit mode: Project, Name, Description, Keywords, Examples
 		switch m.focusIndex {
 		case 0:
-			m.nameInput.Focus()
-		case 1:
-			m.descriptionInput.Focus()
-		case 2:
-			m.keywordsInput.Focus()
-		case 3:
-			m.examplesInput.Focus()
-		}
-	} else {
-		switch m.focusIndex {
-		case 0:
-			m.idInput.Focus()
+			m.projectSelector.Focus()
 		case 1:
 			m.nameInput.Focus()
 		case 2:
@@ -202,18 +228,36 @@ func (m *TimeCodeEditModal) updateFocus() {
 		case 4:
 			m.examplesInput.Focus()
 		}
+	} else {
+		// Add mode: ID, Project, Name, Description, Keywords, Examples
+		switch m.focusIndex {
+		case 0:
+			m.idInput.Focus()
+		case 1:
+			m.projectSelector.Focus()
+		case 2:
+			m.nameInput.Focus()
+		case 3:
+			m.descriptionInput.Focus()
+		case 4:
+			m.keywordsInput.Focus()
+		case 5:
+			m.examplesInput.Focus()
+		}
 	}
 }
 
 func (m *TimeCodeEditModal) save() tea.Cmd {
 	return func() tea.Msg {
 		if m.isEdit {
+			projectID := m.projectSelector.SelectedProjectID()
 			name := m.nameInput.Value()
 			desc := m.descriptionInput.Value()
 			keywords := parseKeywords(m.keywordsInput.Value())
 			examples := parseKeywords(m.examplesInput.Value())
 
 			updates := api.TimeCodeUpdate{
+				ProjectID:   &projectID,
 				Name:        &name,
 				Description: &desc,
 				Keywords:    keywords,
@@ -227,8 +271,9 @@ func (m *TimeCodeEditModal) save() tea.Cmd {
 		}
 
 		id := m.idInput.Value()
+		projectID := m.projectSelector.SelectedProjectID()
 		name := m.nameInput.Value()
-		if id == "" || name == "" {
+		if id == "" || name == "" || projectID == "" {
 			return timeCodeEditErrMsg{err: nil}
 		}
 
@@ -236,7 +281,7 @@ func (m *TimeCodeEditModal) save() tea.Cmd {
 		keywords := parseKeywords(m.keywordsInput.Value())
 		examples := parseKeywords(m.examplesInput.Value())
 
-		_, err := m.client.CreateTimeCode(id, name, desc, keywords, examples)
+		_, err := m.client.CreateTimeCode(id, projectID, name, desc, keywords, examples)
 		if err != nil {
 			return timeCodeEditErrMsg{err}
 		}
@@ -285,12 +330,21 @@ func (m *TimeCodeEditModal) View() string {
 	}
 	b.WriteString("\n\n")
 
+	// Project field
+	b.WriteString(labelStyle.Render("Project:"))
+	if m.projectSelector.Focused() {
+		b.WriteString(helpStyle.Render(" (↑/↓ to select)"))
+	}
+	b.WriteString("\n")
+	b.WriteString(m.projectSelector.View())
+	b.WriteString("\n\n")
+
 	// Name field
 	b.WriteString(labelStyle.Render("Name:"))
 	b.WriteString("\n")
-	nameIdx := 1
+	nameIdx := 2 // Add mode: ID(0), Project(1), Name(2)
 	if m.isEdit {
-		nameIdx = 0
+		nameIdx = 1 // Edit mode: Project(0), Name(1)
 	}
 	style := inputStyle
 	if m.focusIndex == nameIdx {
@@ -302,9 +356,9 @@ func (m *TimeCodeEditModal) View() string {
 	// Description field
 	b.WriteString(labelStyle.Render("Description:"))
 	b.WriteString("\n")
-	descIdx := 2
+	descIdx := 3
 	if m.isEdit {
-		descIdx = 1
+		descIdx = 2
 	}
 	style = inputStyle
 	if m.focusIndex == descIdx {
@@ -316,9 +370,9 @@ func (m *TimeCodeEditModal) View() string {
 	// Keywords field
 	b.WriteString(labelStyle.Render("Keywords (comma separated):"))
 	b.WriteString("\n")
-	keywordsIdx := 3
+	keywordsIdx := 4
 	if m.isEdit {
-		keywordsIdx = 2
+		keywordsIdx = 3
 	}
 	style = inputStyle
 	if m.focusIndex == keywordsIdx {
@@ -330,9 +384,9 @@ func (m *TimeCodeEditModal) View() string {
 	// Examples field
 	b.WriteString(labelStyle.Render("Examples (comma separated):"))
 	b.WriteString("\n")
-	examplesIdx := 4
+	examplesIdx := 5
 	if m.isEdit {
-		examplesIdx = 3
+		examplesIdx = 4
 	}
 	style = inputStyle
 	if m.focusIndex == examplesIdx {

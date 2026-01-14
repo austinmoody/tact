@@ -174,13 +174,13 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, a.workTypes.Refresh()
 
 	case OpenTimeCodeAddMsg:
-		a.timeCodeEdit = NewTimeCodeEditModal(a.client, nil, a.width)
+		a.timeCodeEdit = NewTimeCodeEditModal(a.client, nil, msg.Projects, a.width)
 		a.modal = ModalTimeCodeAdd
 		return a, a.timeCodeEdit.Init()
 
 	case OpenTimeCodeEditMsg:
 		a.selectedTimeCode = msg.TimeCode
-		a.timeCodeEdit = NewTimeCodeEditModal(a.client, msg.TimeCode, a.width)
+		a.timeCodeEdit = NewTimeCodeEditModal(a.client, msg.TimeCode, msg.Projects, a.width)
 		a.modal = ModalTimeCodeEdit
 		return a, a.timeCodeEdit.Init()
 
@@ -500,9 +500,12 @@ type WorkTypeCreatedMsg struct{}
 type WorkTypeUpdatedMsg struct{}
 type WorkTypeDeletedMsg struct{}
 
-type OpenTimeCodeAddMsg struct{}
+type OpenTimeCodeAddMsg struct {
+	Projects []model.Project
+}
 type OpenTimeCodeEditMsg struct {
 	TimeCode *model.TimeCode
+	Projects []model.Project
 }
 
 type OpenWorkTypeAddMsg struct{}
