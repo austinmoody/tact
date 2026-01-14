@@ -106,6 +106,13 @@ var (
 
 	inactiveStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#777777"))
+
+	// Disabled input style (for read-only fields)
+	disabledInputStyle = lipgloss.NewStyle().
+				Border(lipgloss.NormalBorder()).
+				BorderForeground(lipgloss.Color("#444444")).
+				Foreground(lipgloss.Color("#666666")).
+				Padding(0, 1)
 )
 
 // calculateInputWidth determines input field width based on terminal width.

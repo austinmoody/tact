@@ -309,3 +309,265 @@ func (c *Client) DeleteWorkType(id string) error {
 
 	return nil
 }
+
+// Project methods
+
+type ProjectCreate struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+}
+
+type ProjectUpdate struct {
+	Name        *string `json:"name,omitempty"`
+	Description *string `json:"description,omitempty"`
+}
+
+func (c *Client) FetchProjects() ([]model.Project, error) {
+	resp, err := c.httpClient.Get(c.baseURL + "/projects")
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch projects: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status: %d", resp.StatusCode)
+	}
+
+	var projects []model.Project
+	if err := json.NewDecoder(resp.Body).Decode(&projects); err != nil {
+		return nil, fmt.Errorf("failed to decode projects: %w", err)
+	}
+
+	return projects, nil
+}
+
+func (c *Client) CreateProject(id, name, description string) (*model.Project, error) {
+	body := ProjectCreate{
+		ID:          id,
+		Name:        name,
+		Description: description,
+	}
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	resp, err := c.httpClient.Post(c.baseURL+"/projects", "application/json", bytes.NewReader(jsonBody))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create project: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		return nil, fmt.Errorf("unexpected status: %d", resp.StatusCode)
+	}
+
+	var project model.Project
+	if err := json.NewDecoder(resp.Body).Decode(&project); err != nil {
+		return nil, fmt.Errorf("failed to decode project: %w", err)
+	}
+
+	return &project, nil
+}
+
+func (c *Client) UpdateProject(id string, updates ProjectUpdate) (*model.Project, error) {
+	jsonBody, err := json.Marshal(updates)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	req, err := http.NewRequest(http.MethodPut, c.baseURL+"/projects/"+id, bytes.NewReader(jsonBody))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update project: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status: %d", resp.StatusCode)
+	}
+
+	var project model.Project
+	if err := json.NewDecoder(resp.Body).Decode(&project); err != nil {
+		return nil, fmt.Errorf("failed to decode project: %w", err)
+	}
+
+	return &project, nil
+}
+
+func (c *Client) DeleteProject(id string) error {
+	req, err := http.NewRequest(http.MethodDelete, c.baseURL+"/projects/"+id, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to delete project: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("unexpected status: %d", resp.StatusCode)
+	}
+
+	return nil
+}
+
+// Context methods
+
+type ContextCreate struct {
+	Content string `json:"content"`
+}
+
+type ContextUpdate struct {
+	Content string `json:"content"`
+}
+
+func (c *Client) FetchProjectContext(projectID string) ([]model.ContextDocument, error) {
+	url := fmt.Sprintf("%s/projects/%s/context", c.baseURL, projectID)
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch project context: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status: %d", resp.StatusCode)
+	}
+
+	var docs []model.ContextDocument
+	if err := json.NewDecoder(resp.Body).Decode(&docs); err != nil {
+		return nil, fmt.Errorf("failed to decode context: %w", err)
+	}
+
+	return docs, nil
+}
+
+func (c *Client) CreateProjectContext(projectID, content string) (*model.ContextDocument, error) {
+	body := ContextCreate{Content: content}
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	url := fmt.Sprintf("%s/projects/%s/context", c.baseURL, projectID)
+	resp, err := c.httpClient.Post(url, "application/json", bytes.NewReader(jsonBody))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create context: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		return nil, fmt.Errorf("unexpected status: %d", resp.StatusCode)
+	}
+
+	var doc model.ContextDocument
+	if err := json.NewDecoder(resp.Body).Decode(&doc); err != nil {
+		return nil, fmt.Errorf("failed to decode context: %w", err)
+	}
+
+	return &doc, nil
+}
+
+func (c *Client) FetchTimeCodeContext(timeCodeID string) ([]model.ContextDocument, error) {
+	url := fmt.Sprintf("%s/time-codes/%s/context", c.baseURL, timeCodeID)
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch time code context: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status: %d", resp.StatusCode)
+	}
+
+	var docs []model.ContextDocument
+	if err := json.NewDecoder(resp.Body).Decode(&docs); err != nil {
+		return nil, fmt.Errorf("failed to decode context: %w", err)
+	}
+
+	return docs, nil
+}
+
+func (c *Client) CreateTimeCodeContext(timeCodeID, content string) (*model.ContextDocument, error) {
+	body := ContextCreate{Content: content}
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	url := fmt.Sprintf("%s/time-codes/%s/context", c.baseURL, timeCodeID)
+	resp, err := c.httpClient.Post(url, "application/json", bytes.NewReader(jsonBody))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create context: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		return nil, fmt.Errorf("unexpected status: %d", resp.StatusCode)
+	}
+
+	var doc model.ContextDocument
+	if err := json.NewDecoder(resp.Body).Decode(&doc); err != nil {
+		return nil, fmt.Errorf("failed to decode context: %w", err)
+	}
+
+	return &doc, nil
+}
+
+func (c *Client) UpdateContext(contextID, content string) (*model.ContextDocument, error) {
+	body := ContextUpdate{Content: content}
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	req, err := http.NewRequest(http.MethodPut, c.baseURL+"/context/"+contextID, bytes.NewReader(jsonBody))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update context: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status: %d", resp.StatusCode)
+	}
+
+	var doc model.ContextDocument
+	if err := json.NewDecoder(resp.Body).Decode(&doc); err != nil {
+		return nil, fmt.Errorf("failed to decode context: %w", err)
+	}
+
+	return &doc, nil
+}
+
+func (c *Client) DeleteContext(contextID string) error {
+	req, err := http.NewRequest(http.MethodDelete, c.baseURL+"/context/"+contextID, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to delete context: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("unexpected status: %d", resp.StatusCode)
+	}
+
+	return nil
+}
