@@ -1,29 +1,54 @@
 # mcp-server Spec Delta
 
+## REMOVED Requirements
+
+### Requirement: Report Tools
+
+(Removed - the /reports/summary endpoint does not exist in the backend API)
+
 ## MODIFIED Requirements
 
-### Requirement: Time Code Tools - Project Support
+### Requirement: Time Code Tools
 
-The `list_time_codes` tool SHALL accept an optional project_id parameter to filter time codes by project.
+The system SHALL provide MCP tools for managing time codes.
 
-The `create_time_code` tool SHALL accept a project_id parameter (defaults to "default").
+The `list_time_codes` tool SHALL return all time codes, optionally filtered by active status or project_id.
 
-The `update_time_code` tool SHALL accept an optional project_id parameter to reassign a time code to a different project.
+The `get_time_code` tool SHALL accept a time code ID and return full details.
+
+The `create_time_code` tool SHALL accept ID, name, project_id (defaults to "default"), and optional description/keywords/examples and create a new time code.
+
+The `update_time_code` tool SHALL accept a time code ID and update fields including project_id.
+
+The `delete_time_code` tool SHALL accept a time code ID and deactivate it (soft delete).
+
+#### Scenario: List active time codes
+- **WHEN** user invokes `list_time_codes` with active_only=true
+- **THEN** only active time codes are returned
 
 #### Scenario: List time codes by project
-
 - **WHEN** user invokes `list_time_codes` with project_id="izg"
 - **THEN** only time codes belonging to that project are returned
 
-#### Scenario: Create time code in project
+#### Scenario: Create time code
+- **WHEN** user invokes `create_time_code` with id="PROJ-BETA", name="Project Beta"
+- **THEN** a new time code is created and returned
 
+#### Scenario: Create time code in project
 - **WHEN** user invokes `create_time_code` with id="IZG-001", name="IZG Task", project_id="izg"
 - **THEN** a new time code is created under the specified project
 
-#### Scenario: Move time code to different project
+#### Scenario: Update time code with examples
+- **WHEN** user invokes `update_time_code` with examples=["2h coding", "bug fix"]
+- **THEN** the time code examples are updated
 
+#### Scenario: Move time code to different project
 - **WHEN** user invokes `update_time_code` with time_code_id="IZG-001" and project_id="other-project"
 - **THEN** the time code is reassigned to the new project
+
+#### Scenario: Deactivate time code
+- **WHEN** user invokes `delete_time_code` with a valid time code ID
+- **THEN** the time code is marked inactive
 
 ## ADDED Requirements
 

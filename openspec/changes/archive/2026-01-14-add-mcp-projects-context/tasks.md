@@ -36,10 +36,10 @@
 
 ## 5. Testing
 
-- [ ] 5.1 Manual test with Claude Desktop or MCP inspector
-- [ ] 5.2 Verify all tools appear in tool list
-- [ ] 5.3 Test CRUD operations for projects and context
-- [ ] 5.4 Test time code project_id filtering and assignment
+- [x] 5.1 Manual test with Claude Desktop or MCP inspector
+- [x] 5.2 Verify all tools appear in tool list
+- [x] 5.3 Test CRUD operations for projects and context
+- [x] 5.4 Test time code project_id filtering and assignment
 
 ## Dependencies
 
