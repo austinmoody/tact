@@ -103,8 +103,8 @@ Parsing happens **asynchronously** via background processing:
 | Status | Meaning |
 |--------|---------|
 | `pending` | Submitted, awaiting parsing |
-| `parsed` | Successfully parsed, confidence met threshold |
-| `needs_review` | Parsed but confidence below threshold |
+| `parsed` | Successfully parsed with required fields above confidence threshold |
+| `needs_review` | Parsed but missing required fields or confidence below threshold |
 | `failed` | LLM call failed, needs retry or manual entry |
 
 ### Confidence Scoring
@@ -117,6 +117,15 @@ Each parsed field receives a confidence score (0.0 - 1.0):
 Overall entry confidence = minimum of all field confidences.
 
 A configurable **threshold** (default: 0.7) determines whether an entry is marked `parsed` or `needs_review`.
+
+**Required fields for `parsed` status:**
+- **time_code_id** - must be set AND confidence_time_code >= threshold
+- **duration_minutes** - must be set AND confidence_duration >= threshold
+
+**Optional fields:**
+- **work_type_id** - nice to have but not required for `parsed` status
+
+If either required field is missing or has confidence below the threshold, the entry is marked `needs_review` for manual correction.
 
 ### Time Code Categorization
 
