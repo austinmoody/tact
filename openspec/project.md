@@ -95,8 +95,65 @@ Parsing happens **asynchronously** via background processing:
 2. Entry is saved immediately with status `pending`
 3. API returns entry ID right away (fast response for quick entry workflow)
 4. Background worker picks up pending entries
-5. LLM parses entry using time code context (descriptions + examples)
-6. Entry updated with parsed fields, confidence scores, and new status
+5. RAG retrieval finds relevant context documents (see below)
+6. LLM parses entry using time codes, work types, and RAG context
+7. Entry updated with parsed fields, confidence scores, and new status
+
+### RAG Architecture
+
+The system uses Retrieval-Augmented Generation (RAG) to improve parsing accuracy. This is a simple, local implementation without external vector databases.
+
+**How it works:**
+
+```
+┌─────────────────┐      ┌──────────────────┐      ┌─────────────────┐
+│  Entry Text     │      │  Context Store   │      │  LLM Prompt     │
+│  "2h APHL mtg"  │      │  (SQLite)        │      │                 │
+└────────┬────────┘      └────────┬─────────┘      └────────▲────────┘
+         │                        │                         │
+         ▼                        ▼                         │
+┌─────────────────┐      ┌──────────────────┐              │
+│  Embed Text     │      │  All Embeddings  │              │
+│  (384-dim vec)  │      │  (384-dim vecs)  │              │
+└────────┬────────┘      └────────┬─────────┘              │
+         │                        │                         │
+         └──────────┬─────────────┘                         │
+                    ▼                                       │
+         ┌──────────────────┐                               │
+         │ Cosine Similarity│                               │
+         │ (brute force)    │                               │
+         └────────┬─────────┘                               │
+                  │                                         │
+                  ▼                                         │
+         ┌──────────────────┐                               │
+         │ Top 5 matches    │───────────────────────────────┘
+         │ (similarity≥0.3) │
+         └──────────────────┘
+```
+
+**Components:**
+
+1. **Embedding Model**: `all-MiniLM-L6-v2` (sentence-transformers) runs locally, no API calls. Produces 384-dimensional normalized vectors.
+
+2. **Context Documents**: Short text snippets stored in SQLite with their embeddings. Each document is associated with either a project or time code. Examples:
+   - `"ALL meetings with APHL go to FEDS-163 regardless of topic"`
+   - `"IZG = IZ Gateway"`
+   - `"Example: \"2h standup\"\nParsed as: 120 minutes, work_type: meetings"`
+
+3. **Retrieval**: When parsing an entry:
+   - Entry text is embedded using the same model
+   - Cosine similarity is calculated against ALL stored context documents (brute-force, no index)
+   - Top 5 documents with similarity ≥ 0.3 are returned
+   - These are included in the LLM prompt as "Matching Context Rules"
+
+4. **Learning**: When a user manually corrects an entry, a new context document is created from that correction, improving future parsing of similar entries.
+
+**Why this approach:**
+
+- **Simple**: No external vector database (Pinecone, Chroma, etc.) to manage
+- **Local**: Embeddings generated on-device, no API costs
+- **Small scale**: Designed for dozens to hundreds of context documents, not millions
+- **Good enough**: Brute-force similarity search is fast enough for small document sets
 
 ### Entry Statuses
 
