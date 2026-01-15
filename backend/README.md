@@ -115,6 +115,26 @@ curl -X PATCH "http://localhost:2100/entries/{id}?learn=false" \
 
 The created context document will contain the original raw text and the corrected values, helping the LLM make better decisions on similar entries in the future.
 
+### Parsing Status Logic
+
+Entries are assigned a status based on parsing results:
+
+| Status | Condition |
+|--------|-----------|
+| `pending` | Entry submitted, awaiting parsing |
+| `parsed` | Both `time_code_id` AND `duration_minutes` set with confidence >= threshold |
+| `needs_review` | Missing required fields or confidence below threshold |
+| `failed` | LLM call failed (network error, invalid response, etc.) |
+
+**Required fields for `parsed` status:**
+- `time_code_id` with `confidence_time_code` >= threshold (default: 0.7)
+- `duration_minutes` with `confidence_duration` >= threshold (default: 0.7)
+
+**Optional fields:**
+- `work_type_id` - helpful but not required for `parsed` status
+
+The confidence threshold can be configured via the `confidence_threshold` key in the Config table.
+
 ## LLM Integration
 
 The backend uses an LLM to parse time entries. It supports two providers:

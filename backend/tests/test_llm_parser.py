@@ -277,23 +277,113 @@ class TestEntryParser:
         assert mock_entry.status == "failed"
         assert mock_entry.parse_error == "Parse failed"
 
-    def test_parse_entry_low_confidence_needs_review(self):
-        """Test that low confidence entries get needs_review status."""
+    def test_parse_entry_missing_time_code_needs_review(self):
+        """Test that entries without time_code get needs_review status."""
         mock_provider = MagicMock()
         mock_provider.parse.return_value = ParseResult(
             duration_minutes=60,
-            time_code_id=None,
+            time_code_id=None,  # Missing time code
             work_type_id="development",
             description="Some work",
-            confidence_duration=0.8,
+            confidence_duration=0.9,
             confidence_time_code=0.3,
-            confidence_work_type=0.6,
-            confidence_overall=0.3,
+            confidence_work_type=0.8,
+            confidence_overall=0.5,
         )
 
         mock_entry = MagicMock()
         mock_entry.id = "entry-456"
         mock_entry.raw_text = "did some work"
+
+        mock_session = MagicMock()
+        mock_query_result = MagicMock()
+        mock_query_result.filter.return_value.all.return_value = []
+        mock_query_result.filter.return_value.first.return_value = None
+        mock_session.query.return_value = mock_query_result
+
+        parser = EntryParser(provider=mock_provider)
+        result = parser.parse_entry(mock_entry, mock_session)
+
+        assert result is True
+        assert mock_entry.status == "needs_review"
+
+    def test_parse_entry_missing_duration_needs_review(self):
+        """Test that entries without duration get needs_review status."""
+        mock_provider = MagicMock()
+        mock_provider.parse.return_value = ParseResult(
+            duration_minutes=None,  # Missing duration
+            time_code_id="PROJ-001",
+            work_type_id="development",
+            description="Some work",
+            confidence_duration=0.3,
+            confidence_time_code=0.9,
+            confidence_work_type=0.8,
+            confidence_overall=0.5,
+        )
+
+        mock_entry = MagicMock()
+        mock_entry.id = "entry-789"
+        mock_entry.raw_text = "worked on project"
+
+        mock_session = MagicMock()
+        mock_query_result = MagicMock()
+        mock_query_result.filter.return_value.all.return_value = []
+        mock_query_result.filter.return_value.first.return_value = None
+        mock_session.query.return_value = mock_query_result
+
+        parser = EntryParser(provider=mock_provider)
+        result = parser.parse_entry(mock_entry, mock_session)
+
+        assert result is True
+        assert mock_entry.status == "needs_review"
+
+    def test_parse_entry_low_time_code_confidence_needs_review(self):
+        """Test that low time_code confidence gets needs_review even with value."""
+        mock_provider = MagicMock()
+        mock_provider.parse.return_value = ParseResult(
+            duration_minutes=60,
+            time_code_id="PROJ-001",  # Has value but low confidence
+            work_type_id="development",
+            description="Some work",
+            confidence_duration=0.9,
+            confidence_time_code=0.5,  # Below 0.7 threshold
+            confidence_work_type=0.8,
+            confidence_overall=0.6,
+        )
+
+        mock_entry = MagicMock()
+        mock_entry.id = "entry-low-conf"
+        mock_entry.raw_text = "maybe worked on project"
+
+        mock_session = MagicMock()
+        mock_query_result = MagicMock()
+        mock_query_result.filter.return_value.all.return_value = []
+        mock_query_result.filter.return_value.first.return_value = None
+        mock_session.query.return_value = mock_query_result
+
+        parser = EntryParser(provider=mock_provider)
+        result = parser.parse_entry(mock_entry, mock_session)
+
+        assert result is True
+        assert mock_entry.status == "needs_review"
+
+    def test_parse_entry_low_duration_confidence_needs_review(self):
+        """Test that low duration confidence gets needs_review even with value."""
+        mock_provider = MagicMock()
+        mock_provider.parse.return_value = ParseResult(
+            duration_minutes=60,  # Has value but low confidence
+            time_code_id="PROJ-001",
+            work_type_id="development",
+            description="Some work",
+            confidence_duration=0.5,  # Below 0.7 threshold
+            confidence_time_code=0.9,
+            confidence_work_type=0.8,
+            confidence_overall=0.6,
+        )
+
+        mock_entry = MagicMock()
+        mock_entry.id = "entry-low-dur-conf"
+        mock_entry.raw_text = "worked some time on project"
 
         mock_session = MagicMock()
         mock_query_result = MagicMock()

@@ -89,10 +89,20 @@ class EntryParser:
         entry.parsed_at = datetime.now(UTC)
         entry.parse_error = None
 
-        # Set status based on confidence threshold
+        # Set status based on required fields and confidence threshold
+        # Entry is only "parsed" if both time_code and duration are set with
+        # confidence above threshold. Work type is optional.
         threshold = get_confidence_threshold(session)
-        confidence = result.confidence_overall or 0.0
-        if confidence >= threshold:
+        has_time_code = (
+            result.time_code_id is not None
+            and (result.confidence_time_code or 0.0) >= threshold
+        )
+        has_duration = (
+            result.duration_minutes is not None
+            and (result.confidence_duration or 0.0) >= threshold
+        )
+
+        if has_time_code and has_duration:
             entry.status = "parsed"
         else:
             entry.status = "needs_review"
@@ -100,7 +110,8 @@ class EntryParser:
         logger.info(
             f"Entry {entry.id} parsed: duration={result.duration_minutes}, "
             f"time_code={result.time_code_id}, work_type={result.work_type_id}, "
-            f"confidence={result.confidence_overall}, status={entry.status}"
+            f"conf_duration={result.confidence_duration}, "
+            f"conf_time_code={result.confidence_time_code}, status={entry.status}"
         )
 
         return True
