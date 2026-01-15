@@ -2,22 +2,22 @@
 
 ## 1. Update Entry Update Endpoint
 
-- [ ] 1.1 Add `learn: bool = True` query parameter to PATCH `/entries/{id}`
-- [ ] 1.2 After successful update, check if `learn=True` and entry has `time_code_id`
-- [ ] 1.3 If learning, create context document for the time code with formatted content
-- [ ] 1.4 Log when a learned context document is created
+- [x] 1.1 Add `learn: bool = True` query parameter to PATCH `/entries/{id}`
+- [x] 1.2 After successful update, check if `learn=True` and entry has `time_code_id`
+- [x] 1.3 If learning, create context document for the time code with formatted content
+- [x] 1.4 Log when a learned context document is created
 
 ## 2. Add Tests
 
-- [ ] 2.1 Test that updating entry with `learn=true` creates context document
-- [ ] 2.2 Test that updating entry with `learn=false` does not create context
-- [ ] 2.3 Test that updating entry without time_code_id does not create context
-- [ ] 2.4 Test that context content format is correct
+- [x] 2.1 Test that updating entry with `learn=true` creates context document
+- [x] 2.2 Test that updating entry with `learn=false` does not create context
+- [x] 2.3 Test that updating entry without time_code_id does not create context
+- [x] 2.4 Test that context content format is correct
 
 ## 3. Documentation
 
-- [ ] 3.1 Update backend README API documentation for the new parameter
-- [ ] 3.2 Add example curl command showing learning behavior
+- [x] 3.1 Update backend README API documentation for the new parameter
+- [x] 3.2 Add example curl command showing learning behavior
 
 ## Dependencies
 
