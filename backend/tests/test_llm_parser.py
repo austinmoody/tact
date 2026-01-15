@@ -116,6 +116,34 @@ class TestOllamaProvider:
         assert result.work_type_id == "development"
         assert result.error is None
 
+    def test_parse_float_duration_rounds_to_int(self, sample_context):
+        """Test that float duration like 127.5 gets rounded to int."""
+        from tact.llm.ollama import OllamaProvider
+
+        provider = OllamaProvider()
+
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "response": json.dumps({
+                "duration_minutes": 127.5,
+                "time_code_id": "PROJ-001",
+                "work_type_id": "development",
+                "description": "Working on alpha",
+                "confidence_duration": 0.95,
+                "confidence_time_code": 0.85,
+                "confidence_work_type": 0.90,
+                "confidence_overall": 0.85,
+            })
+        }
+
+        with patch.object(provider.client, "post", return_value=mock_response):
+            result = provider.parse("2h coding on alpha", sample_context)
+
+        # 127.5 rounds to 128
+        assert result.duration_minutes == 128
+        assert isinstance(result.duration_minutes, int)
+        assert result.error is None
+
     def test_parse_invalid_json(self, sample_context):
         from tact.llm.ollama import OllamaProvider
 
@@ -181,6 +209,38 @@ class TestAnthropicProvider:
         assert result.duration_minutes == 120
         assert result.time_code_id == "PROJ-001"
         assert result.work_type_id == "development"
+        assert result.error is None
+
+    def test_parse_float_duration_rounds_to_int(self, sample_context):
+        """Test that float duration like 127.5 gets rounded to int."""
+        from tact.llm.anthropic import AnthropicProvider
+
+        mock_message = MagicMock()
+        mock_message.content = [
+            MagicMock(
+                text=json.dumps({
+                    "duration_minutes": 127.5,
+                    "time_code_id": "PROJ-001",
+                    "work_type_id": "development",
+                    "description": "Working on alpha",
+                    "confidence_duration": 0.95,
+                    "confidence_time_code": 0.85,
+                    "confidence_work_type": 0.90,
+                    "confidence_overall": 0.85,
+                })
+            )
+        ]
+
+        with patch.object(anthropic.Anthropic, "__init__", return_value=None):
+            provider = AnthropicProvider(api_key="test-key")
+            provider.client = MagicMock()
+            provider.client.messages.create.return_value = mock_message
+
+            result = provider.parse("2h coding on alpha", sample_context)
+
+        # 127.5 rounds to 128
+        assert result.duration_minutes == 128
+        assert isinstance(result.duration_minutes, int)
         assert result.error is None
 
     def test_parse_invalid_json(self, sample_context):
