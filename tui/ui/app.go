@@ -250,7 +250,10 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, a.contextEdit.Init()
 	}
 
-	// Propagate other messages to current screen
+	// Propagate other messages to modal if one is open, otherwise to screen
+	if a.modal != ModalNone {
+		return a.propagateToModal(msg)
+	}
 	return a.propagateToScreen(msg)
 }
 
@@ -398,6 +401,23 @@ func (a *App) updateProjectsScreen(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		_, cmd := a.projects.Update(msg)
 		return a, cmd
 	}
+}
+
+func (a *App) propagateToModal(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+
+	switch a.modal {
+	case ModalContextList:
+		if a.contextList != nil {
+			_, cmd = a.contextList.Update(msg)
+		}
+	case ModalContextAdd, ModalContextEdit:
+		if a.contextEdit != nil {
+			_, cmd = a.contextEdit.Update(msg)
+		}
+	}
+
+	return a, cmd
 }
 
 func (a *App) propagateToScreen(msg tea.Msg) (tea.Model, tea.Cmd) {
