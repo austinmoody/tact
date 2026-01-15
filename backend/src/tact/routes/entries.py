@@ -4,8 +4,9 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 
-from tact.db.models import TimeEntry
+from tact.db.models import ContextDocument, TimeEntry
 from tact.db.session import get_session
+from tact.rag.embeddings import embed_text
 from tact.schemas.entry import EntryCreate, EntryResponse, EntryUpdate
 
 logger = logging.getLogger(__name__)
@@ -88,6 +89,7 @@ def get_entry(
 def update_entry(
     entry_id: str,
     data: EntryUpdate,
+    learn: bool = Query(True, description="Create context document from correction"),
     session: Session = Depends(get_session),
 ) -> EntryResponse:
     entry = session.query(TimeEntry).filter(TimeEntry.id == entry_id).first()
@@ -102,8 +104,45 @@ def update_entry(
 
     session.commit()
     session.refresh(entry)
+
+    # Create context document for learning if enabled and entry has time_code_id
+    if learn and entry.time_code_id:
+        _create_learned_context(entry, session)
+
     logger.info("Updated entry %s: fields=%s", entry_id, list(update_data.keys()))
     return EntryResponse.model_validate(entry)
+
+
+def _create_learned_context(entry: TimeEntry, session: Session) -> None:
+    """Create a context document from a manually corrected entry."""
+    # Build the content from the entry
+    parts = [f'Example: "{entry.raw_text}"']
+
+    parsed_parts = []
+    if entry.duration_minutes is not None:
+        parsed_parts.append(f"{entry.duration_minutes} minutes")
+    if entry.work_type_id is not None:
+        parsed_parts.append(f"work_type: {entry.work_type_id}")
+
+    if parsed_parts:
+        parts.append(f"Parsed as: {', '.join(parsed_parts)}")
+
+    content = "\n".join(parts)
+
+    # Create the context document
+    context = ContextDocument(
+        time_code_id=entry.time_code_id,
+        content=content,
+        embedding=embed_text(content),
+    )
+    session.add(context)
+    session.commit()
+
+    logger.info(
+        "Created learned context for time code %s from entry %s",
+        entry.time_code_id,
+        entry.id,
+    )
 
 
 @router.delete("/{entry_id}", status_code=204)

@@ -8,14 +8,21 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from tact.db.base import Base
-from tact.db.models import Config, TimeCode, TimeEntry, WorkType  # noqa: F401
+from tact.db.models import (  # noqa: F401
+    Config,
+    ContextDocument,
+    Project,
+    TimeCode,
+    TimeEntry,
+    WorkType,
+)
 from tact.db.session import get_session
 from tact.routes.entries import router as entries_router
 
 
 @pytest.fixture
-def client():
-    """Create a test client with an in-memory database."""
+def db_session():
+    """Create an in-memory database and return a session factory."""
     engine = create_engine(
         "sqlite:///:memory:",
         connect_args={"check_same_thread": False},
@@ -31,9 +38,16 @@ def client():
     Base.metadata.create_all(bind=engine)
 
     TestSession = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    yield TestSession
+    engine.dispose()
+
+
+@pytest.fixture
+def client(db_session):
+    """Create a test client with the shared database session."""
 
     def override_get_session():
-        session = TestSession()
+        session = db_session()
         try:
             yield session
         finally:
@@ -45,8 +59,6 @@ def client():
 
     with TestClient(test_app) as test_client:
         yield test_client
-
-    engine.dispose()
 
 
 # Create tests
@@ -196,3 +208,152 @@ def test_delete_entry_success(client):
 def test_delete_entry_not_found(client):
     response = client.delete("/entries/unknown-uuid")
     assert response.status_code == 404
+
+
+# Learning tests
+
+
+def test_update_entry_with_learn_creates_context(client, db_session):
+    """Test that updating entry with learn=true creates context document."""
+    # Create a project, time code, and work type first
+    session = db_session()
+    project = Project(id="test-project", name="Test Project")
+    time_code = TimeCode(
+        id="TC-001",
+        project_id="test-project",
+        name="Test Time Code",
+        description="Test time code for learning tests",
+    )
+    work_type = WorkType(id="meetings", name="Meetings")
+    session.add(project)
+    session.add(time_code)
+    session.add(work_type)
+    session.commit()
+    session.close()
+
+    # Create an entry
+    create_response = client.post("/entries", json={"raw_text": "2h standup meeting"})
+    entry_id = create_response.json()["id"]
+
+    # Update with time_code_id (learn=true by default)
+    response = client.patch(
+        f"/entries/{entry_id}",
+        json={
+            "time_code_id": "TC-001",
+            "duration_minutes": 120,
+            "work_type_id": "meetings",
+        },
+    )
+    assert response.status_code == 200
+
+    # Verify context document was created
+    session = db_session()
+    contexts = session.query(ContextDocument).filter(
+        ContextDocument.time_code_id == "TC-001"
+    ).all()
+    assert len(contexts) == 1
+    assert 'Example: "2h standup meeting"' in contexts[0].content
+    assert "120 minutes" in contexts[0].content
+    assert "work_type: meetings" in contexts[0].content
+    session.close()
+
+
+def test_update_entry_with_learn_false_no_context(client, db_session):
+    """Test that updating entry with learn=false does not create context."""
+    # Create a project and time code first
+    session = db_session()
+    project = Project(id="test-project", name="Test Project")
+    time_code = TimeCode(
+        id="TC-001",
+        project_id="test-project",
+        name="Test Time Code",
+        description="Test time code for learning tests",
+    )
+    session.add(project)
+    session.add(time_code)
+    session.commit()
+    session.close()
+
+    # Create an entry
+    create_response = client.post("/entries", json={"raw_text": "2h coding"})
+    entry_id = create_response.json()["id"]
+
+    # Update with learn=false
+    response = client.patch(
+        f"/entries/{entry_id}?learn=false",
+        json={
+            "time_code_id": "TC-001",
+            "duration_minutes": 120,
+        },
+    )
+    assert response.status_code == 200
+
+    # Verify no context document was created
+    session = db_session()
+    contexts = session.query(ContextDocument).filter(
+        ContextDocument.time_code_id == "TC-001"
+    ).all()
+    assert len(contexts) == 0
+    session.close()
+
+
+def test_update_entry_without_time_code_no_context(client, db_session):
+    """Test that updating entry without time_code_id does not create context."""
+    # Create an entry
+    create_response = client.post("/entries", json={"raw_text": "2h work"})
+    entry_id = create_response.json()["id"]
+
+    # Update without time_code_id
+    response = client.patch(
+        f"/entries/{entry_id}",
+        json={"duration_minutes": 120},
+    )
+    assert response.status_code == 200
+
+    # Verify no context document was created
+    session = db_session()
+    contexts = session.query(ContextDocument).all()
+    assert len(contexts) == 0
+    session.close()
+
+
+def test_update_entry_context_format_duration_only(client, db_session):
+    """Test context format when only duration is set."""
+    # Create a project and time code first
+    session = db_session()
+    project = Project(id="test-project", name="Test Project")
+    time_code = TimeCode(
+        id="TC-001",
+        project_id="test-project",
+        name="Test Time Code",
+        description="Test time code for learning tests",
+    )
+    session.add(project)
+    session.add(time_code)
+    session.commit()
+    session.close()
+
+    # Create an entry
+    create_response = client.post("/entries", json={"raw_text": "30m quick fix"})
+    entry_id = create_response.json()["id"]
+
+    # Update with only duration (no work_type_id)
+    response = client.patch(
+        f"/entries/{entry_id}",
+        json={
+            "time_code_id": "TC-001",
+            "duration_minutes": 30,
+        },
+    )
+    assert response.status_code == 200
+
+    # Verify context format
+    session = db_session()
+    contexts = session.query(ContextDocument).filter(
+        ContextDocument.time_code_id == "TC-001"
+    ).all()
+    assert len(contexts) == 1
+    assert 'Example: "30m quick fix"' in contexts[0].content
+    assert "30 minutes" in contexts[0].content
+    assert "work_type" not in contexts[0].content
+    session.close()

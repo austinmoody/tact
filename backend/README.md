@@ -93,9 +93,27 @@ make docker-down
 | `/entries` | GET | List entries (filters: `status`, `time_code_id`, `work_type_id`, `from_date`, `to_date`, `limit`, `offset`) |
 | `/entries` | POST | Create an entry (`raw_text` required, `entry_date` optional - defaults to today) |
 | `/entries/{id}` | GET | Get a single entry |
-| `/entries/{id}` | PATCH | Update an entry (sets `manually_corrected=true`) |
+| `/entries/{id}` | PATCH | Update an entry (sets `manually_corrected=true`, `?learn=false` to skip context creation) |
 | `/entries/{id}` | DELETE | Hard-delete an entry (returns 204) |
 | `/entries/{id}/reparse` | POST | Reset entry to pending for re-parsing |
+
+### Learning from Corrections
+
+When you manually correct an entry via PATCH, the system automatically creates a context document for the associated time code. This helps improve future parsing accuracy.
+
+```bash
+# Correct an entry - creates context document by default
+curl -X PATCH http://localhost:2100/entries/{id} \
+  -H "Content-Type: application/json" \
+  -d '{"time_code_id": "PROJ-DEV", "duration_minutes": 120, "work_type_id": "meetings"}'
+
+# Correct without learning (skip context creation)
+curl -X PATCH "http://localhost:2100/entries/{id}?learn=false" \
+  -H "Content-Type: application/json" \
+  -d '{"time_code_id": "PROJ-DEV", "duration_minutes": 120}'
+```
+
+The created context document will contain the original raw text and the corrected values, helping the LLM make better decisions on similar entries in the future.
 
 ## LLM Integration
 
