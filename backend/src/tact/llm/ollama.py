@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_OLLAMA_URL = "http://localhost:11434"
 DEFAULT_OLLAMA_MODEL = "llama3.2:3b"
+DEFAULT_OLLAMA_TIMEOUT = 180.0  # seconds
 
 
 class OllamaProvider(LLMProvider):
@@ -20,10 +21,14 @@ class OllamaProvider(LLMProvider):
         self,
         base_url: str | None = None,
         model: str | None = None,
+        timeout: float | None = None,
     ):
         self.base_url = base_url or os.getenv("TACT_OLLAMA_URL", DEFAULT_OLLAMA_URL)
         self.model = model or os.getenv("TACT_OLLAMA_MODEL", DEFAULT_OLLAMA_MODEL)
-        self.client = httpx.Client(timeout=60.0)
+        self.timeout = timeout or float(
+            os.getenv("TACT_OLLAMA_TIMEOUT", DEFAULT_OLLAMA_TIMEOUT)
+        )
+        self.client = httpx.Client(timeout=self.timeout)
 
     def parse(self, raw_text: str, context: ParseContext) -> ParseResult:
         """Parse raw text using Ollama."""
