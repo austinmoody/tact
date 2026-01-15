@@ -62,8 +62,12 @@ class OllamaProvider(LLMProvider):
         """Parse the JSON response from Ollama."""
         try:
             data = json.loads(response_text)
+            # Convert duration to int if present (LLM may return float like 127.5)
+            duration = data.get("duration_minutes")
+            if duration is not None:
+                duration = round(duration)
             return ParseResult(
-                duration_minutes=data.get("duration_minutes"),
+                duration_minutes=duration,
                 work_type_id=data.get("work_type_id"),
                 time_code_id=data.get("time_code_id"),
                 description=data.get("description"),
