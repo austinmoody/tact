@@ -243,7 +243,10 @@ class TestEntryParser:
         mock_entry.raw_text = "2h coding on alpha"
 
         mock_session = MagicMock()
-        mock_session.query.return_value.filter.return_value.all.return_value = []
+        mock_query_result = MagicMock()
+        mock_query_result.filter.return_value.all.return_value = []
+        mock_query_result.filter.return_value.first.return_value = None
+        mock_session.query.return_value = mock_query_result
 
         parser = EntryParser(provider=mock_provider)
         result = parser.parse_entry(mock_entry, mock_session)
@@ -262,7 +265,10 @@ class TestEntryParser:
         mock_entry.raw_text = "invalid"
 
         mock_session = MagicMock()
-        mock_session.query.return_value.filter.return_value.all.return_value = []
+        mock_query_result = MagicMock()
+        mock_query_result.filter.return_value.all.return_value = []
+        mock_query_result.filter.return_value.first.return_value = None
+        mock_session.query.return_value = mock_query_result
 
         parser = EntryParser(provider=mock_provider)
         result = parser.parse_entry(mock_entry, mock_session)
@@ -270,3 +276,33 @@ class TestEntryParser:
         assert result is False
         assert mock_entry.status == "failed"
         assert mock_entry.parse_error == "Parse failed"
+
+    def test_parse_entry_low_confidence_needs_review(self):
+        """Test that low confidence entries get needs_review status."""
+        mock_provider = MagicMock()
+        mock_provider.parse.return_value = ParseResult(
+            duration_minutes=60,
+            time_code_id=None,
+            work_type_id="development",
+            description="Some work",
+            confidence_duration=0.8,
+            confidence_time_code=0.3,
+            confidence_work_type=0.6,
+            confidence_overall=0.3,
+        )
+
+        mock_entry = MagicMock()
+        mock_entry.id = "entry-456"
+        mock_entry.raw_text = "did some work"
+
+        mock_session = MagicMock()
+        mock_query_result = MagicMock()
+        mock_query_result.filter.return_value.all.return_value = []
+        mock_query_result.filter.return_value.first.return_value = None
+        mock_session.query.return_value = mock_query_result
+
+        parser = EntryParser(provider=mock_provider)
+        result = parser.parse_entry(mock_entry, mock_session)
+
+        assert result is True
+        assert mock_entry.status == "needs_review"

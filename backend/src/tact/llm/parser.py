@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
-from tact.db.models import TimeCode, TimeEntry, WorkType
+from tact.db.models import Config, TimeCode, TimeEntry, WorkType
 from tact.llm.provider import (
     LLMProvider,
     ParseContext,
@@ -16,6 +16,19 @@ from tact.llm.provider import (
 from tact.rag.retrieval import retrieve_similar_contexts
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_CONFIDENCE_THRESHOLD = 0.7
+
+
+def get_confidence_threshold(session: Session) -> float:
+    """Get confidence threshold from config or use default."""
+    config = session.query(Config).filter(Config.key == "confidence_threshold").first()
+    if config:
+        try:
+            return float(config.value)
+        except ValueError:
+            logger.warning("Invalid confidence_threshold config: %s", config.value)
+    return DEFAULT_CONFIDENCE_THRESHOLD
 
 
 def get_provider() -> LLMProvider:
@@ -73,14 +86,21 @@ class EntryParser:
         entry.confidence_work_type = result.confidence_work_type
         entry.confidence_time_code = result.confidence_time_code
         entry.confidence_overall = result.confidence_overall
-        entry.status = "parsed"
         entry.parsed_at = datetime.now(UTC)
         entry.parse_error = None
+
+        # Set status based on confidence threshold
+        threshold = get_confidence_threshold(session)
+        confidence = result.confidence_overall or 0.0
+        if confidence >= threshold:
+            entry.status = "parsed"
+        else:
+            entry.status = "needs_review"
 
         logger.info(
             f"Entry {entry.id} parsed: duration={result.duration_minutes}, "
             f"time_code={result.time_code_id}, work_type={result.work_type_id}, "
-            f"confidence={result.confidence_overall}"
+            f"confidence={result.confidence_overall}, status={entry.status}"
         )
 
         return True
