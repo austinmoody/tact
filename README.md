@@ -63,7 +63,7 @@ See [mcp/README.md](mcp/README.md) for full documentation including Goose/VS Cod
 
 ## TUI
 
-The terminal user interface provides a read-only dashboard for viewing time codes and work types.
+The terminal user interface provides a dashboard for managing time entries, projects, time codes, work types, and RAG context documents.
 
 ### Build & Run
 
@@ -86,13 +86,42 @@ The TUI connects to the backend API. Configure the URL via:
 2. `TACT_API_URL` env var: `TACT_API_URL=http://server:2100 ./tui/tact-tui`
 3. Default: `http://localhost:2100`
 
+### Features
+
+- **Home Screen**: View and manage time entries, create new entries with natural language
+- **Projects**: Create and manage projects for grouping time codes
+- **Time Codes**: Manage billing codes with project associations
+- **Work Types**: Manage categories of work (development, meetings, etc.)
+- **Context Management**: Add RAG context documents to projects and time codes to improve LLM parsing
+
 ### Key Bindings
+
+#### Global
 
 | Key | Action |
 |-----|--------|
 | `j` / `↓` | Move cursor down |
 | `k` / `↑` | Move cursor up |
-| `h` / `l` | Switch between panes |
-| `Enter` | Toggle detail view |
+| `m` | Open menu |
 | `r` | Refresh data |
 | `q` / `Ctrl+C` | Quit |
+| `Esc` | Close modal / Go back |
+
+#### List Screens (Projects, Time Codes, Work Types)
+
+| Key | Action |
+|-----|--------|
+| `a` | Add new item |
+| `e` | Edit selected item |
+| `d` | Delete selected item |
+| `c` | Manage context (Projects, Time Codes) |
+
+#### Modals
+
+| Key | Action |
+|-----|--------|
+| `Tab` | Next field |
+| `Shift+Tab` | Previous field |
+| `Enter` | Save / Submit |
+| `Ctrl+S` | Save (in context editor) |
+| `Esc` | Cancel / Close |
