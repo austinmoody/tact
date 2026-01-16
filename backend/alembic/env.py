@@ -1,10 +1,10 @@
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import pool
+from sqlalchemy import create_engine, pool
 from sqlalchemy.engine import Connection
 
-from tact.db.base import Base, create_db_engine, get_database_url
+from tact.db.base import Base, ensure_db_directory, get_database_url
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -51,11 +51,22 @@ def run_migrations_online() -> None:
     In this scenario we need to create an Engine
     and associate a connection with the context.
 
+    Note: We create a separate engine here without the foreign_keys=ON pragma
+    that the main app uses. This allows migrations to temporarily disable
+    foreign keys when needed (e.g., for batch ALTER TABLE operations in SQLite).
     """
-    connectable = create_db_engine()
+    ensure_db_directory()
+    connectable = create_engine(
+        get_database_url(),
+        connect_args={"check_same_thread": False},
+    )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            render_as_batch=True,  # Required for SQLite ALTER TABLE operations
+        )
 
         with context.begin_transaction():
             context.run_migrations()

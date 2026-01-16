@@ -53,29 +53,13 @@ def test_create_project(client):
         json={
             "id": "IZG",
             "name": "IZ Gateway",
-            "description": "IZ Gateway project",
         },
     )
     assert response.status_code == 201
     data = response.json()
     assert data["id"] == "IZG"
     assert data["name"] == "IZ Gateway"
-    assert data["description"] == "IZ Gateway project"
     assert data["active"] is True
-
-
-def test_create_project_without_description(client):
-    response = client.post(
-        "/projects",
-        json={
-            "id": "SIMPLE",
-            "name": "Simple Project",
-        },
-    )
-    assert response.status_code == 201
-    data = response.json()
-    assert data["id"] == "SIMPLE"
-    assert data["description"] is None
 
 
 def test_create_duplicate_project(client):
@@ -127,12 +111,11 @@ def test_update_project(client):
     client.post("/projects", json={"id": "IZG", "name": "Original"})
     response = client.put(
         "/projects/IZG",
-        json={"name": "Updated", "description": "New description"},
+        json={"name": "Updated"},
     )
     assert response.status_code == 200
     data = response.json()
     assert data["name"] == "Updated"
-    assert data["description"] == "New description"
 
 
 def test_update_project_not_found(client):

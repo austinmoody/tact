@@ -24,7 +24,6 @@ def create_project(
     project = Project(
         id=data.id,
         name=data.name,
-        description=data.description,
     )
     session.add(project)
     session.commit()
@@ -70,8 +69,6 @@ def update_project(
 
     if data.name is not None:
         project.name = data.name
-    if data.description is not None:
-        project.description = data.description
     if data.active is not None:
         project.active = data.active
 

@@ -391,10 +391,6 @@ async def list_tools() -> list[Tool]:
                         "type": "string",
                         "description": "Display name",
                     },
-                    "description": {
-                        "type": "string",
-                        "description": "Project description",
-                    },
                 },
                 "required": ["id", "name"],
             },
@@ -410,7 +406,6 @@ async def list_tools() -> list[Tool]:
                         "description": "Project ID",
                     },
                     "name": {"type": "string", "description": "Display name"},
-                    "description": {"type": "string", "description": "Description"},
                     "active": {"type": "boolean", "description": "Active status"},
                 },
                 "required": ["project_id"],
@@ -672,7 +667,6 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
             result = client.create_project(
                 id=arguments["id"],
                 name=arguments["name"],
-                description=arguments.get("description", ""),
             )
             return json_response(result)
 
