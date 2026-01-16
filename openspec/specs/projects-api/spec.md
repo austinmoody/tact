@@ -5,7 +5,7 @@ TBD - created by archiving change add-rag-context-parsing. Update Purpose after 
 ## Requirements
 ### Requirement: Create Project
 
-The API SHALL allow creating a new project via POST request.
+The API SHALL allow creating a new project via POST request. A project consists of an `id` and `name` only.
 
 #### Scenario: Successful creation
 
@@ -54,7 +54,7 @@ The API SHALL return a single project by ID.
 
 ### Requirement: Update Project
 
-The API SHALL allow updating an existing project.
+The API SHALL allow updating an existing project. Only `name` and `active` fields can be updated.
 
 #### Scenario: Successful update
 

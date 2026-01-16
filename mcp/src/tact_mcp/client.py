@@ -177,11 +177,9 @@ class TactClient:
         response = self._client.get(f"/projects/{project_id}")
         return self._handle_response(response)
 
-    def create_project(
-        self, id: str, name: str, description: str = ""
-    ) -> dict[str, Any]:
+    def create_project(self, id: str, name: str) -> dict[str, Any]:
         """Create a new project."""
-        data = {"id": id, "name": name, "description": description}
+        data = {"id": id, "name": name}
         response = self._client.post("/projects", json=data)
         return self._handle_response(response)
 

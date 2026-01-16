@@ -316,14 +316,12 @@ func (c *Client) DeleteWorkType(id string) error {
 // Project methods
 
 type ProjectCreate struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description,omitempty"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type ProjectUpdate struct {
-	Name        *string `json:"name,omitempty"`
-	Description *string `json:"description,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 func (c *Client) FetchProjects() ([]model.Project, error) {
@@ -345,11 +343,10 @@ func (c *Client) FetchProjects() ([]model.Project, error) {
 	return projects, nil
 }
 
-func (c *Client) CreateProject(id, name, description string) (*model.Project, error) {
+func (c *Client) CreateProject(id, name string) (*model.Project, error) {
 	body := ProjectCreate{
-		ID:          id,
-		Name:        name,
-		Description: description,
+		ID:   id,
+		Name: name,
 	}
 	jsonBody, err := json.Marshal(body)
 	if err != nil {

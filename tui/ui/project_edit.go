@@ -16,10 +16,9 @@ type ProjectEditModal struct {
 	isEdit  bool
 	width   int
 
-	idInput          textinput.Model
-	nameInput        textinput.Model
-	descriptionInput textinput.Model
-	focusIndex       int // 0=id, 1=name, 2=description
+	idInput    textinput.Model
+	nameInput  textinput.Model
+	focusIndex int // 0=id, 1=name
 
 	saving bool
 	err    error
@@ -39,15 +38,9 @@ func NewProjectEditModal(client *api.Client, p *model.Project, width int) *Proje
 	nameInput.CharLimit = 100
 	nameInput.SetWidth(inputWidth)
 
-	descriptionInput := textinput.New()
-	descriptionInput.Placeholder = "Description (optional)"
-	descriptionInput.CharLimit = 500
-	descriptionInput.SetWidth(inputWidth)
-
 	if isEdit {
 		idInput.SetValue(p.ID)
 		nameInput.SetValue(p.Name)
-		descriptionInput.SetValue(p.Description)
 		// Focus name input for edit mode (ID is not editable)
 		nameInput.Focus()
 	} else {
@@ -56,14 +49,13 @@ func NewProjectEditModal(client *api.Client, p *model.Project, width int) *Proje
 	}
 
 	return &ProjectEditModal{
-		client:           client,
-		project:          p,
-		isEdit:           isEdit,
-		width:            width,
-		idInput:          idInput,
-		nameInput:        nameInput,
-		descriptionInput: descriptionInput,
-		focusIndex:       0,
+		client:     client,
+		project:    p,
+		isEdit:     isEdit,
+		width:      width,
+		idInput:    idInput,
+		nameInput:  nameInput,
+		focusIndex: 0,
 	}
 }
 
@@ -108,13 +100,9 @@ func (m *ProjectEditModal) isValid() bool {
 func (m *ProjectEditModal) nextField() (*ProjectEditModal, tea.Cmd) {
 	// In edit mode, skip ID field (index 0)
 	if m.isEdit {
-		if m.focusIndex == 1 {
-			m.focusIndex = 2
-		} else {
-			m.focusIndex = 1
-		}
+		m.focusIndex = 1
 	} else {
-		m.focusIndex = (m.focusIndex + 1) % 3
+		m.focusIndex = (m.focusIndex + 1) % 2
 	}
 	return m, m.updateFocus()
 }
@@ -122,15 +110,11 @@ func (m *ProjectEditModal) nextField() (*ProjectEditModal, tea.Cmd) {
 func (m *ProjectEditModal) prevField() (*ProjectEditModal, tea.Cmd) {
 	// In edit mode, skip ID field (index 0)
 	if m.isEdit {
-		if m.focusIndex == 2 {
-			m.focusIndex = 1
-		} else {
-			m.focusIndex = 2
-		}
+		m.focusIndex = 1
 	} else {
 		m.focusIndex--
 		if m.focusIndex < 0 {
-			m.focusIndex = 2
+			m.focusIndex = 1
 		}
 	}
 	return m, m.updateFocus()
@@ -139,15 +123,12 @@ func (m *ProjectEditModal) prevField() (*ProjectEditModal, tea.Cmd) {
 func (m *ProjectEditModal) updateFocus() tea.Cmd {
 	m.idInput.Blur()
 	m.nameInput.Blur()
-	m.descriptionInput.Blur()
 
 	switch m.focusIndex {
 	case 0:
 		m.idInput.Focus()
 	case 1:
 		m.nameInput.Focus()
-	case 2:
-		m.descriptionInput.Focus()
 	}
 
 	return textinput.Blink
@@ -163,9 +144,6 @@ func (m *ProjectEditModal) updateInputs(msg tea.Msg) (*ProjectEditModal, tea.Cmd
 	m.nameInput, cmd = m.nameInput.Update(msg)
 	cmds = append(cmds, cmd)
 
-	m.descriptionInput, cmd = m.descriptionInput.Update(msg)
-	cmds = append(cmds, cmd)
-
 	return m, tea.Batch(cmds...)
 }
 
@@ -173,12 +151,10 @@ func (m *ProjectEditModal) save() tea.Cmd {
 	return func() tea.Msg {
 		id := m.idInput.Value()
 		name := m.nameInput.Value()
-		description := m.descriptionInput.Value()
 
 		if m.isEdit {
 			updates := api.ProjectUpdate{
-				Name:        &name,
-				Description: &description,
+				Name: &name,
 			}
 			_, err := m.client.UpdateProject(m.project.ID, updates)
 			if err != nil {
@@ -187,7 +163,7 @@ func (m *ProjectEditModal) save() tea.Cmd {
 			return ProjectUpdatedMsg{}
 		}
 
-		_, err := m.client.CreateProject(id, name, description)
+		_, err := m.client.CreateProject(id, name)
 		if err != nil {
 			return projectEditErrMsg{err}
 		}
@@ -226,16 +202,6 @@ func (m *ProjectEditModal) View() string {
 		b.WriteString(focusedInputStyle.Render(m.nameInput.View()))
 	} else {
 		b.WriteString(inputStyle.Render(m.nameInput.View()))
-	}
-	b.WriteString("\n\n")
-
-	// Description field
-	b.WriteString(labelStyle.Render("Description:"))
-	b.WriteString("\n")
-	if m.focusIndex == 2 {
-		b.WriteString(focusedInputStyle.Render(m.descriptionInput.View()))
-	} else {
-		b.WriteString(inputStyle.Render(m.descriptionInput.View()))
 	}
 	b.WriteString("\n\n")
 
