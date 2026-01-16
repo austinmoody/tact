@@ -75,6 +75,7 @@ class OllamaProvider(LLMProvider):
                 confidence_work_type=float(data.get("confidence_work_type", 0)),
                 confidence_time_code=float(data.get("confidence_time_code", 0)),
                 confidence_overall=float(data.get("confidence_overall", 0)),
+                notes=data.get("notes"),
             )
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse Ollama response: {e}")

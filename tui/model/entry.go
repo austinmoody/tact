@@ -14,6 +14,7 @@ type Entry struct {
 	ConfidenceOverall  *float64 `json:"confidence_overall"`
 	Status             string   `json:"status"`
 	ParseError         *string  `json:"parse_error"`
+	ParseNotes         *string  `json:"parse_notes"`
 	ManuallyCorrect    bool     `json:"manually_corrected"`
 	Locked             bool     `json:"locked"`
 	CorrectedAt        *Time    `json:"corrected_at"`

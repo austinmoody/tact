@@ -14,6 +14,7 @@ class ParseResult:
     confidence_work_type: float = 0.0
     confidence_time_code: float = 0.0
     confidence_overall: float = 0.0
+    notes: str | None = None
     error: str | None = None
 
 

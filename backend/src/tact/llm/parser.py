@@ -89,6 +89,9 @@ class EntryParser:
         entry.parsed_at = datetime.now(UTC)
         entry.parse_error = None
 
+        # Build parse_notes from LLM reasoning and RAG context info
+        entry.parse_notes = self._build_parse_notes(result.notes, rag_contexts)
+
         # Set status based on required fields and confidence threshold
         # Entry is only "parsed" if both time_code and duration are set with
         # confidence above threshold. Work type is optional.
@@ -164,3 +167,41 @@ class EntryParser:
             ],
             rag_contexts=rag_contexts,
         )
+
+    def _build_parse_notes(
+        self, llm_notes: str | None, rag_contexts: list[RAGContext] | None
+    ) -> str | None:
+        """Build parse notes from LLM reasoning and RAG context info.
+
+        Args:
+            llm_notes: Notes/reasoning from the LLM
+            rag_contexts: RAG contexts that were used for parsing
+
+        Returns:
+            Combined notes string or None if no notes available
+        """
+        parts = []
+
+        # Add LLM reasoning
+        if llm_notes:
+            parts.append(llm_notes)
+
+        # Add info about closest RAG context if available
+        if rag_contexts:
+            # Get the highest similarity context
+            best_context = max(rag_contexts, key=lambda c: c.similarity)
+            source = (
+                f"time_code:{best_context.time_code_id}"
+                if best_context.time_code_id
+                else f"project:{best_context.project_id}"
+            )
+            context_info = (
+                f"[Context used: '{best_context.content[:100]}' "
+                f"({source}, similarity: {best_context.similarity:.2f})]"
+            )
+            parts.append(context_info)
+
+        if not parts:
+            return None
+
+        return " ".join(parts)

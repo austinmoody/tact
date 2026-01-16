@@ -32,6 +32,7 @@ class EntryResponse(BaseModel):
     confidence_overall: float | None
     status: str
     parse_error: str | None
+    parse_notes: str | None
     manually_corrected: bool
     locked: bool
     corrected_at: datetime | None

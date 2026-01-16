@@ -72,6 +72,7 @@ class TestParseResult:
         assert result.description is None
         assert result.confidence_duration == 0.0
         assert result.confidence_overall == 0.0
+        assert result.notes is None
         assert result.error is None
 
     def test_parse_result_with_values(self):
@@ -82,10 +83,12 @@ class TestParseResult:
             description="Coding",
             confidence_duration=0.95,
             confidence_overall=0.90,
+            notes="Matched based on 'alpha' keyword",
         )
         assert result.duration_minutes == 120
         assert result.time_code_id == "PROJ-001"
         assert result.confidence_overall == 0.90
+        assert result.notes == "Matched based on 'alpha' keyword"
 
 
 class TestOllamaProvider:
@@ -105,6 +108,7 @@ class TestOllamaProvider:
                 "confidence_time_code": 0.85,
                 "confidence_work_type": 0.90,
                 "confidence_overall": 0.85,
+                "notes": "Matched to PROJ-001 based on 'alpha' keyword",
             })
         }
 
@@ -114,6 +118,7 @@ class TestOllamaProvider:
         assert result.duration_minutes == 120
         assert result.time_code_id == "PROJ-001"
         assert result.work_type_id == "development"
+        assert result.notes == "Matched to PROJ-001 based on 'alpha' keyword"
         assert result.error is None
 
     def test_parse_float_duration_rounds_to_int(self, sample_context):
@@ -190,6 +195,7 @@ class TestAnthropicProvider:
                     "confidence_time_code": 0.85,
                     "confidence_work_type": 0.90,
                     "confidence_overall": 0.85,
+                    "notes": "Matched to PROJ-001 based on 'alpha' keyword",
                 })
             )
         ]
@@ -209,6 +215,7 @@ class TestAnthropicProvider:
         assert result.duration_minutes == 120
         assert result.time_code_id == "PROJ-001"
         assert result.work_type_id == "development"
+        assert result.notes == "Matched to PROJ-001 based on 'alpha' keyword"
         assert result.error is None
 
     def test_parse_float_duration_rounds_to_int(self, sample_context):
@@ -456,3 +463,108 @@ class TestEntryParser:
 
         assert result is True
         assert mock_entry.status == "needs_review"
+
+    def test_parse_entry_includes_notes(self):
+        """Test that parse_notes is set from LLM notes."""
+        mock_provider = MagicMock()
+        mock_provider.parse.return_value = ParseResult(
+            duration_minutes=120,
+            time_code_id="PROJ-001",
+            work_type_id="development",
+            description="Coding",
+            confidence_duration=0.95,
+            confidence_time_code=0.85,
+            confidence_work_type=0.90,
+            confidence_overall=0.85,
+            notes="Matched PROJ-001 based on 'alpha' keyword",
+        )
+
+        mock_entry = MagicMock()
+        mock_entry.id = "entry-with-notes"
+        mock_entry.raw_text = "2h coding on alpha"
+
+        mock_session = MagicMock()
+        mock_query_result = MagicMock()
+        mock_query_result.filter.return_value.all.return_value = []
+        mock_query_result.filter.return_value.first.return_value = None
+        mock_session.query.return_value = mock_query_result
+
+        parser = EntryParser(provider=mock_provider)
+        result = parser.parse_entry(mock_entry, mock_session)
+
+        assert result is True
+        assert mock_entry.parse_notes == "Matched PROJ-001 based on 'alpha' keyword"
+
+
+class TestBuildParseNotes:
+    """Tests for the _build_parse_notes helper method."""
+
+    def test_build_parse_notes_with_llm_notes_only(self):
+        """Test parse notes with only LLM reasoning."""
+        parser = EntryParser(provider=MagicMock())
+        notes = parser._build_parse_notes("Matched based on keyword", None)
+        assert notes == "Matched based on keyword"
+
+    def test_build_parse_notes_with_rag_context_only(self):
+        """Test parse notes with only RAG context."""
+        from tact.llm.provider import RAGContext
+
+        parser = EntryParser(provider=MagicMock())
+        rag_contexts = [
+            RAGContext(
+                content="ALL APHL meetings go to FEDS-163",
+                project_id=None,
+                time_code_id="FEDS-163",
+                similarity=0.85,
+            )
+        ]
+        notes = parser._build_parse_notes(None, rag_contexts)
+        assert "[Context used:" in notes
+        assert "FEDS-163" in notes
+        assert "0.85" in notes
+
+    def test_build_parse_notes_with_both(self):
+        """Test parse notes with both LLM notes and RAG context."""
+        from tact.llm.provider import RAGContext
+
+        parser = EntryParser(provider=MagicMock())
+        rag_contexts = [
+            RAGContext(
+                content="ALL APHL meetings go to FEDS-163",
+                project_id=None,
+                time_code_id="FEDS-163",
+                similarity=0.85,
+            )
+        ]
+        notes = parser._build_parse_notes("Used APHL rule", rag_contexts)
+        assert "Used APHL rule" in notes
+        assert "[Context used:" in notes
+
+    def test_build_parse_notes_empty(self):
+        """Test parse notes returns None when no info available."""
+        parser = EntryParser(provider=MagicMock())
+        notes = parser._build_parse_notes(None, None)
+        assert notes is None
+
+    def test_build_parse_notes_picks_highest_similarity(self):
+        """Test that highest similarity context is used."""
+        from tact.llm.provider import RAGContext
+
+        parser = EntryParser(provider=MagicMock())
+        rag_contexts = [
+            RAGContext(
+                content="Low similarity context",
+                project_id="proj-1",
+                time_code_id=None,
+                similarity=0.5,
+            ),
+            RAGContext(
+                content="High similarity context",
+                project_id=None,
+                time_code_id="TC-001",
+                similarity=0.9,
+            ),
+        ]
+        notes = parser._build_parse_notes(None, rag_contexts)
+        assert "High similarity context" in notes
+        assert "0.90" in notes

@@ -15,7 +15,8 @@ Instructions:
 3. Match to a work_type_id from the available list
 4. Generate a clean description of the work done
 5. Provide confidence scores (0.0 to 1.0) for each field
-6. IMPORTANT: If matching context rules are provided above, follow them carefully - \
+6. Provide brief reasoning notes explaining your matching decision
+7. IMPORTANT: If matching context rules are provided above, follow them carefully - \
 they contain project-specific categorization rules that override generic matching
 
 Respond with ONLY valid JSON in this exact format:
@@ -27,10 +28,12 @@ Respond with ONLY valid JSON in this exact format:
   "confidence_duration": <float 0-1>,
   "confidence_time_code": <float 0-1>,
   "confidence_work_type": <float 0-1>,
-  "confidence_overall": <float 0-1>
+  "confidence_overall": <float 0-1>,
+  "notes": "<string explaining reasoning for matches, especially which context rules applied>"
 }}
 
 If you cannot determine a field, set it to null and give low confidence.
+In notes, explain why you made each decision - especially mention which context rules influenced the match.
 Do not include any text outside the JSON object."""
 
 

@@ -132,6 +132,40 @@ func calculateInputWidth(termWidth int) int {
 	return available
 }
 
+// wrapText wraps text to fit within the specified width.
+// It breaks on word boundaries when possible.
+func wrapText(text string, width int) string {
+	if width <= 0 {
+		return text
+	}
+
+	var result strings.Builder
+	words := strings.Fields(text)
+	if len(words) == 0 {
+		return text
+	}
+
+	lineLen := 0
+	for i, word := range words {
+		wordLen := len(word)
+
+		if i == 0 {
+			result.WriteString(word)
+			lineLen = wordLen
+		} else if lineLen+1+wordLen <= width {
+			result.WriteString(" ")
+			result.WriteString(word)
+			lineLen += 1 + wordLen
+		} else {
+			result.WriteString("\n")
+			result.WriteString(word)
+			lineLen = wordLen
+		}
+	}
+
+	return result.String()
+}
+
 // Helper function to render a modal overlay
 func renderModalOverlay(background, modal string, width, height int) string {
 	// Simple overlay - just center the modal
