@@ -13,14 +13,16 @@ import (
 type EntryDetailModal struct {
 	client    *api.Client
 	entry     *model.Entry
+	width     int
 	reparsing bool
 	err       error
 }
 
-func NewEntryDetailModal(client *api.Client, entry *model.Entry) *EntryDetailModal {
+func NewEntryDetailModal(client *api.Client, entry *model.Entry, width int) *EntryDetailModal {
 	return &EntryDetailModal{
 		client: client,
 		entry:  entry,
+		width:  width,
 	}
 }
 
@@ -146,6 +148,26 @@ func (m *EntryDetailModal) View() string {
 	// Overall confidence
 	if m.entry.ConfidenceOverall != nil {
 		b.WriteString(fmt.Sprintf("\n  Overall Confidence: %.0f%%\n", *m.entry.ConfidenceOverall*100))
+	}
+
+	// Parse notes (LLM reasoning and context info)
+	if m.entry.ParseNotes != nil && *m.entry.ParseNotes != "" {
+		b.WriteString("\n")
+		b.WriteString(labelStyle.Render("Parse Notes:"))
+		b.WriteString("\n")
+		// Wrap notes to fit within modal width
+		// Modal has padding (2 each side) + border (1 each side) + indent (2)
+		wrapWidth := m.width - 10
+		if wrapWidth < 30 {
+			wrapWidth = 30
+		}
+		if wrapWidth > 70 {
+			wrapWidth = 70
+		}
+		wrapped := wrapText(*m.entry.ParseNotes, wrapWidth)
+		for _, line := range strings.Split(wrapped, "\n") {
+			b.WriteString("  " + line + "\n")
+		}
 	}
 
 	// Entry date

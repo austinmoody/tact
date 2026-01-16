@@ -359,7 +359,7 @@ func (a *App) updateHomeScreen(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case matchesKey(msg, keys.Enter):
 		if entry := a.home.SelectedEntry(); entry != nil {
 			a.selectedEntry = entry
-			a.entryDetail = NewEntryDetailModal(a.client, entry)
+			a.entryDetail = NewEntryDetailModal(a.client, entry, a.width)
 			a.modal = ModalEntryDetail
 		}
 		return a, nil

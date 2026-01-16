@@ -3,31 +3,31 @@
 ## Implementation Tasks
 
 ### Backend Database & Models
-- [ ] Create Alembic migration to add `parse_notes` column to `time_entries` table
-- [ ] Update `TimeEntry` model in `backend/src/tact/db/models.py`
-- [ ] Update `EntryResponse` schema in `backend/src/tact/schemas/entry.py`
+- [x] Create Alembic migration to add `parse_notes` column to `time_entries` table
+- [x] Update `TimeEntry` model in `backend/src/tact/db/models.py`
+- [x] Update `EntryResponse` schema in `backend/src/tact/schemas/entry.py`
 
 ### Backend LLM Integration
-- [ ] Update `ParseResult` in `backend/src/tact/llm/provider.py` to include `notes` field
-- [ ] Update LLM prompt in `backend/src/tact/llm/prompts.py` to request reasoning explanation
-- [ ] Update `OllamaProvider` in `backend/src/tact/llm/ollama.py` to parse notes from response
-- [ ] Update `AnthropicProvider` in `backend/src/tact/llm/anthropic.py` to parse notes from response
-- [ ] Update `EntryParser` in `backend/src/tact/llm/parser.py` to:
+- [x] Update `ParseResult` in `backend/src/tact/llm/provider.py` to include `notes` field
+- [x] Update LLM prompt in `backend/src/tact/llm/prompts.py` to request reasoning explanation
+- [x] Update `OllamaProvider` in `backend/src/tact/llm/ollama.py` to parse notes from response
+- [x] Update `AnthropicProvider` in `backend/src/tact/llm/anthropic.py` to parse notes from response
+- [x] Update `EntryParser` in `backend/src/tact/llm/parser.py` to:
   - Store LLM notes in entry
   - Append closest RAG context info to notes
 
 ### Backend Tests
-- [ ] Update `backend/tests/test_llm_parser.py` with parse_notes tests
-- [ ] Update any other affected tests
+- [x] Update `backend/tests/test_llm_parser.py` with parse_notes tests
+- [x] Update any other affected tests
 
 ### TUI
-- [ ] Update `tui/model/entry.go`: add `ParseNotes *string` field with json tag
-- [ ] Update `tui/ui/entry_detail.go`: display `parse_notes` after overall confidence section
+- [x] Update `tui/model/entry.go`: add `ParseNotes *string` field with json tag
+- [x] Update `tui/ui/entry_detail.go`: display `parse_notes` after overall confidence section
 - [ ] Consider using different styling for `needs_review` entries to highlight the notes
 
 ### Specs
-- [ ] Update `openspec/specs/llm-parsing/spec.md`
-- [ ] Update `openspec/specs/entries-api/spec.md`
+- [x] Update `openspec/specs/llm-parsing/spec.md`
+- [x] Update `openspec/specs/entries-api/spec.md`
 
 ## Verification
 

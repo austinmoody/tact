@@ -29,13 +29,19 @@ The API SHALL allow creating a new time entry via POST request. Only `raw_text` 
 
 ### Requirement: List Entries
 
-The API SHALL return entries with optional filtering and pagination.
+The API SHALL return entries with optional filtering, pagination, and parse notes included.
 
 #### Scenario: List all entries
 
 - Given: Multiple entries exist
 - When: GET `/entries` is called
 - Then: All entries are returned
+
+#### Scenario: List includes parse notes
+
+- Given: Multiple parsed entries exist
+- When: GET `/entries` is called
+- Then: Each entry in the response includes `parse_notes` field
 
 #### Scenario: Filter by status
 
@@ -69,13 +75,20 @@ The API SHALL return entries with optional filtering and pagination.
 
 ### Requirement: Get Single Entry
 
-The API SHALL return a single entry by ID.
+The API SHALL return a single entry by ID, including parse notes.
 
 #### Scenario: Entry exists
 
 - Given: An entry with a specific ID exists
 - When: GET `/entries/{id}` is called
 - Then: The entry is returned
+
+#### Scenario: Entry with parse notes
+
+- Given: An entry exists that has been parsed
+- When: GET `/entries/{id}` is called
+- Then: The response includes `parse_notes` field
+- And: `parse_notes` contains the LLM reasoning and context info from parsing
 
 #### Scenario: Entry not found
 

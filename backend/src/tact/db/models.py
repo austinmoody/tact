@@ -37,6 +37,7 @@ class TimeEntry(Base):
     # Status
     status: Mapped[str] = mapped_column(default="pending")
     parse_error: Mapped[str | None] = mapped_column(Text, default=None)
+    parse_notes: Mapped[str | None] = mapped_column(Text, default=None)
 
     # Correction tracking
     manually_corrected: Mapped[bool] = mapped_column(default=False)

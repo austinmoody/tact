@@ -156,7 +156,7 @@ The TUI SHALL display entry details in a modal view.
 #### Scenario: Entry detail contents
 
 - Given: The entry detail modal is open
-- Then: The following fields are displayed: raw_text, status, duration_minutes, time_code, work_type, description, confidence, entry_date
+- Then: The following fields are displayed: raw_text, status, duration_minutes, time_code, work_type, description, confidence, parse_notes, entry_date
 
 #### Scenario: Reparse entry
 
