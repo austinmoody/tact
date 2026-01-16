@@ -20,14 +20,14 @@ def create_entry(
     session: Session = Depends(get_session),
 ) -> EntryResponse:
     entry = TimeEntry(
-        raw_text=data.raw_text,
+        user_input=data.user_input,
         entry_date=data.entry_date if data.entry_date else date.today(),
         status="pending",
     )
     session.add(entry)
     session.commit()
     session.refresh(entry)
-    logger.info("Created entry %s: %s", entry.id, data.raw_text[:50])
+    logger.info("Created entry %s: %s", entry.id, data.user_input[:50])
     return EntryResponse.model_validate(entry)
 
 
@@ -116,7 +116,7 @@ def update_entry(
 def _create_learned_context(entry: TimeEntry, session: Session) -> None:
     """Create a context document from a manually corrected entry."""
     # Build the content from the entry
-    parts = [f'Example: "{entry.raw_text}"']
+    parts = [f'Example: "{entry.user_input}"']
 
     parsed_parts = []
     if entry.duration_minutes is not None:
@@ -174,7 +174,7 @@ def reparse_entry(
     entry.duration_minutes = None
     entry.work_type_id = None
     entry.time_code_id = None
-    entry.description = None
+    entry.parsed_description = None
     entry.confidence_duration = None
     entry.confidence_work_type = None
     entry.confidence_time_code = None

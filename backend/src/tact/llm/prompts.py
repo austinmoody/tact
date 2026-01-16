@@ -23,7 +23,7 @@ Respond with ONLY valid JSON in this exact format:
   "duration_minutes": <integer or null>,
   "time_code_id": "<string or null>",
   "work_type_id": "<string or null>",
-  "description": "<string or null>",
+  "parsed_description": "<string or null>",
   "confidence_duration": <float 0-1>,
   "confidence_time_code": <float 0-1>,
   "confidence_work_type": <float 0-1>,
@@ -69,6 +69,6 @@ def build_system_prompt(context: ParseContext) -> str:
     )
 
 
-def build_user_prompt(raw_text: str) -> str:
+def build_user_prompt(user_input: str) -> str:
     """Build the user prompt with the entry to parse."""
-    return f'Parse this time entry:\n"{raw_text}"'
+    return f'Parse this time entry:\n"{user_input}"'

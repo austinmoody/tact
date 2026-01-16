@@ -51,7 +51,7 @@ def test_reparse_entry_success(client):
     # Create an entry
     create_response = client.post(
         "/entries",
-        json={"raw_text": "2h coding on Project Alpha"},
+        json={"user_input": "2h coding on Project Alpha"},
     )
     assert create_response.status_code == 201
     entry_id = create_response.json()["id"]
@@ -84,7 +84,7 @@ def test_reparse_clears_all_parsed_fields(client):
     # Create an entry
     create_response = client.post(
         "/entries",
-        json={"raw_text": "test entry"},
+        json={"user_input": "test entry"},
     )
     entry_id = create_response.json()["id"]
 
@@ -93,7 +93,7 @@ def test_reparse_clears_all_parsed_fields(client):
         f"/entries/{entry_id}",
         json={
             "duration_minutes": 60,
-            "description": "Test description",
+            "parsed_description": "Test description",
             "status": "parsed",
         },
     )
@@ -106,7 +106,7 @@ def test_reparse_clears_all_parsed_fields(client):
     assert data["duration_minutes"] is None
     assert data["work_type_id"] is None
     assert data["time_code_id"] is None
-    assert data["description"] is None
+    assert data["parsed_description"] is None
     assert data["confidence_duration"] is None
     assert data["confidence_work_type"] is None
     assert data["confidence_time_code"] is None

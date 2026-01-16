@@ -69,11 +69,11 @@ def test_time_entry_create_and_query(db_session):
 
     # Create time entry
     entry = TimeEntry(
-        raw_text="2h dev on PROJ-001 fixing bugs",
+        user_input="2h dev on PROJ-001 fixing bugs",
         duration_minutes=120,
         work_type_id="dev",
         time_code_id="PROJ-001",
-        description="fixing bugs",
+        parsed_description="fixing bugs",
         entry_date=date(2026, 1, 10),
         status="parsed",
         confidence_overall=0.95,
@@ -83,7 +83,7 @@ def test_time_entry_create_and_query(db_session):
 
     result = db_session.query(TimeEntry).first()
     assert result is not None
-    assert result.raw_text == "2h dev on PROJ-001 fixing bugs"
+    assert result.user_input == "2h dev on PROJ-001 fixing bugs"
     assert result.duration_minutes == 120
     assert result.work_type_id == "dev"
     assert result.time_code_id == "PROJ-001"
@@ -97,7 +97,7 @@ def test_time_entry_foreign_key_constraint(db_session):
     # This should work since we're not enforcing FK in tests without pragma
     # But with our fixture, FKs are enabled
     entry = TimeEntry(
-        raw_text="test entry",
+        user_input="test entry",
         work_type_id="nonexistent",
     )
     db_session.add(entry)

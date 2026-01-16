@@ -57,9 +57,9 @@ class TestPrompts:
         assert "(none defined)" in prompt
 
     def test_build_user_prompt(self):
-        raw_text = "2h coding on alpha"
-        prompt = build_user_prompt(raw_text)
-        assert raw_text in prompt
+        user_input = "2h coding on alpha"
+        prompt = build_user_prompt(user_input)
+        assert user_input in prompt
         assert "Parse this time entry" in prompt
 
 
@@ -69,7 +69,7 @@ class TestParseResult:
         assert result.duration_minutes is None
         assert result.work_type_id is None
         assert result.time_code_id is None
-        assert result.description is None
+        assert result.parsed_description is None
         assert result.confidence_duration == 0.0
         assert result.confidence_overall == 0.0
         assert result.error is None
@@ -79,7 +79,7 @@ class TestParseResult:
             duration_minutes=120,
             time_code_id="PROJ-001",
             work_type_id="development",
-            description="Coding",
+            parsed_description="Coding",
             confidence_duration=0.95,
             confidence_overall=0.90,
         )
@@ -100,7 +100,7 @@ class TestOllamaProvider:
                 "duration_minutes": 120,
                 "time_code_id": "PROJ-001",
                 "work_type_id": "development",
-                "description": "Working on alpha",
+                "parsed_description": "Working on alpha",
                 "confidence_duration": 0.95,
                 "confidence_time_code": 0.85,
                 "confidence_work_type": 0.90,
@@ -128,7 +128,7 @@ class TestOllamaProvider:
                 "duration_minutes": 127.5,
                 "time_code_id": "PROJ-001",
                 "work_type_id": "development",
-                "description": "Working on alpha",
+                "parsed_description": "Working on alpha",
                 "confidence_duration": 0.95,
                 "confidence_time_code": 0.85,
                 "confidence_work_type": 0.90,
@@ -185,7 +185,7 @@ class TestAnthropicProvider:
                     "duration_minutes": 120,
                     "time_code_id": "PROJ-001",
                     "work_type_id": "development",
-                    "description": "Working on alpha",
+                    "parsed_description": "Working on alpha",
                     "confidence_duration": 0.95,
                     "confidence_time_code": 0.85,
                     "confidence_work_type": 0.90,
@@ -222,7 +222,7 @@ class TestAnthropicProvider:
                     "duration_minutes": 127.5,
                     "time_code_id": "PROJ-001",
                     "work_type_id": "development",
-                    "description": "Working on alpha",
+                    "parsed_description": "Working on alpha",
                     "confidence_duration": 0.95,
                     "confidence_time_code": 0.85,
                     "confidence_work_type": 0.90,
@@ -291,7 +291,7 @@ class TestEntryParser:
             duration_minutes=120,
             time_code_id="PROJ-001",
             work_type_id="development",
-            description="Coding",
+            parsed_description="Coding",
             confidence_duration=0.95,
             confidence_time_code=0.85,
             confidence_work_type=0.90,
@@ -300,7 +300,7 @@ class TestEntryParser:
 
         mock_entry = MagicMock()
         mock_entry.id = "entry-123"
-        mock_entry.raw_text = "2h coding on alpha"
+        mock_entry.user_input = "2h coding on alpha"
 
         mock_session = MagicMock()
         mock_query_result = MagicMock()
@@ -322,7 +322,7 @@ class TestEntryParser:
 
         mock_entry = MagicMock()
         mock_entry.id = "entry-123"
-        mock_entry.raw_text = "invalid"
+        mock_entry.user_input = "invalid"
 
         mock_session = MagicMock()
         mock_query_result = MagicMock()
@@ -344,7 +344,7 @@ class TestEntryParser:
             duration_minutes=60,
             time_code_id=None,  # Missing time code
             work_type_id="development",
-            description="Some work",
+            parsed_description="Some work",
             confidence_duration=0.9,
             confidence_time_code=0.3,
             confidence_work_type=0.8,
@@ -353,7 +353,7 @@ class TestEntryParser:
 
         mock_entry = MagicMock()
         mock_entry.id = "entry-456"
-        mock_entry.raw_text = "did some work"
+        mock_entry.user_input = "did some work"
 
         mock_session = MagicMock()
         mock_query_result = MagicMock()
@@ -374,7 +374,7 @@ class TestEntryParser:
             duration_minutes=None,  # Missing duration
             time_code_id="PROJ-001",
             work_type_id="development",
-            description="Some work",
+            parsed_description="Some work",
             confidence_duration=0.3,
             confidence_time_code=0.9,
             confidence_work_type=0.8,
@@ -383,7 +383,7 @@ class TestEntryParser:
 
         mock_entry = MagicMock()
         mock_entry.id = "entry-789"
-        mock_entry.raw_text = "worked on project"
+        mock_entry.user_input = "worked on project"
 
         mock_session = MagicMock()
         mock_query_result = MagicMock()
@@ -404,7 +404,7 @@ class TestEntryParser:
             duration_minutes=60,
             time_code_id="PROJ-001",  # Has value but low confidence
             work_type_id="development",
-            description="Some work",
+            parsed_description="Some work",
             confidence_duration=0.9,
             confidence_time_code=0.5,  # Below 0.7 threshold
             confidence_work_type=0.8,
@@ -413,7 +413,7 @@ class TestEntryParser:
 
         mock_entry = MagicMock()
         mock_entry.id = "entry-low-conf"
-        mock_entry.raw_text = "maybe worked on project"
+        mock_entry.user_input = "maybe worked on project"
 
         mock_session = MagicMock()
         mock_query_result = MagicMock()
@@ -434,7 +434,7 @@ class TestEntryParser:
             duration_minutes=60,  # Has value but low confidence
             time_code_id="PROJ-001",
             work_type_id="development",
-            description="Some work",
+            parsed_description="Some work",
             confidence_duration=0.5,  # Below 0.7 threshold
             confidence_time_code=0.9,
             confidence_work_type=0.8,
@@ -443,7 +443,7 @@ class TestEntryParser:
 
         mock_entry = MagicMock()
         mock_entry.id = "entry-low-dur-conf"
-        mock_entry.raw_text = "worked some time on project"
+        mock_entry.user_input = "worked some time on project"
 
         mock_session = MagicMock()
         mock_query_result = MagicMock()

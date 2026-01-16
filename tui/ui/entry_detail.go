@@ -80,10 +80,10 @@ func (m *EntryDetailModal) View() string {
 	b.WriteString(modalTitleStyle.Render("Entry Details"))
 	b.WriteString("\n\n")
 
-	// Raw text
-	b.WriteString(labelStyle.Render("Raw Text:"))
+	// User input
+	b.WriteString(labelStyle.Render("User Input:"))
 	b.WriteString("\n")
-	b.WriteString("  " + m.entry.RawText)
+	b.WriteString("  " + m.entry.UserInput)
 	b.WriteString("\n\n")
 
 	// Status
@@ -138,9 +138,9 @@ func (m *EntryDetailModal) View() string {
 		b.WriteString("  Work Type: -\n")
 	}
 
-	// Description
-	if m.entry.Description != nil && *m.entry.Description != "" {
-		b.WriteString(fmt.Sprintf("  Description: %s\n", *m.entry.Description))
+	// Parsed Description
+	if m.entry.ParsedDescription != nil && *m.entry.ParsedDescription != "" {
+		b.WriteString(fmt.Sprintf("  Description: %s\n", *m.entry.ParsedDescription))
 	}
 
 	// Overall confidence

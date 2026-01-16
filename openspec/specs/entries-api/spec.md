@@ -5,25 +5,25 @@ TBD - created by archiving change add-entries-api. Update Purpose after archive.
 ## Requirements
 ### Requirement: Create Entry
 
-The API SHALL allow creating a new time entry via POST request. Only `raw_text` is required. Entry date defaults to today if not specified. Status is set to `pending`.
+The API SHALL allow creating a new time entry via POST request. Only `user_input` is required. Entry date defaults to today if not specified. Status is set to `pending`.
 
-#### Scenario: Successful creation with raw_text only
+#### Scenario: Successful creation with user_input only
 
-- Given: A payload with only `raw_text`
+- Given: A payload with only `user_input`
 - When: POST `/entries` is called
 - Then: The entry is created with `status="pending"` and `entry_date` set to today
 - And: HTTP 201 is returned with the created entry including generated UUID
 
 #### Scenario: Successful creation with entry_date specified
 
-- Given: A payload with `raw_text` and `entry_date`
+- Given: A payload with `user_input` and `entry_date`
 - When: POST `/entries` is called
 - Then: The entry is created with the specified `entry_date`
 - And: HTTP 201 is returned
 
-#### Scenario: Missing raw_text
+#### Scenario: Missing user_input
 
-- Given: A payload without `raw_text`
+- Given: A payload without `user_input`
 - When: POST `/entries` is called
 - Then: HTTP 422 is returned with validation error
 
@@ -89,41 +89,12 @@ The API SHALL allow partial updates to an entry via PATCH request. Updates mark 
 
 #### Scenario: Successful update with learning enabled
 
-- Given: An entry exists with raw_text "2h standup meeting"
+- Given: An entry exists with user_input "2h standup meeting"
 - When: PATCH `/entries/{id}` is called with `time_code_id="PROJ-DEV"` and `work_type_id="meetings"`
 - Then: The entry is updated with the specified fields
 - And: `manually_corrected` is set to `true`
 - And: A context document is created for time code "PROJ-DEV"
 - And: HTTP 200 is returned with the updated entry
-
-#### Scenario: Update with learning disabled
-
-- Given: An entry exists
-- When: PATCH `/entries/{id}?learn=false` is called with updated fields
-- Then: The entry is updated
-- And: `manually_corrected` is set to `true`
-- And: No context document is created
-- And: HTTP 200 is returned
-
-#### Scenario: Update without time_code_id does not learn
-
-- Given: An entry exists without a time_code_id
-- When: PATCH `/entries/{id}` is called with only `duration_minutes=60`
-- Then: The entry is updated
-- And: No context document is created (no time code to associate with)
-- And: HTTP 200 is returned
-
-#### Scenario: Update entry_date
-
-- Given: An entry exists with entry_date "2026-01-01"
-- When: PATCH `/entries/{id}` is called with `entry_date="2026-01-15"`
-- Then: The entry_date is updated to "2026-01-15"
-
-#### Scenario: Update non-existent entry
-
-- Given: No entry with ID "unknown-uuid" exists
-- When: PATCH `/entries/unknown-uuid` is called
-- Then: HTTP 404 is returned
 
 ### Requirement: Delete Entry
 

@@ -15,7 +15,7 @@ class TimeEntry(Base):
     __tablename__ = "time_entries"
 
     id: Mapped[str] = mapped_column(primary_key=True, default=lambda: str(uuid.uuid4()))
-    raw_text: Mapped[str] = mapped_column(Text, nullable=False)
+    user_input: Mapped[str] = mapped_column(Text, nullable=False)
 
     # Parsed fields
     duration_minutes: Mapped[int | None] = mapped_column(default=None)
@@ -25,7 +25,7 @@ class TimeEntry(Base):
     time_code_id: Mapped[str | None] = mapped_column(
         ForeignKey("time_codes.id"), default=None
     )
-    description: Mapped[str | None] = mapped_column(Text, default=None)
+    parsed_description: Mapped[str | None] = mapped_column(Text, default=None)
     entry_date: Mapped[date | None] = mapped_column(default=None)
 
     # Confidence scores

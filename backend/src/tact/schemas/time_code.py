@@ -7,7 +7,7 @@ class TimeCodeCreate(BaseModel):
     id: str
     project_id: str
     name: str
-    description: str
+    description: str = ""
     keywords: list[str] = []
     examples: list[str] = []
 

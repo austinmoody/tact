@@ -63,14 +63,14 @@ def client(db_session):
 
 # Create tests
 
-def test_create_entry_raw_text_only(client):
+def test_create_entry_user_input_only(client):
     response = client.post(
         "/entries",
-        json={"raw_text": "2h coding on Project Alpha"},
+        json={"user_input": "2h coding on Project Alpha"},
     )
     assert response.status_code == 201
     data = response.json()
-    assert data["raw_text"] == "2h coding on Project Alpha"
+    assert data["user_input"] == "2h coding on Project Alpha"
     assert data["status"] == "pending"
     assert data["entry_date"] == str(date.today())
     assert data["id"] is not None
@@ -80,14 +80,14 @@ def test_create_entry_raw_text_only(client):
 def test_create_entry_with_entry_date(client):
     response = client.post(
         "/entries",
-        json={"raw_text": "1h meeting", "entry_date": "2026-01-09"},
+        json={"user_input": "1h meeting", "entry_date": "2026-01-09"},
     )
     assert response.status_code == 201
     data = response.json()
     assert data["entry_date"] == "2026-01-09"
 
 
-def test_create_entry_missing_raw_text(client):
+def test_create_entry_missing_user_input(client):
     response = client.post("/entries", json={})
     assert response.status_code == 422
 
@@ -95,8 +95,8 @@ def test_create_entry_missing_raw_text(client):
 # List tests
 
 def test_list_entries_all(client):
-    client.post("/entries", json={"raw_text": "Entry 1"})
-    client.post("/entries", json={"raw_text": "Entry 2"})
+    client.post("/entries", json={"user_input": "Entry 1"})
+    client.post("/entries", json={"user_input": "Entry 2"})
     response = client.get("/entries")
     assert response.status_code == 200
     data = response.json()
@@ -104,7 +104,7 @@ def test_list_entries_all(client):
 
 
 def test_list_entries_filter_status(client):
-    client.post("/entries", json={"raw_text": "Entry 1"})
+    client.post("/entries", json={"user_input": "Entry 1"})
     response = client.get("/entries?status=pending")
     assert response.status_code == 200
     data = response.json()
@@ -117,9 +117,9 @@ def test_list_entries_filter_status(client):
 
 
 def test_list_entries_filter_date_range(client):
-    client.post("/entries", json={"raw_text": "Entry 1", "entry_date": "2026-01-10"})
-    client.post("/entries", json={"raw_text": "Entry 2", "entry_date": "2026-01-15"})
-    client.post("/entries", json={"raw_text": "Entry 3", "entry_date": "2026-01-20"})
+    client.post("/entries", json={"user_input": "Entry 1", "entry_date": "2026-01-10"})
+    client.post("/entries", json={"user_input": "Entry 2", "entry_date": "2026-01-15"})
+    client.post("/entries", json={"user_input": "Entry 3", "entry_date": "2026-01-20"})
 
     response = client.get("/entries?from_date=2026-01-12&to_date=2026-01-18")
     assert response.status_code == 200
@@ -130,7 +130,7 @@ def test_list_entries_filter_date_range(client):
 
 def test_list_entries_pagination(client):
     for i in range(5):
-        client.post("/entries", json={"raw_text": f"Entry {i}"})
+        client.post("/entries", json={"user_input": f"Entry {i}"})
 
     response = client.get("/entries?limit=2&offset=0")
     assert response.status_code == 200
@@ -144,7 +144,7 @@ def test_list_entries_pagination(client):
 # Get single entry tests
 
 def test_get_entry_exists(client):
-    create_response = client.post("/entries", json={"raw_text": "Test entry"})
+    create_response = client.post("/entries", json={"user_input": "Test entry"})
     entry_id = create_response.json()["id"]
 
     response = client.get(f"/entries/{entry_id}")
@@ -160,7 +160,7 @@ def test_get_entry_not_found(client):
 # Update tests
 
 def test_update_entry_success(client):
-    create_response = client.post("/entries", json={"raw_text": "Original"})
+    create_response = client.post("/entries", json={"user_input": "Original"})
     entry_id = create_response.json()["id"]
 
     response = client.patch(
@@ -174,13 +174,13 @@ def test_update_entry_success(client):
 
 
 def test_update_entry_sets_manually_corrected(client):
-    create_response = client.post("/entries", json={"raw_text": "Original"})
+    create_response = client.post("/entries", json={"user_input": "Original"})
     entry_id = create_response.json()["id"]
     assert create_response.json()["manually_corrected"] is False
 
     response = client.patch(
         f"/entries/{entry_id}",
-        json={"description": "Updated description"},
+        json={"parsed_description": "Updated description"},
     )
     assert response.status_code == 200
     assert response.json()["manually_corrected"] is True
@@ -194,7 +194,7 @@ def test_update_entry_not_found(client):
 # Delete tests
 
 def test_delete_entry_success(client):
-    create_response = client.post("/entries", json={"raw_text": "To be deleted"})
+    create_response = client.post("/entries", json={"user_input": "To be deleted"})
     entry_id = create_response.json()["id"]
 
     response = client.delete(f"/entries/{entry_id}")
@@ -232,7 +232,7 @@ def test_update_entry_with_learn_creates_context(client, db_session):
     session.close()
 
     # Create an entry
-    create_response = client.post("/entries", json={"raw_text": "2h standup meeting"})
+    create_response = client.post("/entries", json={"user_input": "2h standup meeting"})
     entry_id = create_response.json()["id"]
 
     # Update with time_code_id (learn=true by default)
@@ -275,7 +275,7 @@ def test_update_entry_with_learn_false_no_context(client, db_session):
     session.close()
 
     # Create an entry
-    create_response = client.post("/entries", json={"raw_text": "2h coding"})
+    create_response = client.post("/entries", json={"user_input": "2h coding"})
     entry_id = create_response.json()["id"]
 
     # Update with learn=false
@@ -300,7 +300,7 @@ def test_update_entry_with_learn_false_no_context(client, db_session):
 def test_update_entry_without_time_code_no_context(client, db_session):
     """Test that updating entry without time_code_id does not create context."""
     # Create an entry
-    create_response = client.post("/entries", json={"raw_text": "2h work"})
+    create_response = client.post("/entries", json={"user_input": "2h work"})
     entry_id = create_response.json()["id"]
 
     # Update without time_code_id
@@ -334,7 +334,7 @@ def test_update_entry_context_format_duration_only(client, db_session):
     session.close()
 
     # Create an entry
-    create_response = client.post("/entries", json={"raw_text": "30m quick fix"})
+    create_response = client.post("/entries", json={"user_input": "30m quick fix"})
     entry_id = create_response.json()["id"]
 
     # Update with only duration (no work_type_id)
