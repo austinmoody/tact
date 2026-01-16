@@ -28,10 +28,10 @@ class TactClient:
     # --- Entries ---
 
     def create_entry(
-        self, raw_text: str, entry_date: date | None = None
+        self, user_input: str, entry_date: date | None = None
     ) -> dict[str, Any]:
         """Create a new time entry."""
-        data: dict[str, Any] = {"raw_text": raw_text}
+        data: dict[str, Any] = {"user_input": user_input}
         if entry_date:
             data["entry_date"] = entry_date.isoformat()
         response = self._client.post("/entries", json=data)

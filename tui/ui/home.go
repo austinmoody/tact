@@ -179,20 +179,20 @@ func (h *Home) renderEntryLine(index int, entry model.Entry) string {
 		style = selectedItemStyle
 	}
 
-	// Truncate raw text if too long
-	rawText := entry.RawText
+	// Truncate user input if too long
+	userInput := entry.UserInput
 	maxLen := h.width - 20
 	if maxLen < 20 {
 		maxLen = 20
 	}
-	if len(rawText) > maxLen {
-		rawText = rawText[:maxLen-3] + "..."
+	if len(userInput) > maxLen {
+		userInput = userInput[:maxLen-3] + "..."
 	}
 
 	// Status with color
 	status := h.renderStatus(entry.Status)
 
-	line := fmt.Sprintf("%s%-*s  %s", cursor, maxLen, rawText, status)
+	line := fmt.Sprintf("%s%-*s  %s", cursor, maxLen, userInput, status)
 	return style.Render(line)
 }
 

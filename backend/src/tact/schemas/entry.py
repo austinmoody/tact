@@ -4,27 +4,27 @@ from pydantic import BaseModel
 
 
 class EntryCreate(BaseModel):
-    raw_text: str
+    user_input: str
     entry_date: date | None = None
 
 
 class EntryUpdate(BaseModel):
-    raw_text: str | None = None
+    user_input: str | None = None
     duration_minutes: int | None = None
     work_type_id: str | None = None
     time_code_id: str | None = None
-    description: str | None = None
+    parsed_description: str | None = None
     entry_date: date | None = None
     status: str | None = None
 
 
 class EntryResponse(BaseModel):
     id: str
-    raw_text: str
+    user_input: str
     duration_minutes: int | None
     work_type_id: str | None
     time_code_id: str | None
-    description: str | None
+    parsed_description: str | None
     entry_date: date | None
     confidence_duration: float | None
     confidence_work_type: float | None

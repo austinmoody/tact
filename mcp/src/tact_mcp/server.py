@@ -47,7 +47,7 @@ async def list_tools() -> list[Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "raw_text": {
+                    "user_input": {
                         "type": "string",
                         "description": "Natural language description (e.g., '2 hours development on Project Alpha')",
                     },
@@ -56,7 +56,7 @@ async def list_tools() -> list[Tool]:
                         "description": "Optional date in YYYY-MM-DD format",
                     },
                 },
-                "required": ["raw_text"],
+                "required": ["user_input"],
             },
         ),
         Tool(
@@ -129,9 +129,9 @@ async def list_tools() -> list[Tool]:
                         "type": "string",
                         "description": "Work type ID",
                     },
-                    "description": {
+                    "parsed_description": {
                         "type": "string",
-                        "description": "Entry description",
+                        "description": "Parsed description of the work done",
                     },
                     "entry_date": {
                         "type": "string",
@@ -550,7 +550,7 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
             entry_date = None
             if arguments.get("entry_date"):
                 entry_date = date.fromisoformat(arguments["entry_date"])
-            result = client.create_entry(arguments["raw_text"], entry_date)
+            result = client.create_entry(arguments["user_input"], entry_date)
             return json_response(result)
 
         elif name == "list_entries":

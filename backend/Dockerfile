@@ -10,8 +10,9 @@ RUN uv sync --frozen --no-dev --no-install-project
 COPY src/ ./src/
 COPY alembic/ ./alembic/
 COPY alembic.ini ./
-RUN uv sync --frozen --no-dev
+COPY entrypoint.sh ./
+RUN uv sync --frozen --no-dev && chmod +x entrypoint.sh
 
 EXPOSE 2100
 
-CMD ["uv", "run", "uvicorn", "tact.main:app", "--host", "0.0.0.0", "--port", "2100"]
+CMD ["./entrypoint.sh"]

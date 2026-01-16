@@ -30,10 +30,10 @@ class OllamaProvider(LLMProvider):
         )
         self.client = httpx.Client(timeout=self.timeout)
 
-    def parse(self, raw_text: str, context: ParseContext) -> ParseResult:
-        """Parse raw text using Ollama."""
+    def parse(self, user_input: str, context: ParseContext) -> ParseResult:
+        """Parse user input using Ollama."""
         system_prompt = build_system_prompt(context)
-        user_prompt = build_user_prompt(raw_text)
+        user_prompt = build_user_prompt(user_input)
 
         try:
             response = self.client.post(
@@ -70,7 +70,7 @@ class OllamaProvider(LLMProvider):
                 duration_minutes=duration,
                 work_type_id=data.get("work_type_id"),
                 time_code_id=data.get("time_code_id"),
-                description=data.get("description"),
+                parsed_description=data.get("parsed_description"),
                 confidence_duration=float(data.get("confidence_duration", 0)),
                 confidence_work_type=float(data.get("confidence_work_type", 0)),
                 confidence_time_code=float(data.get("confidence_time_code", 0)),

@@ -9,7 +9,7 @@ class ParseResult:
     duration_minutes: int | None = None
     work_type_id: str | None = None
     time_code_id: str | None = None
-    description: str | None = None
+    parsed_description: str | None = None
     confidence_duration: float = 0.0
     confidence_work_type: float = 0.0
     confidence_time_code: float = 0.0
@@ -59,11 +59,11 @@ class LLMProvider(ABC):
     """Abstract base class for LLM providers."""
 
     @abstractmethod
-    def parse(self, raw_text: str, context: ParseContext) -> ParseResult:
-        """Parse raw text into structured entry fields.
+    def parse(self, user_input: str, context: ParseContext) -> ParseResult:
+        """Parse user input into structured entry fields.
 
         Args:
-            raw_text: The raw time entry text to parse
+            user_input: The user's natural language time entry text to parse
             context: Available time codes and work types
 
         Returns:

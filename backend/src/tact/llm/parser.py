@@ -64,12 +64,12 @@ class EntryParser:
             True if parsing succeeded, False otherwise
         """
         # Retrieve RAG context before building parse context
-        rag_contexts = self._retrieve_rag_context(entry.raw_text, session)
+        rag_contexts = self._retrieve_rag_context(entry.user_input, session)
         context = self._build_context(session, rag_contexts)
 
-        logger.info(f"Parsing entry {entry.id}: {entry.raw_text[:50]}...")
+        logger.info(f"Parsing entry {entry.id}: {entry.user_input[:50]}...")
 
-        result = self.provider.parse(entry.raw_text, context)
+        result = self.provider.parse(entry.user_input, context)
 
         if result.error:
             entry.status = "failed"
@@ -81,7 +81,7 @@ class EntryParser:
         entry.duration_minutes = result.duration_minutes
         entry.work_type_id = result.work_type_id
         entry.time_code_id = result.time_code_id
-        entry.description = result.description
+        entry.parsed_description = result.parsed_description
         entry.confidence_duration = result.confidence_duration
         entry.confidence_work_type = result.confidence_work_type
         entry.confidence_time_code = result.confidence_time_code

@@ -84,8 +84,8 @@ func (c *Client) FetchEntries(limit int) ([]model.Entry, error) {
 	return entries, nil
 }
 
-func (c *Client) CreateEntry(rawText string) (*model.Entry, error) {
-	body := map[string]string{"raw_text": rawText}
+func (c *Client) CreateEntry(userInput string) (*model.Entry, error) {
+	body := map[string]string{"user_input": userInput}
 	jsonBody, err := json.Marshal(body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)

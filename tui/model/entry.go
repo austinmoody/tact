@@ -2,11 +2,11 @@ package model
 
 type Entry struct {
 	ID                 string   `json:"id"`
-	RawText            string   `json:"raw_text"`
+	UserInput          string   `json:"user_input"`
 	DurationMinutes    *int     `json:"duration_minutes"`
 	WorkTypeID         *string  `json:"work_type_id"`
 	TimeCodeID         *string  `json:"time_code_id"`
-	Description        *string  `json:"description"`
+	ParsedDescription  *string  `json:"parsed_description"`
 	EntryDate          string   `json:"entry_date"`
 	ConfidenceDuration *float64 `json:"confidence_duration"`
 	ConfidenceWorkType *float64 `json:"confidence_work_type"`
