@@ -471,7 +471,7 @@ class TestEntryParser:
             duration_minutes=120,
             time_code_id="PROJ-001",
             work_type_id="development",
-            description="Coding",
+            parsed_description="Coding",
             confidence_duration=0.95,
             confidence_time_code=0.85,
             confidence_work_type=0.90,
@@ -481,7 +481,7 @@ class TestEntryParser:
 
         mock_entry = MagicMock()
         mock_entry.id = "entry-with-notes"
-        mock_entry.raw_text = "2h coding on alpha"
+        mock_entry.user_input = "2h coding on alpha"
 
         mock_session = MagicMock()
         mock_query_result = MagicMock()
