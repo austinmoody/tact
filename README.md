@@ -9,6 +9,7 @@
 - **backend/** - FastAPI REST API (Python)
 - **tui/** - Terminal UI dashboard (Go/Bubbletea)
 - **mcp/** - MCP server for AI assistants (Python)
+- **macos/** - Native macOS timer app (Swift/AppKit)
 
 ## Quick Start
 
@@ -125,3 +126,50 @@ The TUI connects to the backend API. Configure the URL via:
 | `Enter` | Save / Submit |
 | `Ctrl+S` | Save (in context editor) |
 | `Esc` | Cancel / Close |
+
+## macOS App (Tact Timer)
+
+A native macOS app for quick timer-based time tracking. Lives in the Dock for easy access.
+
+### Requirements
+
+- macOS 13.0+
+- Xcode 15+ (for building)
+
+### Build & Run
+
+```bash
+# Open in Xcode
+open macos/TactTimer/TactTimer.xcodeproj
+
+# Build and run with Cmd+R
+```
+
+Or build from command line:
+
+```bash
+cd macos/TactTimer
+xcodebuild -scheme TactTimer -configuration Debug build
+```
+
+### Features
+
+- **Timer List Window**: Shows on launch, displays all active timers with live elapsed time
+- **Multiple Timers**: Run multiple concurrent timers (only one active at a time, others paused)
+- **Quick Start**: Click "+ New Timer" or use Cmd+N to start tracking
+- **Dock Menu**: Right-click the dock icon for quick access to timers and preferences
+- **Auto-Pause**: Starting a new timer automatically pauses the current one
+- **API Integration**: Stopping a timer saves the entry to the Tact backend
+- **Persistence**: Timers survive app restarts
+
+### Configuration
+
+Open Preferences (Cmd+,) to set the API URL. Default: `http://localhost:2100`
+
+### Usage
+
+1. Start the backend API (`make run`)
+2. Launch Tact Timer
+3. Click "+ New Timer" and enter a description
+4. Work on your task
+5. Click "Stop" when done - the entry is saved to the backend with the elapsed duration
