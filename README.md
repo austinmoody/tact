@@ -160,7 +160,8 @@ xcodebuild -scheme TactTimer -configuration Debug build
 - **Dock Menu**: Right-click the dock icon for quick access to timers and preferences
 - **Auto-Pause**: Starting a new timer automatically pauses the current one
 - **API Integration**: Stopping a timer saves the entry to the Tact backend
-- **Persistence**: Timers survive app restarts
+- **Completed Today**: Stopped timers remain visible for quick restart with "Start New"
+- **Persistence**: Timers survive app restarts; old completed timers auto-cleanup daily
 
 ### Configuration
 

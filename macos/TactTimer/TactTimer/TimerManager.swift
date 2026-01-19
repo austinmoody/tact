@@ -7,7 +7,7 @@ class TimerManager: ObservableObject {
     @Published private(set) var timers: [TactTimer] = []
 
     var hasActiveTimers: Bool {
-        !timers.isEmpty
+        !activeTimers.isEmpty
     }
 
     var runningTimer: TactTimer? {
@@ -15,11 +15,25 @@ class TimerManager: ObservableObject {
     }
 
     var timerCount: Int {
-        timers.count
+        activeTimers.count
     }
 
     var runningCount: Int {
         timers.filter { $0.state == .running }.count
+    }
+
+    /// Active timers (running or paused)
+    var activeTimers: [TactTimer] {
+        timers.filter { $0.state == .running || $0.state == .paused }
+    }
+
+    /// Completed timers from today only
+    var completedTodayTimers: [TactTimer] {
+        let startOfToday = Calendar.current.startOfDay(for: Date())
+        return timers.filter { timer in
+            guard timer.state == .stopped, let stoppedAt = timer.stoppedAt else { return false }
+            return stoppedAt >= startOfToday
+        }
     }
 
     init() {
@@ -63,15 +77,15 @@ class TimerManager: ObservableObject {
     }
 
     func stopTimer(id: UUID, completion: @escaping (Result<Void, Error>) -> Void) {
-        guard let timer = timers.first(where: { $0.id == id }) else {
+        guard let index = timers.firstIndex(where: { $0.id == id }) else {
             completion(.failure(TimerError.notFound))
             return
         }
 
         // Format the time entry
         let formattedEntry = TimeFormatter.formatEntry(
-            seconds: timer.totalElapsedSeconds,
-            description: timer.description
+            seconds: timers[index].totalElapsedSeconds,
+            description: timers[index].description
         )
 
         // Call API to create entry
@@ -79,7 +93,9 @@ class TimerManager: ObservableObject {
             DispatchQueue.main.async {
                 switch result {
                 case .success:
-                    self?.removeTimer(id: id)
+                    // Mark as stopped instead of removing
+                    self?.timers[index].stop()
+                    self?.save()
                     completion(.success(()))
                 case .failure(let error):
                     completion(.failure(error))
@@ -108,7 +124,17 @@ class TimerManager: ObservableObject {
         guard let data = UserDefaults.standard.data(forKey: Self.storageKey) else { return }
 
         do {
-            timers = try JSONDecoder().decode([TactTimer].self, from: data)
+            var loadedTimers = try JSONDecoder().decode([TactTimer].self, from: data)
+
+            // Clean up completed timers from previous days
+            let startOfToday = Calendar.current.startOfDay(for: Date())
+            loadedTimers.removeAll { timer in
+                guard timer.state == .stopped, let stoppedAt = timer.stoppedAt else { return false }
+                return stoppedAt < startOfToday
+            }
+
+            timers = loadedTimers
+            save() // Persist the cleanup
         } catch {
             print("Failed to load timers: \(error)")
             timers = []
