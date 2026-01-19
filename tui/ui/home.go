@@ -11,27 +11,30 @@ import (
 
 	"tact-tui/api"
 	"tact-tui/model"
+	"tact-tui/timer"
 )
 
 const entriesLimit = 15
 
 type Home struct {
-	client  *api.Client
-	entries []model.Entry
-	cursor  int
-	loading bool
-	err     error
-	width   int
-	height  int
+	client       *api.Client
+	timerManager *timer.Manager
+	entries      []model.Entry
+	cursor       int
+	loading      bool
+	err          error
+	width        int
+	height       int
 }
 
 type entriesMsg struct{ entries []model.Entry }
 type homeErrMsg struct{ err error }
 
-func NewHome(client *api.Client) *Home {
+func NewHome(client *api.Client, timerManager *timer.Manager) *Home {
 	return &Home{
-		client:  client,
-		loading: true,
+		client:       client,
+		timerManager: timerManager,
+		loading:      true,
 	}
 }
 
@@ -163,9 +166,22 @@ func (h *Home) View() string {
 		}
 	}
 
+	// Timer status indicator (if a timer is running)
+	if running := h.timerManager.RunningTimer(); running != nil {
+		b.WriteString("\n")
+		elapsed := timer.FormatElapsed(running.TotalElapsedSeconds())
+		desc := running.Description
+		if len(desc) > 40 {
+			desc = desc[:37] + "..."
+		}
+		timerStatus := fmt.Sprintf("⏱ Working on: %s [%s]", desc, elapsed)
+		b.WriteString(statusParsedStyle.Render(timerStatus))
+		b.WriteString("\n")
+	}
+
 	// Help bar at bottom
 	b.WriteString("\n")
-	help := helpStyle.Render("[n] New  [Enter] Details  [m] Menu  [r] Refresh  [q] Quit")
+	help := helpStyle.Render("[n] New  [t] Timer  [Enter] Details  [m] Menu  [r] Refresh  [q] Quit")
 	b.WriteString(help)
 
 	return b.String()

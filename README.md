@@ -90,6 +90,7 @@ The TUI connects to the backend API. Configure the URL via:
 ### Features
 
 - **Home Screen**: View and manage time entries, create new entries with natural language
+- **Timer**: Track time with a floating timer panel, supports multiple timers (one active at a time), auto-creates entries on stop
 - **Projects**: Create and manage projects for grouping time codes
 - **Time Codes**: Manage billing codes with project associations
 - **Work Types**: Manage categories of work (development, meetings, etc.)
@@ -104,6 +105,7 @@ The TUI connects to the backend API. Configure the URL via:
 | `j` / `↓` | Move cursor down |
 | `k` / `↑` | Move cursor up |
 | `m` | Open menu |
+| `t` | Open timer panel |
 | `r` | Refresh data |
 | `q` / `Ctrl+C` | Quit |
 | `Esc` | Close modal / Go back |
@@ -126,6 +128,17 @@ The TUI connects to the backend API. Configure the URL via:
 | `Enter` | Save / Submit |
 | `Ctrl+S` | Save (in context editor) |
 | `Esc` | Cancel / Close |
+
+#### Timer Panel
+
+| Key | Action |
+|-----|--------|
+| `n` | New timer |
+| `p` | Pause selected timer |
+| `r` | Resume selected timer |
+| `s` | Stop timer (creates entry) |
+| `d` | Delete timer |
+| `t` / `Esc` | Close panel |
 
 ## macOS App (Tact Timer)
 

@@ -20,6 +20,7 @@ type keyMap struct {
 	Delete     []string
 	Reparse    []string
 	Context    []string
+	Timer      []string
 }
 
 var keys = keyMap{
@@ -40,6 +41,7 @@ var keys = keyMap{
 	Delete:   []string{"d"},
 	Reparse:  []string{"p"},
 	Context:  []string{"c"},
+	Timer:    []string{"t"},
 }
 
 func matchesKey(msg tea.KeyMsg, bindings []string) bool {

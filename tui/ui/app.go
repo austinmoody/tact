@@ -5,6 +5,7 @@ import (
 
 	"tact-tui/api"
 	"tact-tui/model"
+	"tact-tui/timer"
 )
 
 // Screen represents the current view
@@ -34,6 +35,7 @@ const (
 	ModalContextList
 	ModalContextAdd
 	ModalContextEdit
+	ModalTimerPanel
 )
 
 // App is the root model that manages screens and modals
@@ -61,6 +63,10 @@ type App struct {
 	projectEdit     *ProjectEditModal
 	contextList     *ContextListModal
 	contextEdit     *ContextEditModal
+	timerPanel      *TimerPanel
+
+	// Timer management
+	timerManager *timer.Manager
 
 	// Shared data for modals
 	selectedEntry    *model.Entry
@@ -71,20 +77,27 @@ type App struct {
 }
 
 func NewApp(client *api.Client) *App {
+	tm := timer.NewManager()
 	return &App{
-		client:    client,
-		screen:    ScreenHome,
-		modal:     ModalNone,
-		home:      NewHome(client),
-		timeCodes: NewTimeCodesScreen(client),
-		workTypes: NewWorkTypesScreen(client),
-		projects:  NewProjectsScreen(client),
-		menu:      NewMenuModal(),
+		client:       client,
+		screen:       ScreenHome,
+		modal:        ModalNone,
+		home:         NewHome(client, tm),
+		timeCodes:    NewTimeCodesScreen(client),
+		workTypes:    NewWorkTypesScreen(client),
+		projects:     NewProjectsScreen(client),
+		menu:         NewMenuModal(),
+		timerManager: tm,
 	}
 }
 
 func (a *App) Init() tea.Cmd {
-	return a.home.Init()
+	cmds := []tea.Cmd{a.home.Init()}
+	// Start ticking if there's already a running timer
+	if a.timerManager.RunningTimer() != nil {
+		cmds = append(cmds, timerTick())
+	}
+	return tea.Batch(cmds...)
 }
 
 func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -139,6 +152,29 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.projectEdit = nil
 		a.contextList = nil
 		a.contextEdit = nil
+		a.timerPanel = nil
+		// Keep ticking if there's a running timer
+		if a.timerManager.RunningTimer() != nil {
+			return a, timerTick()
+		}
+		return a, nil
+
+	case timerTickMsg:
+		// Only continue ticking if timer panel is open or a timer is running
+		if a.modal == ModalTimerPanel || a.timerManager.RunningTimer() != nil {
+			return a, timerTick()
+		}
+		return a, nil
+
+	case timerEntryCreatedMsg:
+		// Entry created from timer, refresh home if we're there
+		if a.screen == ScreenHome {
+			return a, a.home.Refresh()
+		}
+		return a, nil
+
+	case timerEntryErrorMsg:
+		// Handle timer entry creation error - keep panel open with error
 		return a, nil
 
 	case MenuSelectMsg:
@@ -320,6 +356,10 @@ func (a *App) updateModal(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		if a.contextEdit != nil {
 			_, cmd = a.contextEdit.Update(msg)
 		}
+	case ModalTimerPanel:
+		if a.timerPanel != nil {
+			_, cmd = a.timerPanel.Update(msg)
+		}
 	}
 
 	return a, cmd
@@ -355,6 +395,11 @@ func (a *App) updateHomeScreen(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case matchesKey(msg, keys.Menu):
 		a.modal = ModalMenu
 		return a, nil
+
+	case matchesKey(msg, keys.Timer):
+		a.timerPanel = NewTimerPanel(a.timerManager, a.client, a.width, a.height)
+		a.modal = ModalTimerPanel
+		return a, timerTick()
 
 	case matchesKey(msg, keys.Enter):
 		if entry := a.home.SelectedEntry(); entry != nil {
@@ -495,6 +540,10 @@ func (a *App) renderWithModal(screenView string) string {
 	case ModalContextAdd, ModalContextEdit:
 		if a.contextEdit != nil {
 			modalView = a.contextEdit.View()
+		}
+	case ModalTimerPanel:
+		if a.timerPanel != nil {
+			modalView = a.timerPanel.View()
 		}
 	}
 
