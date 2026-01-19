@@ -10,14 +10,22 @@ Available Work Types:
 {work_types_text}
 
 Instructions:
-1. Extract the duration in minutes (e.g., "2h" = 120, "30 min" = 30)
-2. Match to a time_code_id from the available list based on keywords and context
+1. Extract the duration in minutes. Examples:
+   - "10m" = 10 minutes (m = minutes)
+   - "30 min" = 30 minutes
+   - "1h" = 60 minutes
+   - "2h" = 120 minutes
+   - "1h30m" = 90 minutes
+   - "1.5h" = 90 minutes
+   IMPORTANT: "m" always means minutes, NOT hours. "10m" = 10, not 600.
+2. Match to a time_code_id using this priority order:
+   a. FIRST check Matching Context Rules above - if the entry text matches a rule, use that time_code_id
+   b. THEN check time code keywords and descriptions
+   Example: If context says "(time_code: ALM-123): Vibe coding" and entry mentions "vibe coding", use ALM-123
 3. Match to a work_type_id from the available list
 4. Generate a clean description of the work done
 5. Provide confidence scores (0.0 to 1.0) for each field
 6. Provide brief reasoning notes explaining your matching decision
-7. IMPORTANT: If matching context rules are provided above, follow them carefully - \
-they contain project-specific categorization rules that override generic matching
 
 Respond with ONLY valid JSON in this exact format:
 {{
@@ -42,13 +50,12 @@ def build_system_prompt(context: ParseContext) -> str:
     # Build RAG context section
     rag_context_text = ""
     if context.rag_contexts:
-        rag_lines = ["\nMatching Context Rules:"]
+        rag_lines = ["\nMatching Context Rules (use these to assign time_code_id):"]
         for rc in context.rag_contexts:
             if rc.time_code_id:
-                source = f"(time_code: {rc.time_code_id})"
+                rag_lines.append(f"- If entry mentions \"{rc.content}\" → use time_code_id: {rc.time_code_id}")
             else:
-                source = f"(project: {rc.project_id})"
-            rag_lines.append(f"- {source}: {rc.content}")
+                rag_lines.append(f"- Project {rc.project_id} rule: {rc.content}")
         rag_context_text = "\n".join(rag_lines) + "\n"
 
     time_codes_text = "\n".join(
