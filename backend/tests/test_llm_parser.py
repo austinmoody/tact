@@ -85,6 +85,7 @@ class TestOllamaProvider:
         from tact.llm.ollama import OllamaProvider
 
         provider = OllamaProvider()
+        provider._model_verified = True  # Skip model check for this test
 
         mock_response = MagicMock()
         mock_response.json.return_value = {
@@ -115,6 +116,7 @@ class TestOllamaProvider:
         from tact.llm.ollama import OllamaProvider
 
         provider = OllamaProvider()
+        provider._model_verified = True  # Skip model check for this test
 
         mock_response = MagicMock()
         mock_response.json.return_value = {
@@ -142,6 +144,7 @@ class TestOllamaProvider:
         from tact.llm.ollama import OllamaProvider
 
         provider = OllamaProvider()
+        provider._model_verified = True  # Skip model check for this test
 
         mock_response = MagicMock()
         mock_response.json.return_value = {"response": "not valid json"}
@@ -158,6 +161,7 @@ class TestOllamaProvider:
         from tact.llm.ollama import OllamaProvider
 
         provider = OllamaProvider()
+        provider._model_verified = True  # Skip model check for this test
 
         with patch.object(
             provider.client, "post", side_effect=HTTPError("Connection refused")
@@ -166,6 +170,95 @@ class TestOllamaProvider:
 
         assert result.error is not None
         assert "HTTP error" in result.error
+
+    def test_ensure_model_available_when_model_exists(self):
+        """Test that model check passes when model is already available."""
+        from tact.llm.ollama import OllamaProvider
+
+        provider = OllamaProvider(model="llama3.2:3b")
+
+        mock_tags_response = MagicMock()
+        mock_tags_response.json.return_value = {
+            "models": [{"name": "llama3.2:3b"}, {"name": "mistral:latest"}]
+        }
+
+        with patch.object(provider.client, "get", return_value=mock_tags_response):
+            error = provider._ensure_model_available()
+
+        assert error is None
+        assert provider._model_verified is True
+
+    def test_ensure_model_available_pulls_missing_model(self):
+        """Test that missing model triggers a pull."""
+        from tact.llm.ollama import OllamaProvider
+
+        provider = OllamaProvider(model="llama3.2:3b")
+
+        mock_tags_response = MagicMock()
+        mock_tags_response.json.return_value = {"models": []}  # No models
+
+        # Mock the streaming pull response
+        mock_pull_response = MagicMock()
+        mock_pull_response.__enter__ = MagicMock(return_value=mock_pull_response)
+        mock_pull_response.__exit__ = MagicMock(return_value=False)
+        mock_pull_response.iter_lines.return_value = [
+            '{"status": "pulling manifest"}',
+            '{"status": "downloading"}',
+            '{"status": "success"}',
+        ]
+
+        with patch.object(provider.client, "get", return_value=mock_tags_response), \
+             patch("tact.llm.ollama.httpx.Client") as mock_client_class:
+            mock_pull_client = MagicMock()
+            mock_pull_client.stream.return_value = mock_pull_response
+            mock_client_class.return_value = mock_pull_client
+
+            error = provider._ensure_model_available()
+
+        assert error is None
+        assert provider._model_verified is True
+        mock_pull_client.stream.assert_called_once()
+
+    def test_ensure_model_available_skips_when_verified(self):
+        """Test that model check is skipped when already verified."""
+        from tact.llm.ollama import OllamaProvider
+
+        provider = OllamaProvider()
+        provider._model_verified = True
+
+        with patch.object(provider.client, "get") as mock_get:
+            error = provider._ensure_model_available()
+
+        assert error is None
+        mock_get.assert_not_called()
+
+    def test_ensure_model_available_returns_error_on_pull_failure(self):
+        """Test that pull error is returned properly."""
+        from tact.llm.ollama import OllamaProvider
+
+        provider = OllamaProvider(model="nonexistent:model")
+
+        mock_tags_response = MagicMock()
+        mock_tags_response.json.return_value = {"models": []}
+
+        mock_pull_response = MagicMock()
+        mock_pull_response.__enter__ = MagicMock(return_value=mock_pull_response)
+        mock_pull_response.__exit__ = MagicMock(return_value=False)
+        mock_pull_response.iter_lines.return_value = [
+            '{"error": "model not found"}',
+        ]
+
+        with patch.object(provider.client, "get", return_value=mock_tags_response), \
+             patch("tact.llm.ollama.httpx.Client") as mock_client_class:
+            mock_pull_client = MagicMock()
+            mock_pull_client.stream.return_value = mock_pull_response
+            mock_client_class.return_value = mock_pull_client
+
+            error = provider._ensure_model_available()
+
+        assert error is not None
+        assert "model not found" in error
+        assert provider._model_verified is False
 
 
 class TestAnthropicProvider:

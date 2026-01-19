@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_OLLAMA_URL = "http://localhost:11434"
 DEFAULT_OLLAMA_MODEL = "llama3.2:3b"
 DEFAULT_OLLAMA_TIMEOUT = 180.0  # seconds
+DEFAULT_OLLAMA_PULL_TIMEOUT = 600.0  # seconds (10 minutes for model downloads)
 
 
 class OllamaProvider(LLMProvider):
@@ -22,16 +23,87 @@ class OllamaProvider(LLMProvider):
         base_url: str | None = None,
         model: str | None = None,
         timeout: float | None = None,
+        pull_timeout: float | None = None,
     ):
         self.base_url = base_url or os.getenv("TACT_OLLAMA_URL", DEFAULT_OLLAMA_URL)
         self.model = model or os.getenv("TACT_OLLAMA_MODEL", DEFAULT_OLLAMA_MODEL)
         self.timeout = timeout or float(
             os.getenv("TACT_OLLAMA_TIMEOUT", DEFAULT_OLLAMA_TIMEOUT)
         )
+        self.pull_timeout = pull_timeout or float(
+            os.getenv("TACT_OLLAMA_PULL_TIMEOUT", DEFAULT_OLLAMA_PULL_TIMEOUT)
+        )
         self.client = httpx.Client(timeout=self.timeout)
+        self._model_verified = False
+
+    def _ensure_model_available(self) -> str | None:
+        """Check if model exists and pull if needed. Returns error message or None."""
+        if self._model_verified:
+            return None
+
+        try:
+            # Check available models
+            response = self.client.get(f"{self.base_url}/api/tags")
+            response.raise_for_status()
+            tags = response.json()
+            models = tags.get("models", [])
+
+            # Check if our model is available (match by name prefix)
+            model_available = any(
+                m.get("name", "").startswith(self.model.split(":")[0])
+                and (
+                    ":" not in self.model
+                    or m.get("name", "") == self.model
+                    or m.get("name", "").startswith(self.model)
+                )
+                for m in models
+            )
+
+            if model_available:
+                self._model_verified = True
+                return None
+
+            # Model not found, pull it
+            logger.info(f"Model '{self.model}' not found, pulling...")
+            pull_client = httpx.Client(timeout=self.pull_timeout)
+            try:
+                # Use streaming to handle the chunked response from Ollama pull
+                with pull_client.stream(
+                    "POST",
+                    f"{self.base_url}/api/pull",
+                    json={"name": self.model},
+                ) as pull_response:
+                    pull_response.raise_for_status()
+                    for line in pull_response.iter_lines():
+                        if line:
+                            try:
+                                status = json.loads(line)
+                                if "status" in status:
+                                    logger.debug(f"Pull status: {status['status']}")
+                                if status.get("error"):
+                                    return f"Model pull failed: {status['error']}"
+                            except json.JSONDecodeError:
+                                pass
+            finally:
+                pull_client.close()
+
+            logger.info(f"Model '{self.model}' pulled successfully")
+            self._model_verified = True
+            return None
+
+        except httpx.HTTPError as e:
+            logger.error(f"Failed to check/pull model: {e}")
+            return f"Failed to ensure model availability: {e}"
+        except Exception as e:
+            logger.error(f"Unexpected error checking/pulling model: {e}")
+            return f"Failed to ensure model availability: {e}"
 
     def parse(self, user_input: str, context: ParseContext) -> ParseResult:
         """Parse user input using Ollama."""
+        # Ensure model is available (auto-pull if needed)
+        if error := self._ensure_model_available():
+            return ParseResult(error=error)
+
         system_prompt = build_system_prompt(context)
         user_prompt = build_user_prompt(user_input)
 

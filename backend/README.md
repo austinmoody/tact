@@ -149,23 +149,20 @@ The backend uses an LLM to parse time entries. It supports two providers:
    # Or download from https://ollama.ai
    ```
 
-2. **Pull a model:**
-   ```bash
-   ollama pull llama3.2:3b
-   ```
-
-3. **Start Ollama:**
+2. **Start Ollama:**
    ```bash
    ollama serve
    ```
 
-4. **Configure (optional):**
+3. **Configure (optional):**
    ```bash
    export TACT_LLM_PROVIDER=ollama           # Default
    export TACT_OLLAMA_URL=http://localhost:11434  # Default
    export TACT_OLLAMA_MODEL=llama3.2:3b      # Default
    export TACT_OLLAMA_TIMEOUT=180            # Seconds, increase for slow models
    ```
+
+> **Note:** Models are automatically pulled on first use if not already available. You can configure the pull timeout via `TACT_OLLAMA_PULL_TIMEOUT` (default: 600 seconds).
 
 ### Anthropic (Cloud)
 
@@ -180,10 +177,14 @@ The backend uses an LLM to parse time entries. It supports two providers:
 
 ### Docker with Ollama
 
-Both the API and Ollama start together:
+Both the API and Ollama start together. Models are automatically pulled on first use:
 
 ```bash
 make docker-up
+```
+
+To manually pre-pull a model (optional):
+```bash
 docker compose exec ollama ollama pull llama3.2:3b
 ```
 
@@ -195,6 +196,7 @@ docker compose exec ollama ollama pull llama3.2:3b
 | `TACT_OLLAMA_URL` | `http://localhost:11434` | Ollama API URL |
 | `TACT_OLLAMA_MODEL` | `llama3.2:3b` | Ollama model name |
 | `TACT_OLLAMA_TIMEOUT` | `180` | Request timeout in seconds |
+| `TACT_OLLAMA_PULL_TIMEOUT` | `600` | Model pull timeout in seconds (for auto-pull) |
 | `TACT_ANTHROPIC_API_KEY` | (none) | Anthropic API key |
 | `TACT_ANTHROPIC_MODEL` | `claude-3-haiku-20240307` | Anthropic model |
 | `TACT_PARSER_INTERVAL` | `10` | Seconds between parse cycles |
