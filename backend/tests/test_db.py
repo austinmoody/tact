@@ -37,9 +37,6 @@ def test_time_code_create_and_query(db_session):
         id="PROJ-001",
         project_id="IZG",
         name="Project Alpha",
-        description="Main project",
-        keywords='["alpha", "main"]',
-        examples='["working on alpha"]',
     )
     db_session.add(time_code)
     db_session.commit()
@@ -60,7 +57,6 @@ def test_time_entry_create_and_query(db_session):
         id="PROJ-001",
         project_id="IZG",
         name="Project Alpha",
-        description="Main project",
     )
     db_session.add(project)
     db_session.add(work_type)

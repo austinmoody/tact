@@ -222,8 +222,7 @@ def test_update_entry_with_learn_creates_context(client, db_session):
         id="TC-001",
         project_id="test-project",
         name="Test Time Code",
-        description="Test time code for learning tests",
-    )
+            )
     work_type = WorkType(id="meetings", name="Meetings")
     session.add(project)
     session.add(time_code)
@@ -267,8 +266,7 @@ def test_update_entry_with_learn_false_no_context(client, db_session):
         id="TC-001",
         project_id="test-project",
         name="Test Time Code",
-        description="Test time code for learning tests",
-    )
+            )
     session.add(project)
     session.add(time_code)
     session.commit()
@@ -326,8 +324,7 @@ def test_update_entry_context_format_duration_only(client, db_session):
         id="TC-001",
         project_id="test-project",
         name="Test Time Code",
-        description="Test time code for learning tests",
-    )
+            )
     session.add(project)
     session.add(time_code)
     session.commit()

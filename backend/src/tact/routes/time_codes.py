@@ -1,4 +1,3 @@
-import json
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -14,14 +13,11 @@ router = APIRouter(prefix="/time-codes", tags=["time-codes"])
 
 
 def _model_to_response(time_code: TimeCode) -> TimeCodeResponse:
-    """Convert SQLAlchemy model to response, parsing JSON fields."""
+    """Convert SQLAlchemy model to response."""
     return TimeCodeResponse(
         id=time_code.id,
         project_id=time_code.project_id,
         name=time_code.name,
-        description=time_code.description,
-        keywords=json.loads(time_code.keywords),
-        examples=json.loads(time_code.examples),
         active=time_code.active,
         created_at=time_code.created_at,
         updated_at=time_code.updated_at,
@@ -45,9 +41,6 @@ def create_time_code(
         id=data.id,
         project_id=data.project_id,
         name=data.name,
-        description=data.description,
-        keywords=json.dumps(data.keywords),
-        examples=json.dumps(data.examples),
     )
     session.add(time_code)
     session.commit()
@@ -106,12 +99,6 @@ def update_time_code(
         time_code.project_id = data.project_id
     if data.name is not None:
         time_code.name = data.name
-    if data.description is not None:
-        time_code.description = data.description
-    if data.keywords is not None:
-        time_code.keywords = json.dumps(data.keywords)
-    if data.examples is not None:
-        time_code.examples = json.dumps(data.examples)
     if data.active is not None:
         time_code.active = data.active
 

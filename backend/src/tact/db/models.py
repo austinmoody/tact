@@ -73,9 +73,6 @@ class TimeCode(Base):
         ForeignKey("projects.id"), default="default"
     )
     name: Mapped[str] = mapped_column(nullable=False)
-    description: Mapped[str] = mapped_column(Text, nullable=False)
-    keywords: Mapped[str] = mapped_column(Text, default="[]")
-    examples: Mapped[str] = mapped_column(Text, default="[]")
     active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(

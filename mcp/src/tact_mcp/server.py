@@ -209,20 +209,6 @@ async def list_tools() -> list[Tool]:
                         "type": "string",
                         "description": "Display name",
                     },
-                    "description": {
-                        "type": "string",
-                        "description": "Description for LLM context",
-                    },
-                    "keywords": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "Keywords for matching",
-                    },
-                    "examples": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "Example entries that map to this code",
-                    },
                     "project_id": {
                         "type": "string",
                         "description": "Project ID (defaults to 'default')",
@@ -243,17 +229,6 @@ async def list_tools() -> list[Tool]:
                         "description": "Time code ID",
                     },
                     "name": {"type": "string", "description": "Display name"},
-                    "description": {"type": "string", "description": "Description"},
-                    "keywords": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "Keywords for matching",
-                    },
-                    "examples": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "Example entries",
-                    },
                     "active": {"type": "boolean", "description": "Active status"},
                     "project_id": {
                         "type": "string",
@@ -606,9 +581,6 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
             result = client.create_time_code(
                 id=arguments["id"],
                 name=arguments["name"],
-                description=arguments.get("description", ""),
-                keywords=arguments.get("keywords"),
-                examples=arguments.get("examples"),
                 project_id=arguments.get("project_id", "default"),
             )
             return json_response(result)

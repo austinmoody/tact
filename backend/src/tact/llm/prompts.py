@@ -19,9 +19,9 @@ Instructions:
    - "1.5h" = 90 minutes
    IMPORTANT: "m" always means minutes, NOT hours. "10m" = 10, not 600.
 2. Match to a time_code_id using this priority order:
-   a. FIRST check Matching Context Rules above - if the entry text matches a rule, use that time_code_id
-   b. THEN check time code keywords and descriptions
-   Example: If context says "(time_code: ALM-123): Vibe coding" and entry mentions "vibe coding", use ALM-123
+   a. FIRST check Matching Context Rules above - if the entry is semantically related to a rule, use that time_code_id
+   b. THEN match to a time code name from the available list
+   Note: Context rules are semantic hints, not exact matches. "disaster recovery meeting" matches a rule about "Disaster Recovery activities".
 3. Match to a work_type_id from the available list
 4. Generate a clean description of the work done
 5. Provide confidence scores (0.0 to 1.0) for each field
@@ -50,18 +50,16 @@ def build_system_prompt(context: ParseContext) -> str:
     # Build RAG context section
     rag_context_text = ""
     if context.rag_contexts:
-        rag_lines = ["\nMatching Context Rules (use these to assign time_code_id):"]
+        rag_lines = ["\nMatching Context Rules (use these to assign time_code_id - these are SEMANTIC hints):"]
         for rc in context.rag_contexts:
             if rc.time_code_id:
-                rag_lines.append(f"- If entry mentions \"{rc.content}\" → use time_code_id: {rc.time_code_id}")
+                rag_lines.append(f"- Work related to \"{rc.content}\" → use time_code_id: {rc.time_code_id}")
             else:
-                rag_lines.append(f"- Project {rc.project_id} rule: {rc.content}")
+                rag_lines.append(f"- Project {rc.project_id} context: {rc.content}")
         rag_context_text = "\n".join(rag_lines) + "\n"
 
     time_codes_text = "\n".join(
-        f"- {tc.id}: {tc.name} - {tc.description} "
-        f"(keywords: {', '.join(tc.keywords)})"
-        for tc in context.time_codes
+        f"- {tc.id}: {tc.name}" for tc in context.time_codes
     )
     if not time_codes_text:
         time_codes_text = "(none defined)"
