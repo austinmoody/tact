@@ -9,7 +9,7 @@ Instructions for AI coding assistants using OpenSpec for spec-driven development
 - Pick a unique `change-id`: kebab-case, verb-led (`add-`, `update-`, `remove-`, `refactor-`)
 - Scaffold: `proposal.md`, `tasks.md`, `design.md` (only if needed), and delta specs per affected capability
 - Write deltas: use `## ADDED|MODIFIED|REMOVED|RENAMED Requirements`; include at least one `#### Scenario:` per requirement
-- Validate: `openspec validate [change-id] --strict` and fix issues
+- Validate: `openspec validate [change-id] --strict --no-interactive` and fix issues
 - Request approval: Do not start implementation until proposal is approved
 
 ## Three-Stage Workflow
@@ -44,7 +44,7 @@ Skip proposal for:
 1. Review `openspec/project.md`, `openspec list`, and `openspec list --specs` to understand current context.
 2. Choose a unique verb-led `change-id` and scaffold `proposal.md`, `tasks.md`, optional `design.md`, and spec deltas under `openspec/changes/<id>/`.
 3. Draft spec deltas using `## ADDED|MODIFIED|REMOVED Requirements` with at least one `#### Scenario:` per requirement.
-4. Run `openspec validate <id> --strict` and resolve any issues before sharing the proposal.
+4. Run `openspec validate <id> --strict --no-interactive` and resolve any issues before sharing the proposal.
 
 ### Stage 2: Implementing Changes
 Track these steps as TODOs and complete them one by one.
@@ -54,15 +54,14 @@ Track these steps as TODOs and complete them one by one.
 4. **Implement tasks sequentially** - Complete in order
 5. **Confirm completion** - Ensure every item in `tasks.md` is finished before updating statuses
 6. **Update checklist** - After all work is done, set every task to `- [x]` so the list reflects reality
-7. **Provide verification steps** - Share the Verification section from tasks.md so the user can independently confirm the implementation
-8. **Approval gate** - Do not start implementation until the proposal is reviewed and approved
+7. **Approval gate** - Do not start implementation until the proposal is reviewed and approved
 
 ### Stage 3: Archiving Changes
 After deployment, create separate PR to:
 - Move `changes/[name]/` → `changes/archive/YYYY-MM-DD-[name]/`
 - Update `specs/` if capabilities changed
 - Use `openspec archive <change-id> --skip-specs --yes` for tooling-only changes (always pass the change ID explicitly)
-- Run `openspec validate --strict` to confirm the archived change passes checks
+- Run `openspec validate --strict --no-interactive` to confirm the archived change passes checks
 
 ## Before Any Task
 
@@ -109,7 +108,7 @@ openspec validate              # Bulk validation mode
 
 # Debugging
 openspec show [change] --json --deltas-only
-openspec validate [change] --strict
+openspec validate [change] --strict --no-interactive
 ```
 
 ### Command Flags
@@ -203,15 +202,7 @@ If multiple capabilities are affected, create multiple delta files under `change
 - [ ] 1.2 Implement API endpoint
 - [ ] 1.3 Add frontend component
 - [ ] 1.4 Write tests
-
-## Verification
-Steps for the user to independently verify the implementation:
-1. [Command or action to verify feature works]
-2. [Command to check expected output/state]
-3. [Any manual checks if applicable]
 ```
-
-The Verification section is required and should include concrete commands or steps the user can run to confirm the implementation works as expected.
 
 5. **Create design.md when needed:**
 Create `design.md` if any of the following apply; otherwise omit it:
@@ -315,7 +306,7 @@ Example for RENAMED:
 
 ```bash
 # Always use strict mode for comprehensive checks
-openspec validate [change] --strict
+openspec validate [change] --strict --no-interactive
 
 # Debug delta parsing
 openspec show [change] --json | jq '.deltas'
@@ -352,7 +343,7 @@ Users MUST provide a second factor during login.
 EOF
 
 # 4) Validate
-openspec validate $CHANGE --strict
+openspec validate $CHANGE --strict --no-interactive
 ```
 
 ## Multi-Capability Example
@@ -450,7 +441,7 @@ Only add complexity with:
 
 ### File Purposes
 - `proposal.md` - Why and what
-- `tasks.md` - Implementation steps and verification commands
+- `tasks.md` - Implementation steps
 - `design.md` - Technical decisions
 - `spec.md` - Requirements and behavior
 
@@ -458,7 +449,7 @@ Only add complexity with:
 ```bash
 openspec list              # What's in progress?
 openspec show [item]       # View details
-openspec validate --strict # Is it correct?
+openspec validate --strict --no-interactive  # Is it correct?
 openspec archive <change-id> [--yes|-y]  # Mark complete (add --yes for automation)
 ```
 
