@@ -148,9 +148,41 @@ class TimerListWindowController: NSWindowController, NSTableViewDataSource, NSTa
     }
 
     private func updateEmptyState() {
-        let isEmpty = timerManager.timers.isEmpty
+        let isEmpty = timerManager.activeTimers.isEmpty && timerManager.completedTodayTimers.isEmpty
         emptyLabel.isHidden = !isEmpty
         tableView.isHidden = isEmpty
+    }
+
+    /// Calculate row index mappings for the combined table view
+    /// Layout: [Active Timers] + [Section Header if completed exist] + [Completed Timers]
+    private func rowInfo(for row: Int) -> RowInfo {
+        let activeCount = timerManager.activeTimers.count
+        let completedCount = timerManager.completedTodayTimers.count
+
+        if row < activeCount {
+            return .activeTimer(index: row)
+        }
+
+        // If we have completed timers, there's a header row
+        if completedCount > 0 {
+            let headerRow = activeCount
+            if row == headerRow {
+                return .sectionHeader
+            }
+            let completedIndex = row - headerRow - 1
+            if completedIndex < completedCount {
+                return .completedTimer(index: completedIndex)
+            }
+        }
+
+        return .none
+    }
+
+    private enum RowInfo {
+        case activeTimer(index: Int)
+        case sectionHeader
+        case completedTimer(index: Int)
+        case none
     }
 
     private func startUpdateTimer() {
@@ -166,10 +198,11 @@ class TimerListWindowController: NSWindowController, NSTableViewDataSource, NSTa
     }
 
     private func updateElapsedTimes() {
-        // Update visible rows only
-        for row in 0..<timerManager.timers.count {
-            if let cellView = tableView.view(atColumn: 0, row: row, makeIfNecessary: false) as? TimerCellView {
-                cellView.updateElapsedTime(timerManager.timers[row])
+        // Update visible active timer rows only
+        let activeTimers = timerManager.activeTimers
+        for (index, timer) in activeTimers.enumerated() {
+            if let cellView = tableView.view(atColumn: 0, row: index, makeIfNecessary: false) as? TimerCellView {
+                cellView.updateElapsedTime(timer)
             }
         }
     }
@@ -177,38 +210,76 @@ class TimerListWindowController: NSWindowController, NSTableViewDataSource, NSTa
     // MARK: - NSTableViewDataSource
 
     func numberOfRows(in tableView: NSTableView) -> Int {
-        return timerManager.timers.count
+        let activeCount = timerManager.activeTimers.count
+        let completedCount = timerManager.completedTodayTimers.count
+
+        // Active timers + (header + completed timers if any completed exist)
+        if completedCount > 0 {
+            return activeCount + 1 + completedCount  // +1 for section header
+        }
+        return activeCount
     }
 
     // MARK: - NSTableViewDelegate
 
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        let timer = timerManager.timers[row]
+        switch rowInfo(for: row) {
+        case .activeTimer(let index):
+            let timer = timerManager.activeTimers[index]
+            let cellView = TimerCellView()
+            cellView.configure(with: timer)
 
-        let cellView = TimerCellView()
-        cellView.configure(with: timer)
-
-        cellView.onPauseResume = { [weak self] in
-            guard let self = self else { return }
-            let timer = self.timerManager.timers[row]
-            if timer.state == .running {
-                self.timerManager.pauseTimer(id: timer.id)
-            } else {
-                self.timerManager.resumeTimer(id: timer.id)
+            cellView.onPauseResume = { [weak self] in
+                guard let self = self else { return }
+                let timer = self.timerManager.activeTimers[index]
+                if timer.state == .running {
+                    self.timerManager.pauseTimer(id: timer.id)
+                } else {
+                    self.timerManager.resumeTimer(id: timer.id)
+                }
             }
-        }
 
-        cellView.onStop = { [weak self] in
-            guard let self = self else { return }
-            let timer = self.timerManager.timers[row]
-            self.stopTimer(timer)
-        }
+            cellView.onStop = { [weak self] in
+                guard let self = self else { return }
+                let timer = self.timerManager.activeTimers[index]
+                self.stopTimer(timer)
+            }
 
-        return cellView
+            return cellView
+
+        case .sectionHeader:
+            return SectionHeaderView(title: "Completed Today")
+
+        case .completedTimer(let index):
+            let timer = timerManager.completedTodayTimers[index]
+            let cellView = CompletedTimerCellView()
+            cellView.configure(with: timer)
+
+            cellView.onStartNew = { [weak self] in
+                self?.timerManager.startNewTimer(description: timer.description)
+            }
+
+            return cellView
+
+        case .none:
+            return nil
+        }
     }
 
     func tableView(_ tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
-        return 60
+        switch rowInfo(for: row) {
+        case .sectionHeader:
+            return 32
+        default:
+            return 60
+        }
+    }
+
+    func tableView(_ tableView: NSTableView, isGroupRow row: Int) -> Bool {
+        if case .sectionHeader = rowInfo(for: row) {
+            return true
+        }
+        return false
     }
 
     private func stopTimer(_ timer: TactTimer) {
@@ -334,5 +405,96 @@ class TimerCellView: NSTableCellView {
 
     @objc private func stopClicked() {
         onStop?()
+    }
+}
+
+// MARK: - Section Header View
+
+class SectionHeaderView: NSTableCellView {
+
+    private let titleLabel = NSTextField(labelWithString: "")
+
+    init(title: String) {
+        super.init(frame: .zero)
+        setupUI()
+        titleLabel.stringValue = title
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func setupUI() {
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.font = .systemFont(ofSize: 11, weight: .semibold)
+        titleLabel.textColor = .secondaryLabelColor
+        addSubview(titleLabel)
+
+        NSLayoutConstraint.activate([
+            titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+            titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+        ])
+    }
+}
+
+// MARK: - Completed Timer Cell View
+
+class CompletedTimerCellView: NSTableCellView {
+
+    var onStartNew: (() -> Void)?
+
+    private let descriptionLabel = NSTextField(labelWithString: "")
+    private let durationLabel = NSTextField(labelWithString: "")
+    private let startNewButton = NSButton()
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        setupUI()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func setupUI() {
+        descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
+        descriptionLabel.font = .systemFont(ofSize: 13)
+        descriptionLabel.textColor = .secondaryLabelColor
+        descriptionLabel.lineBreakMode = .byTruncatingTail
+        addSubview(descriptionLabel)
+
+        durationLabel.translatesAutoresizingMaskIntoConstraints = false
+        durationLabel.font = .systemFont(ofSize: 12)
+        durationLabel.textColor = .tertiaryLabelColor
+        addSubview(durationLabel)
+
+        startNewButton.translatesAutoresizingMaskIntoConstraints = false
+        startNewButton.title = "Start New"
+        startNewButton.bezelStyle = .rounded
+        startNewButton.target = self
+        startNewButton.action = #selector(startNewClicked)
+        addSubview(startNewButton)
+
+        NSLayoutConstraint.activate([
+            descriptionLabel.topAnchor.constraint(equalTo: topAnchor, constant: 10),
+            descriptionLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+            descriptionLabel.trailingAnchor.constraint(lessThanOrEqualTo: startNewButton.leadingAnchor, constant: -8),
+
+            durationLabel.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 4),
+            durationLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+
+            startNewButton.centerYAnchor.constraint(equalTo: centerYAnchor),
+            startNewButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
+            startNewButton.widthAnchor.constraint(equalToConstant: 80),
+        ])
+    }
+
+    func configure(with timer: TactTimer) {
+        descriptionLabel.stringValue = timer.description
+        durationLabel.stringValue = timer.formattedFinalDuration
+    }
+
+    @objc private func startNewClicked() {
+        onStartNew?()
     }
 }
