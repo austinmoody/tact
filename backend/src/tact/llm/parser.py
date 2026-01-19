@@ -14,6 +14,7 @@ from tact.llm.provider import (
     WorkTypeInfo,
 )
 from tact.rag.retrieval import retrieve_similar_contexts
+from tact.utils.duration import round_duration
 
 logger = logging.getLogger(__name__)
 
@@ -77,8 +78,8 @@ class EntryParser:
             logger.warning(f"Entry {entry.id} parse failed: {result.error}")
             return False
 
-        # Update entry with parsed results
-        entry.duration_minutes = result.duration_minutes
+        # Update entry with parsed results (apply duration rounding if configured)
+        entry.duration_minutes = round_duration(result.duration_minutes)
         entry.work_type_id = result.work_type_id
         entry.time_code_id = result.time_code_id
         entry.parsed_description = result.parsed_description

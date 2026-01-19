@@ -199,3 +199,4 @@ docker compose exec ollama ollama pull llama3.2:3b
 | `TACT_ANTHROPIC_MODEL` | `claude-3-haiku-20240307` | Anthropic model |
 | `TACT_PARSER_INTERVAL` | `10` | Seconds between parse cycles |
 | `TACT_DISABLE_WORKER` | `false` | Set to `true` to disable background parsing |
+| `TACT_DURATION_ROUNDING` | `none` | Duration rounding: `none`, `15`, or `30` minutes |
