@@ -64,9 +64,6 @@ def test_create_time_code(client, project):
             "id": "PROJ-001",
             "project_id": "IZG",
             "name": "Project Alpha",
-            "description": "Main project",
-            "keywords": ["alpha", "main"],
-            "examples": ["working on alpha"],
         },
     )
     assert response.status_code == 201
@@ -75,7 +72,6 @@ def test_create_time_code(client, project):
     assert data["project_id"] == "IZG"
     assert data["name"] == "Project Alpha"
     assert data["active"] is True
-    assert data["keywords"] == ["alpha", "main"]
 
 
 def test_create_time_code_project_not_found(client):
@@ -85,7 +81,6 @@ def test_create_time_code_project_not_found(client):
             "id": "PROJ-001",
             "project_id": "UNKNOWN",
             "name": "Project",
-            "description": "Desc",
         },
     )
     assert response.status_code == 400
@@ -99,7 +94,6 @@ def test_create_duplicate_time_code(client, project):
             "id": "PROJ-001",
             "project_id": "IZG",
             "name": "Project",
-            "description": "Desc",
         },
     )
     response = client.post(
@@ -108,7 +102,6 @@ def test_create_duplicate_time_code(client, project):
             "id": "PROJ-001",
             "project_id": "IZG",
             "name": "Another",
-            "description": "Desc",
         },
     )
     assert response.status_code == 409
@@ -121,7 +114,6 @@ def test_list_time_codes(client, project):
             "id": "PROJ-001",
             "project_id": "IZG",
             "name": "Project 1",
-            "description": "Desc 1",
         },
     )
     client.post(
@@ -130,7 +122,6 @@ def test_list_time_codes(client, project):
             "id": "PROJ-002",
             "project_id": "IZG",
             "name": "Project 2",
-            "description": "Desc 2",
         },
     )
     response = client.get("/time-codes")
@@ -146,7 +137,6 @@ def test_list_time_codes_filter_active(client, project):
             "id": "PROJ-001",
             "project_id": "IZG",
             "name": "Active",
-            "description": "Desc",
         },
     )
     client.post(
@@ -155,7 +145,6 @@ def test_list_time_codes_filter_active(client, project):
             "id": "PROJ-002",
             "project_id": "IZG",
             "name": "Will be inactive",
-            "description": "Desc",
         },
     )
     client.delete("/time-codes/PROJ-002")
@@ -179,7 +168,6 @@ def test_list_time_codes_filter_by_project(client):
             "id": "IZG-001",
             "project_id": "IZG",
             "name": "IZG Code",
-            "description": "Desc",
         },
     )
     client.post(
@@ -188,7 +176,6 @@ def test_list_time_codes_filter_by_project(client):
             "id": "TESTME-001",
             "project_id": "TESTME",
             "name": "TestMe Code",
-            "description": "Desc",
         },
     )
 
@@ -207,7 +194,6 @@ def test_get_time_code(client, project):
             "id": "PROJ-001",
             "project_id": "IZG",
             "name": "Project",
-            "description": "Desc",
         },
     )
     response = client.get("/time-codes/PROJ-001")
@@ -229,7 +215,6 @@ def test_update_time_code(client, project):
             "id": "PROJ-001",
             "project_id": "IZG",
             "name": "Original",
-            "description": "Desc",
         },
     )
     response = client.put(
@@ -252,7 +237,6 @@ def test_update_time_code_change_project(client):
             "id": "PROJ-001",
             "project_id": "IZG",
             "name": "Original",
-            "description": "Desc",
         },
     )
 
@@ -272,7 +256,6 @@ def test_update_time_code_invalid_project(client, project):
             "id": "PROJ-001",
             "project_id": "IZG",
             "name": "Original",
-            "description": "Desc",
         },
     )
     response = client.put(
@@ -295,7 +278,6 @@ def test_delete_time_code(client, project):
             "id": "PROJ-001",
             "project_id": "IZG",
             "name": "Project",
-            "description": "Desc",
         },
     )
     response = client.delete("/time-codes/PROJ-001")

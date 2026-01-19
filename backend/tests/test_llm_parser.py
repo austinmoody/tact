@@ -13,18 +13,8 @@ from tact.llm.provider import ParseContext, ParseResult, TimeCodeInfo, WorkTypeI
 def sample_context():
     return ParseContext(
         time_codes=[
-            TimeCodeInfo(
-                id="PROJ-001",
-                name="Project Alpha",
-                description="Main project",
-                keywords=["alpha", "main"],
-            ),
-            TimeCodeInfo(
-                id="ADMIN-01",
-                name="Admin Tasks",
-                description="Administrative work",
-                keywords=["admin", "paperwork"],
-            ),
+            TimeCodeInfo(id="PROJ-001", name="Project Alpha"),
+            TimeCodeInfo(id="ADMIN-01", name="Admin Tasks"),
         ],
         work_types=[
             WorkTypeInfo(id="development", name="Development"),
@@ -43,7 +33,6 @@ class TestPrompts:
         prompt = build_system_prompt(sample_context)
         assert "PROJ-001" in prompt
         assert "Project Alpha" in prompt
-        assert "alpha, main" in prompt
         assert "ADMIN-01" in prompt
 
     def test_build_system_prompt_includes_work_types(self, sample_context):

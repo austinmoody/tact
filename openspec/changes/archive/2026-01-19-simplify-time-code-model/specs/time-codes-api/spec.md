@@ -13,32 +13,21 @@ The API SHALL allow creating a new time code via POST request.
 - And: The time code is associated with the specified project
 - And: HTTP 201 is returned with the created time code
 
+#### Scenario: Project not found
+
+- Given: A time code payload references a non-existent project_id
+- When: POST `/time-codes` is called
+- Then: HTTP 400 Bad Request is returned
+- And: Error message indicates project not found
+
+## NEW Requirements
+
 ### Requirement: Time Code Fields
 
-The TimeCode model SHALL have the following fields only:
+The TimeCode model SHALL have the following core fields: id, project_id, name, active, created_at, updated_at.
 
 #### Scenario: Minimal field set
 
 - Given: A time code is created or retrieved
 - Then: The time code has fields: id, project_id, name, active, created_at, updated_at
 - And: No description, keywords, or examples fields exist
-
-## REMOVED Requirements
-
-### Requirement: Time Code Description
-
-~~The TimeCode model included a description field for longer explanations.~~
-
-Removed: Description was redundant with name field. RAG context handles matching.
-
-### Requirement: Time Code Keywords
-
-~~The TimeCode model included keywords for LLM matching hints.~~
-
-Removed: RAG context documents provide better matching through learned examples.
-
-### Requirement: Time Code Examples
-
-~~The TimeCode model included examples for LLM context.~~
-
-Removed: Field was never used in LLM prompt. RAG context serves this purpose.

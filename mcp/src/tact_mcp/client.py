@@ -105,18 +105,12 @@ class TactClient:
         self,
         id: str,
         name: str,
-        description: str = "",
-        keywords: list[str] | None = None,
-        examples: list[str] | None = None,
         project_id: str = "default",
     ) -> dict[str, Any]:
         """Create a new time code."""
         data = {
             "id": id,
             "name": name,
-            "description": description,
-            "keywords": keywords or [],
-            "examples": examples or [],
             "project_id": project_id,
         }
         response = self._client.post("/time-codes", json=data)

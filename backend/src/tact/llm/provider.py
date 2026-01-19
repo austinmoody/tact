@@ -24,8 +24,6 @@ class TimeCodeInfo:
 
     id: str
     name: str
-    description: str
-    keywords: list[str]
 
 
 @dataclass

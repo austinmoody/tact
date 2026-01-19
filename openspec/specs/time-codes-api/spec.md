@@ -9,7 +9,7 @@ The API SHALL allow creating a new time code via POST request.
 
 #### Scenario: Successful creation with project
 
-- Given: A valid time code payload with id, name, description, and project_id
+- Given: A valid time code payload with id, name, and project_id
 - And: The referenced project exists
 - When: POST `/time-codes` is called
 - Then: The time code is created with `active=true`

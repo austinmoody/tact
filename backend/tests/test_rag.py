@@ -202,7 +202,6 @@ class TestRetrieval:
             id="FEDS-163",
             project_id="test",
             name="Development",
-            description="Dev work",
         )
         db_session.add(time_code)
         db_session.commit()

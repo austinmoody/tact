@@ -69,9 +69,9 @@ The `list_time_codes` tool SHALL return all time codes, optionally filtered by a
 
 The `get_time_code` tool SHALL accept a time code ID and return full details.
 
-The `create_time_code` tool SHALL accept ID, name, project_id (defaults to "default"), and optional description/keywords/examples and create a new time code.
+The `create_time_code` tool SHALL accept ID, name, and project_id (defaults to "default") and create a new time code.
 
-The `update_time_code` tool SHALL accept a time code ID and update fields including project_id.
+The `update_time_code` tool SHALL accept a time code ID and update fields including name, active, and project_id.
 
 The `delete_time_code` tool SHALL accept a time code ID and deactivate it (soft delete).
 
@@ -91,9 +91,9 @@ The `delete_time_code` tool SHALL accept a time code ID and deactivate it (soft 
 - **WHEN** user invokes `create_time_code` with id="IZG-001", name="IZG Task", project_id="izg"
 - **THEN** a new time code is created under the specified project
 
-#### Scenario: Update time code with examples
-- **WHEN** user invokes `update_time_code` with examples=["2h coding", "bug fix"]
-- **THEN** the time code examples are updated
+#### Scenario: Update time code name
+- **WHEN** user invokes `update_time_code` with time_code_id="IZG-001" and name="Updated Name"
+- **THEN** the time code name is updated
 
 #### Scenario: Move time code to different project
 - **WHEN** user invokes `update_time_code` with time_code_id="IZG-001" and project_id="other-project"

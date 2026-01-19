@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 from datetime import UTC, datetime
@@ -155,13 +154,7 @@ class EntryParser:
 
         return ParseContext(
             time_codes=[
-                TimeCodeInfo(
-                    id=tc.id,
-                    name=tc.name,
-                    description=tc.description,
-                    keywords=json.loads(tc.keywords) if tc.keywords else [],
-                )
-                for tc in time_codes
+                TimeCodeInfo(id=tc.id, name=tc.name) for tc in time_codes
             ],
             work_types=[
                 WorkTypeInfo(id=wt.id, name=wt.name) for wt in work_types

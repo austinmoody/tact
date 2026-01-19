@@ -17,12 +17,9 @@ type TimeCodeEditModal struct {
 	width    int
 
 	// Input fields
-	idInput          textinput.Model
-	projectSelector  *ProjectSelector
-	nameInput        textinput.Model
-	descriptionInput textinput.Model
-	keywordsInput    textinput.Model
-	examplesInput    textinput.Model
+	idInput         textinput.Model
+	projectSelector *ProjectSelector
+	nameInput       textinput.Model
 
 	focusIndex int
 	inputCount int
@@ -54,55 +51,28 @@ func NewTimeCodeEditModal(client *api.Client, tc *model.TimeCode, projects []mod
 	nameInput.CharLimit = 100
 	nameInput.SetWidth(inputWidth)
 
-	descriptionInput := textinput.New()
-	descriptionInput.Placeholder = "Optional description"
-	descriptionInput.CharLimit = 500
-	descriptionInput.SetWidth(inputWidth)
-
-	keywordsInput := textinput.New()
-	keywordsInput.Placeholder = "keyword1, keyword2, keyword3"
-	keywordsInput.CharLimit = 500
-	keywordsInput.SetWidth(inputWidth)
-
-	examplesInput := textinput.New()
-	examplesInput.Placeholder = "2h on project, 30m meeting"
-	examplesInput.CharLimit = 500
-	examplesInput.SetWidth(inputWidth)
-
-	// Add mode: ID, Project, Name, Description, Keywords, Examples (6 fields)
-	// Edit mode: Project, Name, Description, Keywords, Examples (5 fields, ID readonly)
-	inputCount := 6
+	// Add mode: ID, Project, Name (3 fields)
+	// Edit mode: Project, Name (2 fields, ID readonly)
+	inputCount := 3
 	if isEdit {
-		inputCount = 5
+		inputCount = 2
 		idInput.SetValue(tc.ID)
 		nameInput.SetValue(tc.Name)
-		if tc.Description != "" {
-			descriptionInput.SetValue(tc.Description)
-		}
-		if len(tc.Keywords) > 0 {
-			keywordsInput.SetValue(strings.Join(tc.Keywords, ", "))
-		}
-		if len(tc.Examples) > 0 {
-			examplesInput.SetValue(strings.Join(tc.Examples, ", "))
-		}
 		projectSelector.Focus()
 	} else {
 		idInput.Focus()
 	}
 
 	return &TimeCodeEditModal{
-		client:           client,
-		timeCode:         tc,
-		isEdit:           isEdit,
-		width:            width,
-		idInput:          idInput,
-		projectSelector:  projectSelector,
-		nameInput:        nameInput,
-		descriptionInput: descriptionInput,
-		keywordsInput:    keywordsInput,
-		examplesInput:    examplesInput,
-		focusIndex:       0,
-		inputCount:       inputCount,
+		client:          client,
+		timeCode:        tc,
+		isEdit:          isEdit,
+		width:           width,
+		idInput:         idInput,
+		projectSelector: projectSelector,
+		nameInput:       nameInput,
+		focusIndex:      0,
+		inputCount:      inputCount,
 	}
 }
 
@@ -159,21 +129,15 @@ func (m *TimeCodeEditModal) Update(msg tea.Msg) (*TimeCodeEditModal, tea.Cmd) {
 	// Update only the focused input
 	var cmd tea.Cmd
 	if m.isEdit {
-		// Edit mode: Project, Name, Description, Keywords, Examples
+		// Edit mode: Project, Name
 		switch m.focusIndex {
 		case 0:
 			m.projectSelector, cmd = m.projectSelector.Update(msg)
 		case 1:
 			m.nameInput, cmd = m.nameInput.Update(msg)
-		case 2:
-			m.descriptionInput, cmd = m.descriptionInput.Update(msg)
-		case 3:
-			m.keywordsInput, cmd = m.keywordsInput.Update(msg)
-		case 4:
-			m.examplesInput, cmd = m.examplesInput.Update(msg)
 		}
 	} else {
-		// Add mode: ID, Project, Name, Description, Keywords, Examples
+		// Add mode: ID, Project, Name
 		switch m.focusIndex {
 		case 0:
 			m.idInput, cmd = m.idInput.Update(msg)
@@ -181,12 +145,6 @@ func (m *TimeCodeEditModal) Update(msg tea.Msg) (*TimeCodeEditModal, tea.Cmd) {
 			m.projectSelector, cmd = m.projectSelector.Update(msg)
 		case 2:
 			m.nameInput, cmd = m.nameInput.Update(msg)
-		case 3:
-			m.descriptionInput, cmd = m.descriptionInput.Update(msg)
-		case 4:
-			m.keywordsInput, cmd = m.keywordsInput.Update(msg)
-		case 5:
-			m.examplesInput, cmd = m.examplesInput.Update(msg)
 		}
 	}
 
@@ -210,26 +168,17 @@ func (m *TimeCodeEditModal) updateFocus() {
 	m.idInput.Blur()
 	m.projectSelector.Blur()
 	m.nameInput.Blur()
-	m.descriptionInput.Blur()
-	m.keywordsInput.Blur()
-	m.examplesInput.Blur()
 
 	if m.isEdit {
-		// Edit mode: Project, Name, Description, Keywords, Examples
+		// Edit mode: Project, Name
 		switch m.focusIndex {
 		case 0:
 			m.projectSelector.Focus()
 		case 1:
 			m.nameInput.Focus()
-		case 2:
-			m.descriptionInput.Focus()
-		case 3:
-			m.keywordsInput.Focus()
-		case 4:
-			m.examplesInput.Focus()
 		}
 	} else {
-		// Add mode: ID, Project, Name, Description, Keywords, Examples
+		// Add mode: ID, Project, Name
 		switch m.focusIndex {
 		case 0:
 			m.idInput.Focus()
@@ -237,12 +186,6 @@ func (m *TimeCodeEditModal) updateFocus() {
 			m.projectSelector.Focus()
 		case 2:
 			m.nameInput.Focus()
-		case 3:
-			m.descriptionInput.Focus()
-		case 4:
-			m.keywordsInput.Focus()
-		case 5:
-			m.examplesInput.Focus()
 		}
 	}
 }
@@ -252,16 +195,10 @@ func (m *TimeCodeEditModal) save() tea.Cmd {
 		if m.isEdit {
 			projectID := m.projectSelector.SelectedProjectID()
 			name := m.nameInput.Value()
-			desc := m.descriptionInput.Value()
-			keywords := parseKeywords(m.keywordsInput.Value())
-			examples := parseKeywords(m.examplesInput.Value())
 
 			updates := api.TimeCodeUpdate{
-				ProjectID:   &projectID,
-				Name:        &name,
-				Description: &desc,
-				Keywords:    keywords,
-				Examples:    examples,
+				ProjectID: &projectID,
+				Name:      &name,
 			}
 			_, err := m.client.UpdateTimeCode(m.timeCode.ID, updates)
 			if err != nil {
@@ -277,31 +214,12 @@ func (m *TimeCodeEditModal) save() tea.Cmd {
 			return timeCodeEditErrMsg{err: nil}
 		}
 
-		desc := m.descriptionInput.Value()
-		keywords := parseKeywords(m.keywordsInput.Value())
-		examples := parseKeywords(m.examplesInput.Value())
-
-		_, err := m.client.CreateTimeCode(id, projectID, name, desc, keywords, examples)
+		_, err := m.client.CreateTimeCode(id, projectID, name)
 		if err != nil {
 			return timeCodeEditErrMsg{err}
 		}
 		return TimeCodeCreatedMsg{}
 	}
-}
-
-func parseKeywords(s string) []string {
-	if s == "" {
-		return nil
-	}
-	parts := strings.Split(s, ",")
-	var result []string
-	for _, p := range parts {
-		p = strings.TrimSpace(p)
-		if p != "" {
-			result = append(result, p)
-		}
-	}
-	return result
 }
 
 type timeCodeEditErrMsg struct{ err error }
@@ -351,48 +269,6 @@ func (m *TimeCodeEditModal) View() string {
 		style = focusedInputStyle
 	}
 	b.WriteString(style.Render(m.nameInput.View()))
-	b.WriteString("\n\n")
-
-	// Description field
-	b.WriteString(labelStyle.Render("Description:"))
-	b.WriteString("\n")
-	descIdx := 3
-	if m.isEdit {
-		descIdx = 2
-	}
-	style = inputStyle
-	if m.focusIndex == descIdx {
-		style = focusedInputStyle
-	}
-	b.WriteString(style.Render(m.descriptionInput.View()))
-	b.WriteString("\n\n")
-
-	// Keywords field
-	b.WriteString(labelStyle.Render("Keywords (comma separated):"))
-	b.WriteString("\n")
-	keywordsIdx := 4
-	if m.isEdit {
-		keywordsIdx = 3
-	}
-	style = inputStyle
-	if m.focusIndex == keywordsIdx {
-		style = focusedInputStyle
-	}
-	b.WriteString(style.Render(m.keywordsInput.View()))
-	b.WriteString("\n\n")
-
-	// Examples field
-	b.WriteString(labelStyle.Render("Examples (comma separated):"))
-	b.WriteString("\n")
-	examplesIdx := 5
-	if m.isEdit {
-		examplesIdx = 4
-	}
-	style = inputStyle
-	if m.focusIndex == examplesIdx {
-		style = focusedInputStyle
-	}
-	b.WriteString(style.Render(m.examplesInput.View()))
 	b.WriteString("\n\n")
 
 	// Error
