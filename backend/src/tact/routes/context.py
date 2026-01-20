@@ -109,9 +109,7 @@ def get_context(
     session: Session = Depends(get_session),
 ) -> ContextResponse:
     context = (
-        session.query(ContextDocument)
-        .filter(ContextDocument.id == context_id)
-        .first()
+        session.query(ContextDocument).filter(ContextDocument.id == context_id).first()
     )
     if not context:
         raise HTTPException(status_code=404, detail="Context document not found")
@@ -126,9 +124,7 @@ def update_context(
     session: Session = Depends(get_session),
 ) -> ContextResponse:
     context = (
-        session.query(ContextDocument)
-        .filter(ContextDocument.id == context_id)
-        .first()
+        session.query(ContextDocument).filter(ContextDocument.id == context_id).first()
     )
     if not context:
         raise HTTPException(status_code=404, detail="Context document not found")
@@ -149,9 +145,7 @@ def delete_context(
     session: Session = Depends(get_session),
 ) -> ContextResponse:
     context = (
-        session.query(ContextDocument)
-        .filter(ContextDocument.id == context_id)
-        .first()
+        session.query(ContextDocument).filter(ContextDocument.id == context_id).first()
     )
     if not context:
         raise HTTPException(status_code=404, detail="Context document not found")

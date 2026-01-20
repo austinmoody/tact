@@ -47,9 +47,7 @@ class TimeEntry(Base):
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(default=utc_now)
     parsed_at: Mapped[datetime | None] = mapped_column(default=None)
-    updated_at: Mapped[datetime] = mapped_column(
-        default=utc_now, onupdate=utc_now
-    )
+    updated_at: Mapped[datetime] = mapped_column(default=utc_now, onupdate=utc_now)
 
 
 class Project(Base):
@@ -59,9 +57,7 @@ class Project(Base):
     name: Mapped[str] = mapped_column(nullable=False)
     active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(default=utc_now)
-    updated_at: Mapped[datetime] = mapped_column(
-        default=utc_now, onupdate=utc_now
-    )
+    updated_at: Mapped[datetime] = mapped_column(default=utc_now, onupdate=utc_now)
 
 
 class TimeCode(Base):
@@ -75,9 +71,7 @@ class TimeCode(Base):
     name: Mapped[str] = mapped_column(nullable=False)
     active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(default=utc_now)
-    updated_at: Mapped[datetime] = mapped_column(
-        default=utc_now, onupdate=utc_now
-    )
+    updated_at: Mapped[datetime] = mapped_column(default=utc_now, onupdate=utc_now)
 
 
 class WorkType(Base):
@@ -87,9 +81,7 @@ class WorkType(Base):
     name: Mapped[str] = mapped_column(nullable=False)
     active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(default=utc_now)
-    updated_at: Mapped[datetime] = mapped_column(
-        default=utc_now, onupdate=utc_now
-    )
+    updated_at: Mapped[datetime] = mapped_column(default=utc_now, onupdate=utc_now)
 
 
 class ContextDocument(Base):
@@ -120,6 +112,4 @@ class Config(Base):
 
     key: Mapped[str] = mapped_column(primary_key=True)
     value: Mapped[str] = mapped_column(Text, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(
-        default=utc_now, onupdate=utc_now
-    )
+    updated_at: Mapped[datetime] = mapped_column(default=utc_now, onupdate=utc_now)

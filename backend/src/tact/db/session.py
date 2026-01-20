@@ -20,6 +20,7 @@ def get_session_context() -> Generator[Session, None, None]:
     finally:
         session.close()
 
+
 # Allow tests to override this
 _session_factory: Callable[[], Session] = SessionLocal
 

@@ -63,6 +63,7 @@ def client(db_session):
 
 # Create tests
 
+
 def test_create_entry_user_input_only(client):
     response = client.post(
         "/entries",
@@ -93,6 +94,7 @@ def test_create_entry_missing_user_input(client):
 
 
 # List tests
+
 
 def test_list_entries_all(client):
     client.post("/entries", json={"user_input": "Entry 1"})
@@ -143,6 +145,7 @@ def test_list_entries_pagination(client):
 
 # Get single entry tests
 
+
 def test_get_entry_exists(client):
     create_response = client.post("/entries", json={"user_input": "Test entry"})
     entry_id = create_response.json()["id"]
@@ -158,6 +161,7 @@ def test_get_entry_not_found(client):
 
 
 # Update tests
+
 
 def test_update_entry_success(client):
     create_response = client.post("/entries", json={"user_input": "Original"})
@@ -193,6 +197,7 @@ def test_update_entry_not_found(client):
 
 # Delete tests
 
+
 def test_delete_entry_success(client):
     create_response = client.post("/entries", json={"user_input": "To be deleted"})
     entry_id = create_response.json()["id"]
@@ -222,7 +227,7 @@ def test_update_entry_with_learn_creates_context(client, db_session):
         id="TC-001",
         project_id="test-project",
         name="Test Time Code",
-            )
+    )
     work_type = WorkType(id="meetings", name="Meetings")
     session.add(project)
     session.add(time_code)
@@ -247,9 +252,11 @@ def test_update_entry_with_learn_creates_context(client, db_session):
 
     # Verify context document was created
     session = db_session()
-    contexts = session.query(ContextDocument).filter(
-        ContextDocument.time_code_id == "TC-001"
-    ).all()
+    contexts = (
+        session.query(ContextDocument)
+        .filter(ContextDocument.time_code_id == "TC-001")
+        .all()
+    )
     assert len(contexts) == 1
     assert 'Example: "2h standup meeting"' in contexts[0].content
     assert "120 minutes" in contexts[0].content
@@ -266,7 +273,7 @@ def test_update_entry_with_learn_false_no_context(client, db_session):
         id="TC-001",
         project_id="test-project",
         name="Test Time Code",
-            )
+    )
     session.add(project)
     session.add(time_code)
     session.commit()
@@ -288,9 +295,11 @@ def test_update_entry_with_learn_false_no_context(client, db_session):
 
     # Verify no context document was created
     session = db_session()
-    contexts = session.query(ContextDocument).filter(
-        ContextDocument.time_code_id == "TC-001"
-    ).all()
+    contexts = (
+        session.query(ContextDocument)
+        .filter(ContextDocument.time_code_id == "TC-001")
+        .all()
+    )
     assert len(contexts) == 0
     session.close()
 
@@ -324,7 +333,7 @@ def test_update_entry_context_format_duration_only(client, db_session):
         id="TC-001",
         project_id="test-project",
         name="Test Time Code",
-            )
+    )
     session.add(project)
     session.add(time_code)
     session.commit()
@@ -346,9 +355,11 @@ def test_update_entry_context_format_duration_only(client, db_session):
 
     # Verify context format
     session = db_session()
-    contexts = session.query(ContextDocument).filter(
-        ContextDocument.time_code_id == "TC-001"
-    ).all()
+    contexts = (
+        session.query(ContextDocument)
+        .filter(ContextDocument.time_code_id == "TC-001")
+        .all()
+    )
     assert len(contexts) == 1
     assert 'Example: "30m quick fix"' in contexts[0].content
     assert "30 minutes" in contexts[0].content
