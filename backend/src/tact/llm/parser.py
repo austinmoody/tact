@@ -8,6 +8,7 @@ from tact.db.models import Config, TimeCode, TimeEntry, WorkType
 from tact.llm.provider import (
     LLMProvider,
     ParseContext,
+    ParseResult,
     RAGContext,
     TimeCodeInfo,
     WorkTypeInfo,
@@ -17,7 +18,17 @@ from tact.utils.duration import round_duration
 
 logger = logging.getLogger(__name__)
 
+from dataclasses import dataclass
+
 DEFAULT_CONFIDENCE_THRESHOLD = 0.7
+
+
+@dataclass
+class ParseContextWithRAG:
+    """Parse context bundled with RAG contexts for later use in apply_parse_result."""
+
+    context: ParseContext
+    rag_contexts: list[RAGContext] | None
 
 
 def get_confidence_threshold(session: Session) -> float:
@@ -52,6 +63,101 @@ class EntryParser:
 
     def __init__(self, provider: LLMProvider | None = None):
         self.provider = provider or get_provider()
+
+    def build_parse_context(
+        self, user_input: str, session: Session
+    ) -> ParseContextWithRAG:
+        """Build parsing context from database. Requires active session.
+
+        This method fetches all data needed for parsing (RAG context, time codes,
+        work types) so the actual LLM call can be made without a database connection.
+
+        Args:
+            user_input: The raw text to parse (used for RAG retrieval)
+            session: Active database session
+
+        Returns:
+            ParseContextWithRAG containing ParseContext and RAG contexts
+        """
+        rag_contexts = self._retrieve_rag_context(user_input, session)
+        context = self._build_context(session, rag_contexts)
+        return ParseContextWithRAG(context=context, rag_contexts=rag_contexts)
+
+    def parse_text(self, user_input: str, context: ParseContext) -> ParseResult:
+        """Parse text using pre-built context. No database access required.
+
+        Args:
+            user_input: The raw text to parse
+            context: Pre-built ParseContext from build_parse_context()
+
+        Returns:
+            ParseResult with extracted fields and confidence scores
+        """
+        return self.provider.parse(user_input, context)
+
+    def apply_parse_result(
+        self,
+        entry: TimeEntry,
+        result: ParseResult,
+        rag_contexts: list[RAGContext] | None,
+        session: Session,
+    ) -> bool:
+        """Apply a ParseResult to an entry. Requires active session for threshold lookup.
+
+        Args:
+            entry: The entry to update
+            result: ParseResult from parse_text()
+            rag_contexts: RAG contexts used for building parse notes
+            session: Active database session (for threshold config lookup)
+
+        Returns:
+            True if parsing succeeded, False if there was an error
+        """
+        if result.error:
+            entry.status = "failed"
+            entry.parse_error = result.error
+            logger.warning(f"Entry {entry.id} parse failed: {result.error}")
+            return False
+
+        # Update entry with parsed results (apply duration rounding if configured)
+        entry.duration_minutes = round_duration(result.duration_minutes)
+        entry.work_type_id = result.work_type_id
+        entry.time_code_id = result.time_code_id
+        entry.parsed_description = result.parsed_description
+        entry.confidence_duration = result.confidence_duration
+        entry.confidence_work_type = result.confidence_work_type
+        entry.confidence_time_code = result.confidence_time_code
+        entry.confidence_overall = result.confidence_overall
+        entry.parsed_at = datetime.now(UTC)
+        entry.parse_error = None
+
+        # Build parse_notes from LLM reasoning and RAG context info
+        entry.parse_notes = self._build_parse_notes(result.notes, rag_contexts)
+
+        # Set status based on required fields and confidence threshold
+        threshold = get_confidence_threshold(session)
+        has_time_code = (
+            result.time_code_id is not None
+            and (result.confidence_time_code or 0.0) >= threshold
+        )
+        has_duration = (
+            result.duration_minutes is not None
+            and (result.confidence_duration or 0.0) >= threshold
+        )
+
+        if has_time_code and has_duration:
+            entry.status = "parsed"
+        else:
+            entry.status = "needs_review"
+
+        logger.info(
+            f"Entry {entry.id} parsed: duration={result.duration_minutes}, "
+            f"time_code={result.time_code_id}, work_type={result.work_type_id}, "
+            f"conf_duration={result.confidence_duration}, "
+            f"conf_time_code={result.confidence_time_code}, status={entry.status}"
+        )
+
+        return True
 
     def parse_entry(self, entry: TimeEntry, session: Session) -> bool:
         """Parse a single entry and update it with results.
