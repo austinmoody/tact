@@ -92,9 +92,7 @@ def _parse_single_entry(
     """
     try:
         logger.info(f"Parsing entry {entry_data.id}: {entry_data.user_input[:50]}...")
-        result = parser.parse_text(
-            entry_data.user_input, entry_data.context.context
-        )
+        result = parser.parse_text(entry_data.user_input, entry_data.context.context)
         return ParsedEntry(
             entry_id=entry_data.id,
             result=result,
@@ -137,7 +135,9 @@ def _write_parse_result(parser: EntryParser, parsed: ParsedEntry) -> bool:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to save parse result for entry {parsed.entry_id}: {e}")
+            logger.error(
+                f"Failed to save parse result for entry {parsed.entry_id}: {e}"
+            )
             session.rollback()
             return False
 

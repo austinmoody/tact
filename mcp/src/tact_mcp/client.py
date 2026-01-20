@@ -194,9 +194,7 @@ class TactClient:
         response = self._client.get(f"/projects/{project_id}/context")
         return self._handle_response(response)
 
-    def create_project_context(
-        self, project_id: str, content: str
-    ) -> dict[str, Any]:
+    def create_project_context(self, project_id: str, content: str) -> dict[str, Any]:
         """Create a new context document for a project."""
         response = self._client.post(
             f"/projects/{project_id}/context", json={"content": content}

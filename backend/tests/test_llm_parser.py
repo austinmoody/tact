@@ -89,17 +89,19 @@ class TestOllamaProvider:
 
         mock_response = MagicMock()
         mock_response.json.return_value = {
-            "response": json.dumps({
-                "duration_minutes": 120,
-                "time_code_id": "PROJ-001",
-                "work_type_id": "development",
-                "parsed_description": "Working on alpha",
-                "confidence_duration": 0.95,
-                "confidence_time_code": 0.85,
-                "confidence_work_type": 0.90,
-                "confidence_overall": 0.85,
-                "notes": "Matched to PROJ-001 based on 'alpha' keyword",
-            })
+            "response": json.dumps(
+                {
+                    "duration_minutes": 120,
+                    "time_code_id": "PROJ-001",
+                    "work_type_id": "development",
+                    "parsed_description": "Working on alpha",
+                    "confidence_duration": 0.95,
+                    "confidence_time_code": 0.85,
+                    "confidence_work_type": 0.90,
+                    "confidence_overall": 0.85,
+                    "notes": "Matched to PROJ-001 based on 'alpha' keyword",
+                }
+            )
         }
 
         with patch.object(provider.client, "post", return_value=mock_response):
@@ -120,16 +122,18 @@ class TestOllamaProvider:
 
         mock_response = MagicMock()
         mock_response.json.return_value = {
-            "response": json.dumps({
-                "duration_minutes": 127.5,
-                "time_code_id": "PROJ-001",
-                "work_type_id": "development",
-                "parsed_description": "Working on alpha",
-                "confidence_duration": 0.95,
-                "confidence_time_code": 0.85,
-                "confidence_work_type": 0.90,
-                "confidence_overall": 0.85,
-            })
+            "response": json.dumps(
+                {
+                    "duration_minutes": 127.5,
+                    "time_code_id": "PROJ-001",
+                    "work_type_id": "development",
+                    "parsed_description": "Working on alpha",
+                    "confidence_duration": 0.95,
+                    "confidence_time_code": 0.85,
+                    "confidence_work_type": 0.90,
+                    "confidence_overall": 0.85,
+                }
+            )
         }
 
         with patch.object(provider.client, "post", return_value=mock_response):
@@ -207,8 +211,10 @@ class TestOllamaProvider:
             '{"status": "success"}',
         ]
 
-        with patch.object(provider.client, "get", return_value=mock_tags_response), \
-             patch("tact.llm.ollama.httpx.Client") as mock_client_class:
+        with (
+            patch.object(provider.client, "get", return_value=mock_tags_response),
+            patch("tact.llm.ollama.httpx.Client") as mock_client_class,
+        ):
             mock_pull_client = MagicMock()
             mock_pull_client.stream.return_value = mock_pull_response
             mock_client_class.return_value = mock_pull_client
@@ -248,8 +254,10 @@ class TestOllamaProvider:
             '{"error": "model not found"}',
         ]
 
-        with patch.object(provider.client, "get", return_value=mock_tags_response), \
-             patch("tact.llm.ollama.httpx.Client") as mock_client_class:
+        with (
+            patch.object(provider.client, "get", return_value=mock_tags_response),
+            patch("tact.llm.ollama.httpx.Client") as mock_client_class,
+        ):
             mock_pull_client = MagicMock()
             mock_pull_client.stream.return_value = mock_pull_response
             mock_client_class.return_value = mock_pull_client
@@ -268,25 +276,26 @@ class TestAnthropicProvider:
         mock_message = MagicMock()
         mock_message.content = [
             MagicMock(
-                text=json.dumps({
-                    "duration_minutes": 120,
-                    "time_code_id": "PROJ-001",
-                    "work_type_id": "development",
-                    "parsed_description": "Working on alpha",
-                    "confidence_duration": 0.95,
-                    "confidence_time_code": 0.85,
-                    "confidence_work_type": 0.90,
-                    "confidence_overall": 0.85,
-                    "notes": "Matched to PROJ-001 based on 'alpha' keyword",
-                })
+                text=json.dumps(
+                    {
+                        "duration_minutes": 120,
+                        "time_code_id": "PROJ-001",
+                        "work_type_id": "development",
+                        "parsed_description": "Working on alpha",
+                        "confidence_duration": 0.95,
+                        "confidence_time_code": 0.85,
+                        "confidence_work_type": 0.90,
+                        "confidence_overall": 0.85,
+                        "notes": "Matched to PROJ-001 based on 'alpha' keyword",
+                    }
+                )
             )
         ]
 
-        with patch.object(
-            anthropic.Anthropic, "__init__", return_value=None
-        ), patch.object(
-            anthropic.Anthropic, "messages", create=True
-        ) as mock_messages:
+        with (
+            patch.object(anthropic.Anthropic, "__init__", return_value=None),
+            patch.object(anthropic.Anthropic, "messages", create=True) as mock_messages,
+        ):
             mock_messages.create.return_value = mock_message
             provider = AnthropicProvider(api_key="test-key")
             provider.client = MagicMock()
@@ -307,16 +316,18 @@ class TestAnthropicProvider:
         mock_message = MagicMock()
         mock_message.content = [
             MagicMock(
-                text=json.dumps({
-                    "duration_minutes": 127.5,
-                    "time_code_id": "PROJ-001",
-                    "work_type_id": "development",
-                    "parsed_description": "Working on alpha",
-                    "confidence_duration": 0.95,
-                    "confidence_time_code": 0.85,
-                    "confidence_work_type": 0.90,
-                    "confidence_overall": 0.85,
-                })
+                text=json.dumps(
+                    {
+                        "duration_minutes": 127.5,
+                        "time_code_id": "PROJ-001",
+                        "work_type_id": "development",
+                        "parsed_description": "Working on alpha",
+                        "confidence_duration": 0.95,
+                        "confidence_time_code": 0.85,
+                        "confidence_work_type": 0.90,
+                        "confidence_overall": 0.85,
+                    }
+                )
             )
         ]
 
@@ -366,8 +377,9 @@ class TestAnthropicProvider:
     def test_missing_api_key_raises(self):
         from tact.llm.anthropic import AnthropicProvider
 
-        with patch.dict("os.environ", {}, clear=True), patch.object(
-            anthropic.Anthropic, "__init__", return_value=None
+        with (
+            patch.dict("os.environ", {}, clear=True),
+            patch.object(anthropic.Anthropic, "__init__", return_value=None),
         ):
             with pytest.raises(ValueError, match="API key required"):
                 AnthropicProvider()

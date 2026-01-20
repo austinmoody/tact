@@ -50,23 +50,23 @@ def build_system_prompt(context: ParseContext) -> str:
     # Build RAG context section
     rag_context_text = ""
     if context.rag_contexts:
-        rag_lines = ["\nMatching Context Rules (use these to assign time_code_id - these are SEMANTIC hints):"]
+        rag_lines = [
+            "\nMatching Context Rules (use these to assign time_code_id - these are SEMANTIC hints):"
+        ]
         for rc in context.rag_contexts:
             if rc.time_code_id:
-                rag_lines.append(f"- Work related to \"{rc.content}\" → use time_code_id: {rc.time_code_id}")
+                rag_lines.append(
+                    f'- Work related to "{rc.content}" → use time_code_id: {rc.time_code_id}'
+                )
             else:
                 rag_lines.append(f"- Project {rc.project_id} context: {rc.content}")
         rag_context_text = "\n".join(rag_lines) + "\n"
 
-    time_codes_text = "\n".join(
-        f"- {tc.id}: {tc.name}" for tc in context.time_codes
-    )
+    time_codes_text = "\n".join(f"- {tc.id}: {tc.name}" for tc in context.time_codes)
     if not time_codes_text:
         time_codes_text = "(none defined)"
 
-    work_types_text = "\n".join(
-        f"- {wt.id}: {wt.name}" for wt in context.work_types
-    )
+    work_types_text = "\n".join(f"- {wt.id}: {wt.name}" for wt in context.work_types)
     if not work_types_text:
         work_types_text = "(none defined)"
 

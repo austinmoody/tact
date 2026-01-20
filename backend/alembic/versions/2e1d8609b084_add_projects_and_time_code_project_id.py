@@ -5,6 +5,7 @@ Revises: 64619729f440
 Create Date: 2026-01-13 15:03:28.964334
 
 """
+
 from typing import Sequence, Union
 import logging
 import sys
@@ -15,8 +16,8 @@ import sqlalchemy as sa
 logger = logging.getLogger(__name__)
 
 # revision identifiers, used by Alembic.
-revision: str = '2e1d8609b084'
-down_revision: Union[str, Sequence[str], None] = '64619729f440'
+revision: str = "2e1d8609b084"
+down_revision: Union[str, Sequence[str], None] = "64619729f440"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

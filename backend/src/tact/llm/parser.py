@@ -259,12 +259,8 @@ class EntryParser:
         work_types = session.query(WorkType).filter(WorkType.active.is_(True)).all()
 
         return ParseContext(
-            time_codes=[
-                TimeCodeInfo(id=tc.id, name=tc.name) for tc in time_codes
-            ],
-            work_types=[
-                WorkTypeInfo(id=wt.id, name=wt.name) for wt in work_types
-            ],
+            time_codes=[TimeCodeInfo(id=tc.id, name=tc.name) for tc in time_codes],
+            work_types=[WorkTypeInfo(id=wt.id, name=wt.name) for wt in work_types],
             rag_contexts=rag_contexts,
         )
 

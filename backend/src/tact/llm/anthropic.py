@@ -26,9 +26,7 @@ class AnthropicProvider(LLMProvider):
                 "Anthropic API key required. Set TACT_ANTHROPIC_API_KEY environment "
                 "variable or pass api_key parameter."
             )
-        self.model = model or os.getenv(
-            "TACT_ANTHROPIC_MODEL", DEFAULT_ANTHROPIC_MODEL
-        )
+        self.model = model or os.getenv("TACT_ANTHROPIC_MODEL", DEFAULT_ANTHROPIC_MODEL)
         self.client = anthropic.Anthropic(api_key=self.api_key)
 
     def parse(self, user_input: str, context: ParseContext) -> ParseResult:
@@ -41,9 +39,7 @@ class AnthropicProvider(LLMProvider):
                 model=self.model,
                 max_tokens=1024,
                 system=system_prompt,
-                messages=[
-                    {"role": "user", "content": user_prompt}
-                ],
+                messages=[{"role": "user", "content": user_prompt}],
             )
 
             response_text = message.content[0].text

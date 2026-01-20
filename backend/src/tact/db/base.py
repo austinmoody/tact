@@ -33,7 +33,9 @@ def _set_sqlite_pragma(dbapi_conn, connection_record):
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.execute("PRAGMA journal_mode=WAL")
     cursor.execute("PRAGMA busy_timeout=5000")
-    logger.debug("SQLite pragmas set: foreign_keys=ON, journal_mode=WAL, busy_timeout=5000")
+    logger.debug(
+        "SQLite pragmas set: foreign_keys=ON, journal_mode=WAL, busy_timeout=5000"
+    )
     cursor.close()
 
 
