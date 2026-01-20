@@ -1,8 +1,11 @@
+import logging
 import os
 from pathlib import Path
 
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import DeclarativeBase
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_DB_PATH = "./data/tact.db"
 
@@ -28,6 +31,9 @@ class Base(DeclarativeBase):
 def _set_sqlite_pragma(dbapi_conn, connection_record):
     cursor = dbapi_conn.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.execute("PRAGMA journal_mode=WAL")
+    cursor.execute("PRAGMA busy_timeout=5000")
+    logger.debug("SQLite pragmas set: foreign_keys=ON, journal_mode=WAL, busy_timeout=5000")
     cursor.close()
 
 

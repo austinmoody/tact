@@ -1,4 +1,5 @@
 from collections.abc import Callable, Generator
+from contextlib import contextmanager
 
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -8,6 +9,16 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Alias for external use
 SessionFactory = SessionLocal
+
+
+@contextmanager
+def get_session_context() -> Generator[Session, None, None]:
+    """Context manager for database sessions. Ensures proper cleanup."""
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
 
 # Allow tests to override this
 _session_factory: Callable[[], Session] = SessionLocal
