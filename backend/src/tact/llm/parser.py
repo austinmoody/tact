@@ -1,5 +1,6 @@
 import logging
 import os
+from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
@@ -17,8 +18,6 @@ from tact.rag.retrieval import retrieve_similar_contexts
 from tact.utils.duration import round_duration
 
 logger = logging.getLogger(__name__)
-
-from dataclasses import dataclass
 
 DEFAULT_CONFIDENCE_THRESHOLD = 0.7
 
@@ -102,7 +101,9 @@ class EntryParser:
         rag_contexts: list[RAGContext] | None,
         session: Session,
     ) -> bool:
-        """Apply a ParseResult to an entry. Requires active session for threshold lookup.
+        """Apply a ParseResult to an entry.
+
+        Requires active session for threshold lookup.
 
         Args:
             entry: The entry to update

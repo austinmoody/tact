@@ -1,5 +1,3 @@
-import os
-
 import pytest
 
 from tact.utils.duration import get_rounding_increment, round_duration

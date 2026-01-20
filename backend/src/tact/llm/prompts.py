@@ -19,9 +19,11 @@ Instructions:
    - "1.5h" = 90 minutes
    IMPORTANT: "m" always means minutes, NOT hours. "10m" = 10, not 600.
 2. Match to a time_code_id using this priority order:
-   a. FIRST check Matching Context Rules above - if the entry is semantically related to a rule, use that time_code_id
+   a. FIRST check Matching Context Rules above - if the entry is
+      semantically related to a rule, use that time_code_id
    b. THEN match to a time code name from the available list
-   Note: Context rules are semantic hints, not exact matches. "disaster recovery meeting" matches a rule about "Disaster Recovery activities".
+   Note: Context rules are semantic hints, not exact matches.
+   Example: "disaster recovery meeting" matches "Disaster Recovery".
 3. Match to a work_type_id from the available list
 4. Generate a clean description of the work done
 5. Provide confidence scores (0.0 to 1.0) for each field
@@ -37,11 +39,11 @@ Respond with ONLY valid JSON in this exact format:
   "confidence_time_code": <float 0-1>,
   "confidence_work_type": <float 0-1>,
   "confidence_overall": <float 0-1>,
-  "notes": "<string explaining reasoning for matches, especially which context rules applied>"
+  "notes": "<string explaining reasoning, especially which context rules>"
 }}
 
 If you cannot determine a field, set it to null and give low confidence.
-In notes, explain why you made each decision - especially mention which context rules influenced the match.
+In notes, explain why you made each decision, mentioning context rules.
 Do not include any text outside the JSON object."""
 
 
@@ -50,14 +52,10 @@ def build_system_prompt(context: ParseContext) -> str:
     # Build RAG context section
     rag_context_text = ""
     if context.rag_contexts:
-        rag_lines = [
-            "\nMatching Context Rules (use these to assign time_code_id - these are SEMANTIC hints):"
-        ]
+        rag_lines = ["\nMatching Context Rules (SEMANTIC hints for time_code_id):"]
         for rc in context.rag_contexts:
             if rc.time_code_id:
-                rag_lines.append(
-                    f'- Work related to "{rc.content}" → use time_code_id: {rc.time_code_id}'
-                )
+                rag_lines.append(f'- "{rc.content}" → time_code_id: {rc.time_code_id}')
             else:
                 rag_lines.append(f"- Project {rc.project_id} context: {rc.content}")
         rag_context_text = "\n".join(rag_lines) + "\n"

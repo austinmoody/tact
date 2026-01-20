@@ -1,9 +1,8 @@
 from logging.config import fileConfig
 
-from alembic import context
-from sqlalchemy import create_engine, pool
-from sqlalchemy.engine import Connection
+from sqlalchemy import create_engine
 
+from alembic import context
 from tact.db.base import Base, ensure_db_directory, get_database_url
 
 # this is the Alembic Config object, which provides
