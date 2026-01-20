@@ -18,10 +18,9 @@ type TimerPanel struct {
 	cursor    int
 	inputMode bool
 	input     textinput.Model
-	width     int
-	height    int
-	err       error
-	saving    bool
+	width  int
+	height int
+	err    error
 }
 
 // NewTimerPanel creates a new timer panel
