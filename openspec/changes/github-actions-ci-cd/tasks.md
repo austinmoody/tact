@@ -39,7 +39,7 @@
 
 ## 5. Verification
 
-- [ ] 5.1 Push a test commit to verify Python CI runs
-- [ ] 5.2 Push a test commit to verify Go CI runs
-- [ ] 5.3 Verify release-please creates a release PR
-- [ ] 5.4 Test Docker build workflow (can trigger manually first)
+- [x] 5.1 Push a test commit to verify Python CI runs
+- [x] 5.2 Push a test commit to verify Go CI runs
+- [ ] 5.3 Verify release-please creates a release PR (requires merge to main)
+- [ ] 5.4 Test Docker build workflow (requires a release)
