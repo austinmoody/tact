@@ -6,21 +6,19 @@ Create Date: 2026-01-16 06:43:18.501677
 
 """
 
-from typing import Sequence, Union
+from collections.abc import Sequence
 
 from alembic import op
-import sqlalchemy as sa
-
 
 # revision identifiers, used by Alembic.
 revision: str = "8809038f19d7"
-down_revision: Union[str, Sequence[str], None] = "f79f252be3d6"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | Sequence[str] | None = "f79f252be3d6"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    """Rename raw_text -> user_input and description -> parsed_description in time_entries."""
+    """Rename raw_text -> user_input and description -> parsed_description."""
     # Disable foreign keys during batch operation (required for SQLite)
     op.execute("PRAGMA foreign_keys=OFF")
     with op.batch_alter_table("time_entries") as batch_op:
@@ -30,7 +28,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    """Revert user_input -> raw_text and parsed_description -> description in time_entries."""
+    """Revert user_input -> raw_text and parsed_description -> description."""
     op.execute("PRAGMA foreign_keys=OFF")
     with op.batch_alter_table("time_entries") as batch_op:
         batch_op.alter_column("user_input", new_column_name="raw_text")

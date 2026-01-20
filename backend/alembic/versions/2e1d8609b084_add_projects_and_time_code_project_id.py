@@ -6,20 +6,21 @@ Create Date: 2026-01-13 15:03:28.964334
 
 """
 
-from typing import Sequence, Union
 import logging
 import sys
+from collections.abc import Sequence
+
+import sqlalchemy as sa
 
 from alembic import op
-import sqlalchemy as sa
 
 logger = logging.getLogger(__name__)
 
 # revision identifiers, used by Alembic.
 revision: str = "2e1d8609b084"
-down_revision: Union[str, Sequence[str], None] = "64619729f440"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | Sequence[str] | None = "64619729f440"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def log_step(msg: str) -> None:
@@ -51,7 +52,10 @@ def upgrade() -> None:
     op.execute(
         """
         INSERT INTO projects (id, name, description, active, created_at, updated_at)
-        VALUES ('default', 'Default Project', 'Default project for existing time codes', 1, datetime('now'), datetime('now'))
+        VALUES (
+            'default', 'Default Project', 'Default project for existing time codes',
+            1, datetime('now'), datetime('now')
+        )
         """
     )
     log_step("Step 2: DONE - default project inserted")
