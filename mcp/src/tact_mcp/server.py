@@ -49,7 +49,10 @@ async def list_tools() -> list[Tool]:
                 "properties": {
                     "user_input": {
                         "type": "string",
-                        "description": "Natural language description (e.g., '2 hours development on Project Alpha')",
+                        "description": (
+                            "Natural language description "
+                            "(e.g., '2 hours development on Project Alpha')"
+                        ),
                     },
                     "entry_date": {
                         "type": "string",
@@ -431,7 +434,10 @@ async def list_tools() -> list[Tool]:
         ),
         Tool(
             name="create_project_context",
-            description="Create a new context document for a project (used for RAG-enhanced parsing)",
+            description=(
+                "Create a new context document for a project "
+                "(used for RAG-enhanced parsing)"
+            ),
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -449,7 +455,10 @@ async def list_tools() -> list[Tool]:
         ),
         Tool(
             name="create_time_code_context",
-            description="Create a new context document for a time code (used for RAG-enhanced parsing)",
+            description=(
+                "Create a new context document for a time code "
+                "(used for RAG-enhanced parsing)"
+            ),
             inputSchema={
                 "type": "object",
                 "properties": {

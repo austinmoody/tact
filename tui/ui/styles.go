@@ -19,17 +19,6 @@ var (
 			Background(highlight).
 			Padding(0, 1)
 
-	// Pane styles
-	paneStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(subtle).
-			Padding(0, 1)
-
-	focusedPaneStyle = lipgloss.NewStyle().
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(highlight).
-				Padding(0, 1)
-
 	// List item styles
 	itemStyle = lipgloss.NewStyle().
 			PaddingLeft(2)
@@ -38,12 +27,6 @@ var (
 				Foreground(special).
 				Bold(true).
 				PaddingLeft(0)
-
-	// Detail panel style
-	detailStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(subtle).
-			Padding(0, 1)
 
 	// Status bar style
 	statusStyle = lipgloss.NewStyle().
@@ -100,10 +83,7 @@ var (
 	labelStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#AAAAAA"))
 
-	// Active/Inactive status styles
-	activeStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#73F59F"))
-
+	// Inactive status style
 	inactiveStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#777777"))
 
