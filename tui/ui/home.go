@@ -17,17 +17,20 @@ import (
 const entriesLimit = 15
 
 type Home struct {
-	client       *api.Client
-	timerManager *timer.Manager
-	entries      []model.Entry
-	cursor       int
-	loading      bool
-	err          error
-	width        int
-	height       int
+	client        *api.Client
+	timerManager  *timer.Manager
+	entries       []model.Entry
+	timeCodes     []model.TimeCode
+	timeCodeNames map[string]string // Lookup map: ID -> Name
+	cursor        int
+	loading       bool
+	err           error
+	width         int
+	height        int
 }
 
 type entriesMsg struct{ entries []model.Entry }
+type homeTimeCodesMsg struct{ timeCodes []model.TimeCode }
 type homeErrMsg struct{ err error }
 
 func NewHome(client *api.Client, timerManager *timer.Manager) *Home {
@@ -39,13 +42,13 @@ func NewHome(client *api.Client, timerManager *timer.Manager) *Home {
 }
 
 func (h *Home) Init() tea.Cmd {
-	return h.fetchEntries()
+	return tea.Batch(h.fetchEntries(), h.fetchTimeCodes())
 }
 
 func (h *Home) Refresh() tea.Cmd {
 	h.loading = true
 	h.err = nil
-	return h.fetchEntries()
+	return tea.Batch(h.fetchEntries(), h.fetchTimeCodes())
 }
 
 func (h *Home) fetchEntries() tea.Cmd {
@@ -55,6 +58,16 @@ func (h *Home) fetchEntries() tea.Cmd {
 			return homeErrMsg{err}
 		}
 		return entriesMsg{entries}
+	}
+}
+
+func (h *Home) fetchTimeCodes() tea.Cmd {
+	return func() tea.Msg {
+		timeCodes, err := h.client.FetchTimeCodes()
+		if err != nil {
+			return homeErrMsg{err}
+		}
+		return homeTimeCodesMsg{timeCodes}
 	}
 }
 
@@ -68,6 +81,10 @@ func (h *Home) SelectedEntry() *model.Entry {
 		return nil
 	}
 	return &h.entries[h.cursor]
+}
+
+func (h *Home) TimeCodeNames() map[string]string {
+	return h.timeCodeNames
 }
 
 func (h *Home) Update(msg tea.Msg) (*Home, tea.Cmd) {
@@ -93,6 +110,15 @@ func (h *Home) Update(msg tea.Msg) (*Home, tea.Cmd) {
 	case homeErrMsg:
 		h.err = msg.err
 		h.loading = false
+		return h, nil
+
+	case homeTimeCodesMsg:
+		h.timeCodes = msg.timeCodes
+		// Build lookup map from ID to Name
+		h.timeCodeNames = make(map[string]string)
+		for _, tc := range h.timeCodes {
+			h.timeCodeNames[tc.ID] = tc.Name
+		}
 		return h, nil
 	}
 
@@ -198,9 +224,13 @@ func (h *Home) renderEntryLine(index int, entry model.Entry) string {
 		style = selectedItemStyle
 	}
 
-	// Truncate user input if too long
+	// Time code display (ID + Name, truncated)
+	const timeCodeColWidth = 25
+	timeCodeDisplay := h.getTimeCodeDisplay(entry.TimeCodeID)
+
+	// Truncate user input to fit: width - cursor(2) - timeCodeCol - gap(2) - status(7) - gap(2)
 	userInput := entry.UserInput
-	maxLen := h.width - 20
+	maxLen := h.width - 2 - timeCodeColWidth - 2 - 7 - 2
 	if maxLen < 20 {
 		maxLen = 20
 	}
@@ -211,8 +241,33 @@ func (h *Home) renderEntryLine(index int, entry model.Entry) string {
 	// Status with color
 	status := h.renderStatus(entry.Status)
 
-	line := fmt.Sprintf("%s%-*s  %s", cursor, maxLen, userInput, status)
+	line := fmt.Sprintf("%s%-*s  %-*s  %s", cursor, maxLen, userInput, timeCodeColWidth, timeCodeDisplay, status)
 	return style.Render(line)
+}
+
+func (h *Home) getTimeCodeDisplay(timeCodeID *string) string {
+	if timeCodeID == nil || *timeCodeID == "" {
+		return ""
+	}
+	id := *timeCodeID
+	name, ok := h.timeCodeNames[id]
+	if !ok || name == "" {
+		return id
+	}
+
+	// Combine ID and name, truncate if needed
+	display := fmt.Sprintf("%s %s", id, name)
+	const maxDisplay = 25
+	if len(display) > maxDisplay {
+		// Keep ID visible, truncate name
+		availableForName := maxDisplay - len(id) - 4 // space + "..."
+		if availableForName > 0 && len(name) > availableForName {
+			display = fmt.Sprintf("%s %s...", id, name[:availableForName])
+		} else {
+			display = display[:maxDisplay-3] + "..."
+		}
+	}
+	return display
 }
 
 func (h *Home) renderStatus(status string) string {
