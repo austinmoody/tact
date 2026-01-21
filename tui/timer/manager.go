@@ -122,14 +122,20 @@ func (m *Manager) ActiveTimers() []*Timer {
 	return active
 }
 
+// localMidnight returns the start of today in local timezone
+func localMidnight() time.Time {
+	now := time.Now()
+	return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local)
+}
+
 // CompletedToday returns all stopped timers from today
 func (m *Manager) CompletedToday() []*Timer {
 	var completed []*Timer
-	today := time.Now().Truncate(24 * time.Hour)
+	today := localMidnight()
 
 	for _, t := range m.timers {
 		if t.IsStopped() && t.StoppedAt != nil {
-			if t.StoppedAt.Truncate(24 * time.Hour).Equal(today) {
+			if !t.StoppedAt.Before(today) {
 				completed = append(completed, t)
 			}
 		}
@@ -158,7 +164,7 @@ func (m *Manager) pauseRunning() {
 
 // cleanupOldCompleted removes completed timers from previous days
 func (m *Manager) cleanupOldCompleted() {
-	today := time.Now().Truncate(24 * time.Hour)
+	today := localMidnight()
 	var kept []*Timer
 
 	for _, t := range m.timers {
@@ -167,8 +173,8 @@ func (m *Manager) cleanupOldCompleted() {
 			kept = append(kept, t)
 			continue
 		}
-		// Keep completed timers from today
-		if t.StoppedAt != nil && t.StoppedAt.Truncate(24*time.Hour).Equal(today) {
+		// Keep completed timers from today (stopped at or after local midnight)
+		if t.StoppedAt != nil && !t.StoppedAt.Before(today) {
 			kept = append(kept, t)
 		}
 	}
