@@ -129,6 +129,42 @@ func (c *Client) ReparseEntry(id string) (*model.Entry, error) {
 	return &entry, nil
 }
 
+type EntryUpdate struct {
+	UserInput *string `json:"user_input,omitempty"`
+	EntryDate *string `json:"entry_date,omitempty"`
+}
+
+func (c *Client) UpdateEntry(id string, update EntryUpdate, learn bool) (*model.Entry, error) {
+	jsonBody, err := json.Marshal(update)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	url := fmt.Sprintf("%s/entries/%s?learn=%t", c.baseURL, id, learn)
+	req, err := http.NewRequest(http.MethodPatch, url, bytes.NewReader(jsonBody))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update entry: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status: %d", resp.StatusCode)
+	}
+
+	var entry model.Entry
+	if err := json.NewDecoder(resp.Body).Decode(&entry); err != nil {
+		return nil, fmt.Errorf("failed to decode entry: %w", err)
+	}
+
+	return &entry, nil
+}
+
 // Time Code mutation methods
 
 type TimeCodeCreate struct {

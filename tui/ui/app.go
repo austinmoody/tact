@@ -143,6 +143,11 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.entryDetail = nil
 		return a, a.home.Refresh()
 
+	case EntryUpdatedMsg:
+		a.modal = ModalNone
+		a.entryDetail = nil
+		return a, a.home.Refresh()
+
 	case ModalCloseMsg:
 		a.modal = ModalNone
 		a.entryInput = nil
@@ -452,6 +457,14 @@ func (a *App) propagateToModal(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch a.modal {
+	case ModalNewEntry:
+		if a.entryInput != nil {
+			_, cmd = a.entryInput.Update(msg)
+		}
+	case ModalEntryDetail:
+		if a.entryDetail != nil {
+			_, cmd = a.entryDetail.Update(msg)
+		}
 	case ModalContextList:
 		if a.contextList != nil {
 			_, cmd = a.contextList.Update(msg)
@@ -554,6 +567,7 @@ func (a *App) renderWithModal(screenView string) string {
 
 type EntryCreatedMsg struct{}
 type EntryReparseMsg struct{}
+type EntryUpdatedMsg struct{}
 type ModalCloseMsg struct{}
 type NavigateHomeMsg struct{}
 

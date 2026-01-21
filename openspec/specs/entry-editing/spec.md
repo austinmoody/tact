@@ -1,5 +1,3 @@
-## ADDED Requirements
-
 ### Requirement: User can edit entry user input
 The entry detail modal SHALL allow users to edit the `user_input` field of a time entry.
 
@@ -30,14 +28,16 @@ The entry detail modal SHALL allow users to change the `entry_date` of a time en
 - **WHEN** user enters an invalid date format and attempts to save
 - **THEN** the modal SHALL display an error message and remain in edit mode
 
-### Requirement: Save entry changes with learn flag
-The entry detail modal SHALL save changes via the API with the learn flag enabled.
+### Requirement: Save entry changes
+The entry detail modal SHALL save changes via the API.
 
 #### Scenario: Save changes successfully
 - **WHEN** user presses `Enter` in edit mode with valid changes
-- **THEN** the system SHALL call PATCH /entries/{id}?learn=true with updated fields
+- **THEN** the system SHALL call PATCH /entries/{id}?learn=false with updated fields
 - **AND** the modal SHALL show updated entry details
 - **AND** the home screen entry list SHALL refresh
+
+Note: learn=false is used because user_input and entry_date edits are not AI parsing corrections. The learn flag should only be true when correcting time_code or work_type assignments.
 
 #### Scenario: API error displayed
 - **WHEN** the API returns an error during save
