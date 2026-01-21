@@ -77,8 +77,11 @@ func (h *Home) Update(msg tea.Msg) (*Home, tea.Cmd) {
 
 	case entriesMsg:
 		h.entries = msg.entries
-		// Sort by created_at descending (newest first)
+		// Sort by entry_date descending, then created_at descending within each date
 		sort.Slice(h.entries, func(i, j int) bool {
+			if h.entries[i].EntryDate != h.entries[j].EntryDate {
+				return h.entries[i].EntryDate > h.entries[j].EntryDate
+			}
 			return h.entries[i].CreatedAt.After(h.entries[j].CreatedAt.Time)
 		})
 		h.loading = false

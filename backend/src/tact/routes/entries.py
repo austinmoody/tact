@@ -55,6 +55,8 @@ def list_entries(
     if to_date is not None:
         query = query.filter(TimeEntry.entry_date <= to_date)
 
+    # Sort by entry_date descending, then created_at descending for consistent ordering
+    query = query.order_by(TimeEntry.entry_date.desc(), TimeEntry.created_at.desc())
     query = query.offset(offset).limit(limit)
     entries = query.all()
 
