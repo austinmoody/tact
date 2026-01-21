@@ -130,8 +130,10 @@ func (c *Client) ReparseEntry(id string) (*model.Entry, error) {
 }
 
 type EntryUpdate struct {
-	UserInput *string `json:"user_input,omitempty"`
-	EntryDate *string `json:"entry_date,omitempty"`
+	UserInput  *string `json:"user_input,omitempty"`
+	EntryDate  *string `json:"entry_date,omitempty"`
+	TimeCodeID *string `json:"time_code_id,omitempty"`
+	WorkTypeID *string `json:"work_type_id,omitempty"`
 }
 
 func (c *Client) UpdateEntry(id string, update EntryUpdate, learn bool) (*model.Entry, error) {
