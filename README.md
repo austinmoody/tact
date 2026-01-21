@@ -187,3 +187,40 @@ Open Preferences (Cmd+,) to set the API URL. Default: `http://localhost:2100`
 3. Click "+ New Timer" and enter a description
 4. Work on your task
 5. Click "Stop" when done - the entry is saved to the backend with the elapsed duration
+
+## Potential Future Enhancements
+
+### Ollama Structured Output Schema Support
+
+The current Ollama integration uses basic `"format": "json"` mode which asks the model to return JSON but doesn't enforce a specific structure. Ollama now supports **schema-constrained structured output** where you pass a full JSON schema to the `format` parameter, guaranteeing the exact output format.
+
+**Current implementation** (`backend/src/tact/llm/ollama.py`):
+```python
+"format": "json",
+```
+
+**Enhanced implementation** would pass the expected schema:
+```python
+"format": {
+    "type": "object",
+    "properties": {
+        "duration_minutes": {"type": ["integer", "null"]},
+        "time_code_id": {"type": ["string", "null"]},
+        "work_type_id": {"type": ["string", "null"]},
+        "parsed_description": {"type": ["string", "null"]},
+        "confidence_duration": {"type": "number"},
+        "confidence_time_code": {"type": "number"},
+        "confidence_work_type": {"type": "number"},
+        "confidence_overall": {"type": "number"},
+        "notes": {"type": "string"}
+    },
+    "required": ["duration_minutes", "time_code_id", "confidence_duration", "confidence_time_code"]
+}
+```
+
+This would improve parsing reliability across all Ollama models by ensuring the model always returns the expected fields, rather than relying on prompt instructions alone.
+
+**References:**
+- [Ollama Structured Outputs Blog](https://ollama.com/blog/structured-outputs)
+- [Ollama Structured Outputs Docs](https://docs.ollama.com/capabilities/structured-outputs)
+
