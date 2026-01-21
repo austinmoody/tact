@@ -14,6 +14,23 @@ DEFAULT_OLLAMA_MODEL = "llama3.2:3b"
 DEFAULT_OLLAMA_TIMEOUT = 180.0  # seconds
 DEFAULT_OLLAMA_PULL_TIMEOUT = 600.0  # seconds (10 minutes for model downloads)
 
+# JSON schema for structured output - constrains LLM response to exact field structure
+PARSE_RESULT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "duration_minutes": {"type": "integer"},
+        "work_type_id": {"type": ["string", "null"]},
+        "time_code_id": {"type": ["string", "null"]},
+        "parsed_description": {"type": ["string", "null"]},
+        "confidence_duration": {"type": "number"},
+        "confidence_work_type": {"type": "number"},
+        "confidence_time_code": {"type": "number"},
+        "confidence_overall": {"type": "number"},
+        "notes": {"type": ["string", "null"]},
+    },
+    "required": ["confidence_overall"],
+}
+
 
 class OllamaProvider(LLMProvider):
     """LLM provider using Ollama for local model inference."""
@@ -114,7 +131,7 @@ class OllamaProvider(LLMProvider):
                     "model": self.model,
                     "prompt": f"{system_prompt}\n\n{user_prompt}",
                     "stream": False,
-                    "format": "json",
+                    "format": PARSE_RESULT_SCHEMA,
                 },
             )
             response.raise_for_status()
