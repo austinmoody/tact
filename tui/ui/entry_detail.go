@@ -21,11 +21,12 @@ const (
 )
 
 type EntryDetailModal struct {
-	client    *api.Client
-	entry     *model.Entry
-	width     int
-	reparsing bool
-	err       error
+	client        *api.Client
+	entry         *model.Entry
+	width         int
+	reparsing     bool
+	err           error
+	timeCodeNames map[string]string // Lookup map: ID -> Name (for display)
 
 	// Edit mode fields
 	editMode       bool
@@ -47,7 +48,7 @@ type EntryDetailModal struct {
 	originalWorkTypeID *string
 }
 
-func NewEntryDetailModal(client *api.Client, entry *model.Entry, width int) *EntryDetailModal {
+func NewEntryDetailModal(client *api.Client, entry *model.Entry, width int, timeCodeNames map[string]string) *EntryDetailModal {
 	// Initialize text input fields
 	userInput := textinput.New()
 	userInput.Placeholder = "Enter description..."
@@ -73,6 +74,7 @@ func NewEntryDetailModal(client *api.Client, entry *model.Entry, width int) *Ent
 		client:         client,
 		entry:          entry,
 		width:          width,
+		timeCodeNames:  timeCodeNames,
 		userInputField: userInput,
 		dateField:      dateInput,
 	}
@@ -503,7 +505,17 @@ func (m *EntryDetailModal) View() string {
 		if m.entry.ConfidenceTimeCode != nil {
 			confidence = fmt.Sprintf(" (%.0f%%)", *m.entry.ConfidenceTimeCode*100)
 		}
-		b.WriteString(fmt.Sprintf("  Time Code: %s%s\n", *m.entry.TimeCodeID, confidence))
+		timeCodeDisplay := *m.entry.TimeCodeID
+		if name, ok := m.timeCodeNames[*m.entry.TimeCodeID]; ok && name != "" {
+			// Truncate name if too long (keep ID + confidence visible)
+			displayName := name
+			const maxNameLen = 20
+			if len(displayName) > maxNameLen {
+				displayName = displayName[:maxNameLen-3] + "..."
+			}
+			timeCodeDisplay = fmt.Sprintf("%s - %s", *m.entry.TimeCodeID, displayName)
+		}
+		b.WriteString(fmt.Sprintf("  Time Code: %s%s\n", timeCodeDisplay, confidence))
 	} else {
 		b.WriteString("  Time Code: -\n")
 	}

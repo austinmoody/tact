@@ -396,3 +396,57 @@ The TUI SHALL allow viewing and managing context documents for projects and time
 - When: Esc is pressed
 - Then: The modal closes and focus returns to the parent screen
 
+### Requirement: Entry list displays time code names
+
+The TUI entry list SHALL display time code names alongside IDs for parsed entries.
+
+#### Scenario: Show time code in entry list
+
+- Given: The home screen displays entries with parsed time codes
+- When: Entries are rendered
+- Then: Each entry SHALL show the time code ID and name between the user input and status
+- And: Long time code names SHALL be truncated to fit available space
+
+#### Scenario: Entry without time code
+
+- Given: An entry has no parsed time code
+- When: The entry is rendered
+- Then: The time code column SHALL be empty
+- And: The layout SHALL remain consistent with other entries
+
+### Requirement: Entry detail displays time code names
+
+The TUI entry detail modal SHALL display time code names in the parsed fields section.
+
+#### Scenario: Show time code name in parsed fields
+
+- Given: The entry detail modal displays a parsed time code
+- When: The parsed fields section is rendered
+- Then: The time code line SHALL show: ID, name, and confidence percentage
+- And: The format SHALL be "Time Code: ID - Name (confidence%)"
+
+#### Scenario: Time code name truncation in detail
+
+- Given: The time code name is longer than available space
+- When: The time code is rendered
+- Then: The name SHALL be truncated with ellipsis
+- And: The ID and confidence SHALL always be fully visible
+
+### Requirement: Time codes are cached for display
+
+The TUI SHALL cache time codes for efficient name lookups.
+
+#### Scenario: Fetch time codes on startup
+
+- Given: The TUI starts and loads the home screen
+- When: Initialization completes
+- Then: Time codes SHALL be fetched from the API
+- And: A lookup map from ID to name SHALL be created
+
+#### Scenario: Refresh time codes
+
+- Given: The user presses the refresh key (r)
+- When: Data is refreshed
+- Then: Time codes SHALL be re-fetched along with entries
+- And: The lookup map SHALL be updated
+
