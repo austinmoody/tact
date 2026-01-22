@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.1.0](https://github.com/austinmoody/tact/compare/v1.0.0...v1.1.0) (2026-01-22)
+
+
+### Features
+
+* **ollama:** use JSON schema for structured output ([13472fb](https://github.com/austinmoody/tact/commit/13472fbb9c030c53206703c21ff229b60306cf65))
+* **tui:** add entry editing capability ([b4aab77](https://github.com/austinmoody/tact/commit/b4aab7772343179aa28401958ccf50895c28e6fa))
+* **tui:** add time code and work type editing with learn flag ([a6b1a8e](https://github.com/austinmoody/tact/commit/a6b1a8ef1df0c24743ecb8311e40c490c2e851fa))
+* **tui:** show time code names in entry list and detail view ([0748298](https://github.com/austinmoody/tact/commit/074829823d685c8df71d89096a633c56337725ca))
+
+
+### Bug Fixes
+
+* **ci:** add workflow_dispatch trigger to Docker build ([50cb7da](https://github.com/austinmoody/tact/commit/50cb7da6ad6ffa54db390a9005552c2bcdbc3905))
+* correct date display bugs in TUI and backend API ([64828b6](https://github.com/austinmoody/tact/commit/64828b64917222f1c31198a4e2c9ba5e56b7b280))
+
 ## 1.0.0 (2026-01-21)
 
 
