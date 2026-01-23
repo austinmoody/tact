@@ -74,6 +74,29 @@ func (h *Home) fetchTimeCodes() tea.Cmd {
 func (h *Home) SetSize(width, height int) {
 	h.width = width
 	h.height = height
+	h.clampCursor()
+}
+
+// calculateAvailableEntryLines computes how many lines are available for entries
+// based on terminal height minus fixed UI elements.
+func (h *Home) calculateAvailableEntryLines() int {
+	// Fixed UI overhead:
+	// - Title bar + blank line: 2 lines
+	// - Help bar + blank line before: 2 lines
+	// - Scroll indicator (reserved): 1 line
+	// - Safety margin: 5 lines
+	// - Timer status (if running): +2 lines
+	fixedLines := 10
+	if h.timerManager.RunningTimer() != nil {
+		fixedLines += 2
+	}
+
+	available := h.height - fixedLines
+	// Minimum of 1 entry line regardless of calculated space
+	if available < 1 {
+		available = 1
+	}
+	return available
 }
 
 func (h *Home) SelectedEntry() *model.Entry {
@@ -102,9 +125,7 @@ func (h *Home) Update(msg tea.Msg) (*Home, tea.Cmd) {
 			return h.entries[i].CreatedAt.After(h.entries[j].CreatedAt.Time)
 		})
 		h.loading = false
-		if h.cursor >= len(h.entries) {
-			h.cursor = max(0, len(h.entries)-1)
-		}
+		h.clampCursor()
 		return h, nil
 
 	case homeErrMsg:
@@ -134,7 +155,9 @@ func (h *Home) handleKeyPress(msg tea.KeyPressMsg) (*Home, tea.Cmd) {
 		return h, nil
 
 	case matchesKey(msg, keys.Down):
-		if h.cursor < len(h.entries)-1 {
+		maxVisible := h.calculateMaxVisibleEntries()
+		maxCursor := min(len(h.entries)-1, maxVisible-1)
+		if h.cursor < maxCursor {
 			h.cursor++
 		}
 		return h, nil
@@ -147,7 +170,7 @@ func (h *Home) handleKeyPress(msg tea.KeyPressMsg) (*Home, tea.Cmd) {
 }
 
 func (h *Home) View() string {
-	if h.width == 0 {
+	if h.width == 0 || h.height == 0 {
 		return "Loading..."
 	}
 
@@ -172,8 +195,15 @@ func (h *Home) View() string {
 	} else if len(h.entries) == 0 {
 		b.WriteString(statusStyle.Render("No entries yet. Press [n] to create one.") + "\n")
 	} else {
+		maxVisible := h.calculateMaxVisibleEntries()
 		var currentDate string
+		entriesRendered := 0
+
 		for i, entry := range h.entries {
+			if entriesRendered >= maxVisible {
+				break
+			}
+
 			entryDate := entry.EntryDate
 			if len(entryDate) > 10 {
 				entryDate = entryDate[:10]
@@ -192,6 +222,14 @@ func (h *Home) View() string {
 
 			line := h.renderEntryLine(i, entry)
 			b.WriteString(line + "\n")
+			entriesRendered++
+		}
+
+		// Show scroll indicator if entries are hidden
+		hiddenCount := len(h.entries) - entriesRendered
+		if hiddenCount > 0 {
+			indicator := fmt.Sprintf("↓ %d more entries", hiddenCount)
+			b.WriteString(helpStyle.Render(indicator) + "\n")
 		}
 	}
 
@@ -292,4 +330,69 @@ func (h *Home) formatDateHeader(dateStr string) string {
 
 	// Format as "Monday - Jan 2, 2006"
 	return t.Format("Monday - Jan 2, 2006")
+}
+
+// clampCursor ensures the cursor stays within the visible range of entries.
+func (h *Home) clampCursor() {
+	if len(h.entries) == 0 {
+		h.cursor = 0
+		return
+	}
+	maxVisible := h.calculateMaxVisibleEntries()
+	if h.cursor >= maxVisible {
+		h.cursor = maxVisible - 1
+	}
+	if h.cursor < 0 {
+		h.cursor = 0
+	}
+}
+
+// calculateMaxVisibleEntries determines how many entries can be displayed
+// given the current terminal height and accounting for date headers.
+func (h *Home) calculateMaxVisibleEntries() int {
+	if len(h.entries) == 0 {
+		return 0
+	}
+
+	// If height isn't set yet, show limited entries
+	if h.height == 0 {
+		return min(5, len(h.entries))
+	}
+
+	availableLines := h.calculateAvailableEntryLines()
+	linesUsed := 0
+	visibleCount := 0
+	var currentDate string
+
+	for _, entry := range h.entries {
+		entryDate := entry.EntryDate
+		if len(entryDate) > 10 {
+			entryDate = entryDate[:10]
+		}
+
+		linesNeeded := 1 // Entry line
+
+		// Date header costs
+		if entryDate != currentDate {
+			if currentDate != "" {
+				linesNeeded++ // Space between date groups
+			}
+			linesNeeded += 2 // Date header + separator
+			currentDate = entryDate
+		}
+
+		if linesUsed+linesNeeded > availableLines {
+			break
+		}
+
+		linesUsed += linesNeeded
+		visibleCount++
+	}
+
+	// Always show at least 1 entry if entries exist
+	if visibleCount == 0 && len(h.entries) > 0 {
+		visibleCount = 1
+	}
+
+	return visibleCount
 }
