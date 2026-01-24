@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/austinmoody/tact/compare/v1.1.0...v1.2.0) (2026-01-24)
+
+
+### Features
+
+* **webui:** add web UI dashboard with Go, Templ, and HTMX ([bccf1af](https://github.com/austinmoody/tact/commit/bccf1afabf49e1a1e6cff5b9ef01351af26d760b))
+
 ## [1.1.0](https://github.com/austinmoody/tact/compare/v1.0.0...v1.1.0) (2026-01-22)
 
 
