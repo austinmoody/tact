@@ -1,0 +1,154 @@
+package pages
+
+import (
+	"tact-webui/model"
+	"tact-webui/templates/layouts"
+)
+
+func getProjectNameByID(id string, projects []model.Project) string {
+	for _, p := range projects {
+		if p.ID == id {
+			return p.Name
+		}
+	}
+	return id
+}
+
+templ TimeCodes(timeCodes []model.TimeCode, projects []model.Project) {
+	@layouts.Base("Time Codes") {
+		<h1>Time Codes</h1>
+
+		<section>
+			<h3>Add Time Code</h3>
+			<form hx-post="/time-codes" hx-target="#timecode-list" hx-swap="innerHTML" hx-on::after-request="this.reset()">
+				<div class="grid">
+					<label>
+						ID
+						<input type="text" name="id" placeholder="timecode-id" required/>
+					</label>
+					<label>
+						Project
+						<select name="project_id" required>
+							<option value="">-- Select Project --</option>
+							for _, p := range projects {
+								<option value={ p.ID }>{ p.Name }</option>
+							}
+						</select>
+					</label>
+					<label>
+						Name
+						<input type="text" name="name" placeholder="Time Code Name" required/>
+					</label>
+					<label>
+						&nbsp;
+						<button type="submit">Add</button>
+					</label>
+				</div>
+			</form>
+		</section>
+
+		<section id="timecode-list">
+			@TimeCodeList(timeCodes, projects)
+		</section>
+
+		<div id="context-modal"></div>
+	}
+}
+
+templ TimeCodeList(timeCodes []model.TimeCode, projects []model.Project) {
+	if len(timeCodes) == 0 {
+		<article>
+			<p>No time codes yet. Add your first time code above.</p>
+		</article>
+	} else {
+		<table>
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Name</th>
+					<th>Project</th>
+					<th>Status</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, tc := range timeCodes {
+					@TimeCodeRow(tc, projects)
+				}
+			</tbody>
+		</table>
+	}
+}
+
+templ TimeCodeRow(tc model.TimeCode, projects []model.Project) {
+	<tr id={ "timecode-" + tc.ID }>
+		<td>{ tc.ID }</td>
+		<td>{ tc.Name }</td>
+		<td>{ getProjectNameByID(tc.ProjectID, projects) }</td>
+		<td>
+			if tc.Active {
+				<span class="success">Active</span>
+			} else {
+				<span class="secondary">Inactive</span>
+			}
+		</td>
+		<td>
+			<div class="btn-group">
+				<button
+					class="outline secondary"
+					hx-get={ "/time-codes/" + tc.ID + "/edit" }
+					hx-target={ "#timecode-" + tc.ID }
+					hx-swap="outerHTML"
+				>
+					Edit
+				</button>
+				<button
+					class="outline secondary"
+					hx-get={ "/time-codes/" + tc.ID + "/context" }
+					hx-target="#context-modal"
+					hx-swap="innerHTML"
+				>
+					Context
+				</button>
+				<button
+					class="outline secondary"
+					hx-delete={ "/time-codes/" + tc.ID }
+					hx-target={ "#timecode-" + tc.ID }
+					hx-swap="outerHTML"
+					hx-confirm="Are you sure you want to deactivate this time code?"
+				>
+					Deactivate
+				</button>
+			</div>
+		</td>
+	</tr>
+}
+
+templ TimeCodeEdit(tc model.TimeCode, projects []model.Project) {
+	<tr id={ "timecode-" + tc.ID }>
+		<td>{ tc.ID }</td>
+		<td>
+			<form
+				hx-put={ "/time-codes/" + tc.ID }
+				hx-target={ "#timecode-" + tc.ID }
+				hx-swap="outerHTML"
+			>
+				<input type="text" name="name" value={ tc.Name } required/>
+				<input type="hidden" name="project_id" value={ tc.ProjectID }/>
+				<button type="submit">Save</button>
+			</form>
+		</td>
+		<td>{ getProjectNameByID(tc.ProjectID, projects) }</td>
+		<td></td>
+		<td>
+			<button
+				class="outline secondary"
+				hx-get={ "/time-codes/" + tc.ID + "/row" }
+				hx-target={ "#timecode-" + tc.ID }
+				hx-swap="outerHTML"
+			>
+				Cancel
+			</button>
+		</td>
+	</tr>
+}

@@ -1,0 +1,111 @@
+package components
+
+import (
+	"fmt"
+	"tact-webui/model"
+)
+
+func getTimeCodeName(id *string, timeCodes []model.TimeCode) string {
+	if id == nil {
+		return "-"
+	}
+	for _, tc := range timeCodes {
+		if tc.ID == *id {
+			return tc.Name
+		}
+	}
+	return *id
+}
+
+func getWorkTypeName(id *string, workTypes []model.WorkType) string {
+	if id == nil {
+		return "-"
+	}
+	for _, wt := range workTypes {
+		if wt.ID == *id {
+			return wt.Name
+		}
+	}
+	return *id
+}
+
+func formatDuration(minutes *int) string {
+	if minutes == nil {
+		return "-"
+	}
+	h := *minutes / 60
+	m := *minutes % 60
+	if h > 0 {
+		return fmt.Sprintf("%dh %dm", h, m)
+	}
+	return fmt.Sprintf("%dm", m)
+}
+
+func statusClass(status string) string {
+	switch status {
+	case "parsed":
+		return "success"
+	case "pending":
+		return "warning"
+	case "failed":
+		return "error"
+	default:
+		return ""
+	}
+}
+
+templ EntryList(entries []model.Entry, timeCodes []model.TimeCode, workTypes []model.WorkType) {
+	if len(entries) == 0 {
+		<article>
+			<p>No entries yet. Add your first time entry above.</p>
+		</article>
+	} else {
+		<table>
+			<thead>
+				<tr>
+					<th>Date</th>
+					<th>Description</th>
+					<th>Duration</th>
+					<th>Time Code</th>
+					<th>Work Type</th>
+					<th>Status</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, entry := range entries {
+					@EntryRow(entry, timeCodes, workTypes)
+				}
+			</tbody>
+		</table>
+	}
+}
+
+templ EntryRow(entry model.Entry, timeCodes []model.TimeCode, workTypes []model.WorkType) {
+	<tr id={ "entry-" + entry.ID }>
+		<td>{ entry.EntryDate }</td>
+		<td>
+			if entry.ParsedDescription != nil {
+				{ *entry.ParsedDescription }
+			} else {
+				{ entry.UserInput }
+			}
+		</td>
+		<td>{ formatDuration(entry.DurationMinutes) }</td>
+		<td>{ getTimeCodeName(entry.TimeCodeID, timeCodes) }</td>
+		<td>{ getWorkTypeName(entry.WorkTypeID, workTypes) }</td>
+		<td>
+			<span class={ statusClass(entry.Status) }>{ entry.Status }</span>
+		</td>
+		<td>
+			<button
+				class="outline secondary"
+				hx-get={ "/entries/" + entry.ID + "/detail" }
+				hx-target={ "#entry-" + entry.ID }
+				hx-swap="outerHTML"
+			>
+				Edit
+			</button>
+		</td>
+	</tr>
+}

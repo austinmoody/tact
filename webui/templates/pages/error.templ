@@ -1,0 +1,23 @@
+package pages
+
+import "tact-webui/templates/layouts"
+
+templ Error(title string, message string) {
+	@layouts.Base(title) {
+		<article>
+			<header>
+				<h2>{ title }</h2>
+			</header>
+			<p>{ message }</p>
+			<footer>
+				<a href="/" role="button">Return Home</a>
+			</footer>
+		</article>
+	}
+}
+
+templ ErrorPartial(message string) {
+	<article class="error">
+		<p>{ message }</p>
+	</article>
+}

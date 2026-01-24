@@ -23,6 +23,17 @@ services:
     volumes:
       - ollama_data:/root/.ollama
 
+  webui:
+    build:
+      context: ./webui
+      dockerfile: Dockerfile
+    ports:
+      - "2200:2200"
+    environment:
+      - TACT_API_URL=http://api:2100
+    depends_on:
+      - api
+
   mcp:
     build:
       context: ./mcp
