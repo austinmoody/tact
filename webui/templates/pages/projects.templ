@@ -1,0 +1,142 @@
+package pages
+
+import (
+	"tact-webui/model"
+	"tact-webui/templates/layouts"
+)
+
+templ Projects(projects []model.Project) {
+	@layouts.Base("Projects") {
+		<h1>Projects</h1>
+
+		<section>
+			<h3>Add Project</h3>
+			<form hx-post="/projects" hx-target="#project-list" hx-swap="innerHTML" hx-on::after-request="this.reset()">
+				<div class="grid">
+					<label>
+						ID
+						<input type="text" name="id" placeholder="project-id" required/>
+					</label>
+					<label>
+						Name
+						<input type="text" name="name" placeholder="Project Name" required/>
+					</label>
+					<label>
+						&nbsp;
+						<button type="submit">Add</button>
+					</label>
+				</div>
+			</form>
+		</section>
+
+		<section>
+			<input
+				type="search"
+				name="search"
+				placeholder="Search projects..."
+				hx-get="/projects/list"
+				hx-target="#project-list"
+				hx-swap="innerHTML"
+				hx-trigger="input changed delay:300ms, search"
+			/>
+		</section>
+
+		<section id="project-list">
+			@ProjectList(projects)
+		</section>
+
+		<div id="context-modal"></div>
+	}
+}
+
+templ ProjectList(projects []model.Project) {
+	if len(projects) == 0 {
+		<article>
+			<p>No projects yet. Add your first project above.</p>
+		</article>
+	} else {
+		<table>
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Name</th>
+					<th>Status</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, project := range projects {
+					@ProjectRow(project)
+				}
+			</tbody>
+		</table>
+	}
+}
+
+templ ProjectRow(project model.Project) {
+	<tr id={ "project-" + project.ID }>
+		<td>{ project.ID }</td>
+		<td>{ project.Name }</td>
+		<td>
+			if project.Active {
+				<span class="success">Active</span>
+			} else {
+				<span class="secondary">Inactive</span>
+			}
+		</td>
+		<td>
+			<div class="btn-group">
+				<button
+					class="outline secondary"
+					hx-get={ "/projects/" + project.ID + "/edit" }
+					hx-target={ "#project-" + project.ID }
+					hx-swap="outerHTML"
+				>
+					Edit
+				</button>
+				<button
+					class="outline secondary"
+					hx-get={ "/projects/" + project.ID + "/context" }
+					hx-target="#context-modal"
+					hx-swap="innerHTML"
+				>
+					Context
+				</button>
+				<button
+					class="outline secondary"
+					hx-delete={ "/projects/" + project.ID }
+					hx-target={ "#project-" + project.ID }
+					hx-swap="outerHTML"
+					hx-confirm="Are you sure you want to deactivate this project?"
+				>
+					Deactivate
+				</button>
+			</div>
+		</td>
+	</tr>
+}
+
+templ ProjectEdit(project model.Project) {
+	<tr id={ "project-" + project.ID }>
+		<td>{ project.ID }</td>
+		<td colspan="2">
+			<form
+				hx-put={ "/projects/" + project.ID }
+				hx-target={ "#project-" + project.ID }
+				hx-swap="outerHTML"
+			>
+				<input type="text" name="name" value={ project.Name } required/>
+			</form>
+		</td>
+		<td>
+			<button
+				class="outline secondary"
+				hx-get={ "/projects/" + project.ID + "/row" }
+				hx-target={ "#project-" + project.ID }
+				hx-swap="outerHTML"
+			>
+				Cancel
+			</button>
+		</td>
+	</tr>
+}

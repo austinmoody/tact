@@ -1,0 +1,28 @@
+package pages
+
+import (
+	"tact-webui/model"
+	"tact-webui/templates/layouts"
+	"tact-webui/templates/components"
+)
+
+templ Home(entries []model.Entry, timeCodes []model.TimeCode, workTypes []model.WorkType) {
+	@layouts.Base("Entries") {
+		<h1>Time Entries</h1>
+
+		<section>
+			@components.EntryForm()
+		</section>
+
+		<section>
+			<h3>Filter Entries</h3>
+			@components.EntryFilter("", "", "")
+		</section>
+
+		<section id="entry-list" hx-get="/entries/list" hx-trigger="entryCreated from:body">
+			<div id="entry-list-content">
+				@components.EntryList(entries, timeCodes, workTypes)
+			</div>
+		</section>
+	}
+}

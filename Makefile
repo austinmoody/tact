@@ -1,4 +1,4 @@
-.PHONY: help install run test lint format migrate db-revision docker-build docker-up docker-down tui-build tui-run tui-dev
+.PHONY: help install run test lint format migrate db-revision docker-build docker-up docker-down tui-build tui-run tui-dev webui-generate webui-build webui-run webui-dev
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
@@ -41,3 +41,15 @@ tui-run: ## Run TUI
 
 tui-dev: ## Run TUI (dev mode, localhost:2100)
 	cd tui && go run . --api http://localhost:2100
+
+webui-generate: ## Generate templ files for Web UI
+	cd webui && templ generate
+
+webui-build: webui-generate ## Build Web UI binary
+	cd webui && go build -o tact-webui .
+
+webui-run: ## Run Web UI (port 2200)
+	cd webui && go run .
+
+webui-dev: ## Run Web UI (dev mode, localhost:2100)
+	cd webui && go run . --api http://localhost:2100

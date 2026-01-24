@@ -1,0 +1,92 @@
+package components
+
+import "tact-webui/model"
+
+templ ContextList(docs []model.ContextDocument, entityType string, entityID string) {
+	<dialog open id="context-modal">
+		<article>
+			<header>
+				<button aria-label="Close" rel="prev" onclick="this.closest('dialog').close()"></button>
+				<h3>Context Documents</h3>
+			</header>
+
+			<form
+				if entityType == "project" {
+					hx-post={ "/projects/" + entityID + "/context" }
+				} else {
+					hx-post={ "/time-codes/" + entityID + "/context" }
+				}
+				hx-target="#context-modal"
+				hx-swap="innerHTML"
+			>
+				<label>
+					Add Context
+					<textarea name="content" rows="3" placeholder="Enter context information..."></textarea>
+				</label>
+				<button type="submit">Add</button>
+			</form>
+
+			<hr/>
+
+			if len(docs) == 0 {
+				<p>No context documents yet.</p>
+			} else {
+				for _, doc := range docs {
+					@ContextItem(doc)
+				}
+			}
+
+			<footer>
+				<button class="secondary" onclick="this.closest('dialog').close()">Close</button>
+			</footer>
+		</article>
+	</dialog>
+}
+
+templ ContextItem(doc model.ContextDocument) {
+	<article id={ "context-" + doc.ID }>
+		<p>{ doc.Content }</p>
+		<footer>
+			<small>{ doc.CreatedAt.Format("2006-01-02 15:04") }</small>
+			<button
+				class="outline secondary"
+				hx-get={ "/context/" + doc.ID + "/edit" }
+				hx-target={ "#context-" + doc.ID }
+				hx-swap="outerHTML"
+			>
+				Edit
+			</button>
+			<button
+				class="outline secondary"
+				hx-delete={ "/context/" + doc.ID }
+				hx-target={ "#context-" + doc.ID }
+				hx-swap="outerHTML"
+				hx-confirm="Delete this context document?"
+			>
+				Delete
+			</button>
+		</footer>
+	</article>
+}
+
+templ ContextEdit(doc model.ContextDocument) {
+	<article id={ "context-" + doc.ID }>
+		<form
+			hx-put={ "/context/" + doc.ID }
+			hx-target={ "#context-" + doc.ID }
+			hx-swap="outerHTML"
+		>
+			<textarea name="content" rows="3">{ doc.Content }</textarea>
+			<button type="submit">Save</button>
+			<button
+				type="button"
+				class="secondary"
+				hx-get={ "/context/" + doc.ID }
+				hx-target={ "#context-" + doc.ID }
+				hx-swap="outerHTML"
+			>
+				Cancel
+			</button>
+		</form>
+	</article>
+}

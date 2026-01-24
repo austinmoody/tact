@@ -1,0 +1,105 @@
+package components
+
+import (
+	"tact-webui/model"
+)
+
+templ EntryDetail(entry model.Entry, timeCodes []model.TimeCode, workTypes []model.WorkType) {
+	<tr id={ "entry-" + entry.ID } class="entry-detail-row">
+		<td colspan="7">
+			<article>
+				<header>
+					<strong>Edit Entry</strong>
+					<button
+						class="outline secondary close-btn"
+						hx-get={ "/entries/" + entry.ID + "/row" }
+						hx-target={ "#entry-" + entry.ID }
+						hx-swap="outerHTML"
+					>
+						Close
+					</button>
+				</header>
+				<form
+					hx-patch={ "/entries/" + entry.ID }
+					hx-target={ "#entry-" + entry.ID }
+					hx-swap="outerHTML"
+				>
+					<div class="grid">
+						<label>
+							Date
+							<input type="date" name="entry_date" value={ entry.EntryDate }/>
+						</label>
+						<label>
+							Time Code
+							<select name="time_code_id">
+								<option value="">-- Select --</option>
+								for _, tc := range timeCodes {
+									<option
+										value={ tc.ID }
+										if entry.TimeCodeID != nil && *entry.TimeCodeID == tc.ID {
+											selected
+										}
+									>
+										{ tc.Name }
+									</option>
+								}
+							</select>
+						</label>
+						<label>
+							Work Type
+							<select name="work_type_id">
+								<option value="">-- Select --</option>
+								for _, wt := range workTypes {
+									<option
+										value={ wt.ID }
+										if entry.WorkTypeID != nil && *entry.WorkTypeID == wt.ID {
+											selected
+										}
+									>
+										{ wt.Name }
+									</option>
+								}
+							</select>
+						</label>
+					</div>
+					<label>
+						Original Input
+						<textarea name="user_input" rows="2">{ entry.UserInput }</textarea>
+					</label>
+					if entry.ParseError != nil {
+						<article class="error">
+							<strong>Parse Error:</strong> { *entry.ParseError }
+						</article>
+					}
+					if entry.ParseNotes != nil {
+						<details>
+							<summary>Parse Notes</summary>
+							<p>{ *entry.ParseNotes }</p>
+						</details>
+					}
+					<div class="grid">
+						<button type="submit">Save</button>
+						<button
+							type="button"
+							class="secondary"
+							hx-post={ "/entries/" + entry.ID + "/reparse" }
+							hx-target={ "#entry-" + entry.ID }
+							hx-swap="outerHTML"
+						>
+							Reparse
+						</button>
+						<button
+							type="button"
+							class="outline secondary"
+							hx-get={ "/entries/" + entry.ID + "/row" }
+							hx-target={ "#entry-" + entry.ID }
+							hx-swap="outerHTML"
+						>
+							Cancel
+						</button>
+					</div>
+				</form>
+			</article>
+		</td>
+	</tr>
+}

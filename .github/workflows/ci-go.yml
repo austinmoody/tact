@@ -7,7 +7,7 @@ on:
     branches: [main, develop]
 
 jobs:
-  build-and-test:
+  build-and-test-tui:
     name: Build and Test TUI
     runs-on: ubuntu-latest
     defaults:
@@ -22,6 +22,43 @@ jobs:
         with:
           go-version: "1.24"
           cache-dependency-path: tui/go.sum
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -v ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Install staticcheck
+        run: go install honnef.co/go/tools/cmd/staticcheck@latest
+
+      - name: Run staticcheck
+        run: staticcheck ./...
+
+  build-and-test-webui:
+    name: Build and Test Web UI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: webui
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go 1.24
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache-dependency-path: webui/go.sum
+
+      - name: Install templ
+        run: go install github.com/a-h/templ/cmd/templ@latest
+
+      - name: Generate templ files
+        run: templ generate
 
       - name: Build
         run: go build -v ./...
