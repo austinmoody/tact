@@ -1,0 +1,114 @@
+package pages
+
+import (
+	"tact-webui/model"
+	"tact-webui/templates/layouts"
+)
+
+templ WorkTypes(workTypes []model.WorkType) {
+	@layouts.Base("Work Types") {
+		<h1>Work Types</h1>
+
+		<section>
+			<h3>Add Work Type</h3>
+			<form hx-post="/work-types" hx-target="#worktype-list" hx-swap="innerHTML" hx-on::after-request="this.reset()">
+				<fieldset role="group">
+					<input type="text" name="name" placeholder="Work Type Name" required/>
+					<button type="submit">Add</button>
+				</fieldset>
+			</form>
+		</section>
+
+		<section id="worktype-list">
+			@WorkTypeList(workTypes)
+		</section>
+	}
+}
+
+templ WorkTypeList(workTypes []model.WorkType) {
+	if len(workTypes) == 0 {
+		<article>
+			<p>No work types yet. Add your first work type above.</p>
+		</article>
+	} else {
+		<table>
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Name</th>
+					<th>Status</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, wt := range workTypes {
+					@WorkTypeRow(wt)
+				}
+			</tbody>
+		</table>
+	}
+}
+
+templ WorkTypeRow(wt model.WorkType) {
+	<tr id={ "worktype-" + wt.ID }>
+		<td>{ wt.ID }</td>
+		<td>{ wt.Name }</td>
+		<td>
+			if wt.Active {
+				<span class="success">Active</span>
+			} else {
+				<span class="secondary">Inactive</span>
+			}
+		</td>
+		<td>
+			<div class="btn-group">
+				<button
+					class="outline secondary"
+					hx-get={ "/work-types/" + wt.ID + "/edit" }
+					hx-target={ "#worktype-" + wt.ID }
+					hx-swap="outerHTML"
+				>
+					Edit
+				</button>
+				<button
+					class="outline secondary"
+					hx-delete={ "/work-types/" + wt.ID }
+					hx-target={ "#worktype-" + wt.ID }
+					hx-swap="outerHTML"
+					hx-confirm="Are you sure you want to deactivate this work type?"
+				>
+					Deactivate
+				</button>
+			</div>
+		</td>
+	</tr>
+}
+
+templ WorkTypeEdit(wt model.WorkType) {
+	<tr id={ "worktype-" + wt.ID }>
+		<td>{ wt.ID }</td>
+		<td>
+			<form
+				hx-put={ "/work-types/" + wt.ID }
+				hx-target={ "#worktype-" + wt.ID }
+				hx-swap="outerHTML"
+			>
+				<fieldset role="group">
+					<input type="text" name="name" value={ wt.Name } required/>
+					<button type="submit">Save</button>
+				</fieldset>
+			</form>
+		</td>
+		<td></td>
+		<td>
+			<button
+				class="outline secondary"
+				hx-get={ "/work-types/" + wt.ID + "/row" }
+				hx-target={ "#worktype-" + wt.ID }
+				hx-swap="outerHTML"
+			>
+				Cancel
+			</button>
+		</td>
+	</tr>
+}

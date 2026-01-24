@@ -1,0 +1,85 @@
+package pages
+
+import "tact-webui/templates/layouts"
+
+type TimerState struct {
+	Active      bool
+	Paused      bool
+	Description string
+	Elapsed     string
+}
+
+templ Timer(state TimerState) {
+	@layouts.Base("Timer") {
+		<h1>Timer</h1>
+
+		<article id="timer-container" hx-ext="sse" sse-connect="/timer/stream">
+			<header>
+				<h2 id="timer-display" sse-swap="timer-display">{ state.Elapsed }</h2>
+			</header>
+
+			if state.Active {
+				<p id="timer-description" sse-swap="timer-description">{ state.Description }</p>
+			}
+
+			<footer id="timer-controls" sse-swap="timer-controls">
+				@TimerControls(state)
+			</footer>
+		</article>
+
+		if !state.Active {
+			<article>
+				<h3>Start New Timer</h3>
+				<form hx-post="/timer/start" hx-target="#timer-container" hx-swap="outerHTML">
+					<label>
+						Description
+						<input
+							type="text"
+							name="description"
+							placeholder="Working on feature X"
+							required
+						/>
+					</label>
+					<button type="submit">Start Timer</button>
+				</form>
+			</article>
+		}
+	}
+}
+
+templ TimerControls(state TimerState) {
+	<div class="grid">
+		if state.Active {
+			if state.Paused {
+				<button hx-post="/timer/resume" hx-target="#timer-controls" hx-swap="innerHTML">
+					Resume
+				</button>
+			} else {
+				<button hx-post="/timer/pause" hx-target="#timer-controls" hx-swap="innerHTML">
+					Pause
+				</button>
+			}
+			<button class="secondary" hx-post="/timer/stop">
+				Stop & Save
+			</button>
+			<button class="outline secondary" hx-post="/timer/discard" hx-confirm="Are you sure you want to discard this timer?">
+				Discard
+			</button>
+		} else {
+			<p>No timer running</p>
+		}
+	</div>
+}
+
+templ TimerDisplay(elapsed string) {
+	{ elapsed }
+}
+
+templ TimerIndicator(active bool, elapsed string) {
+	if active {
+		<a href="/timer" class="timer-indicator">
+			<span class="timer-icon">⏱</span>
+			<span>{ elapsed }</span>
+		</a>
+	}
+}

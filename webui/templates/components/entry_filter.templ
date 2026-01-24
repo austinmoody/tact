@@ -1,0 +1,35 @@
+package components
+
+templ EntryFilter(status string, dateFrom string, dateTo string) {
+	<form
+		id="entry-filters"
+		hx-get="/entries/list"
+		hx-target="#entry-list-content"
+		hx-swap="innerHTML"
+		hx-trigger="change from:select, change from:input[type=date]"
+	>
+		<div class="grid">
+			<label>
+				Status
+				<select name="status">
+					<option value="" selected?={ status == "" }>All</option>
+					<option value="parsed" selected?={ status == "parsed" }>Parsed</option>
+					<option value="pending" selected?={ status == "pending" }>Pending</option>
+					<option value="failed" selected?={ status == "failed" }>Failed</option>
+				</select>
+			</label>
+			<label>
+				From Date
+				<input type="date" name="date_from" value={ dateFrom }/>
+			</label>
+			<label>
+				To Date
+				<input type="date" name="date_to" value={ dateTo }/>
+			</label>
+			<label>
+				&nbsp;
+				<button type="button" class="outline secondary" hx-get="/entries/list" hx-target="#entry-list-content" hx-swap="innerHTML">Clear</button>
+			</label>
+		</div>
+	</form>
+}

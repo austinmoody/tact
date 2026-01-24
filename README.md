@@ -8,6 +8,7 @@
 
 - **backend/** - FastAPI REST API (Python)
 - **tui/** - Terminal UI dashboard (Go/Bubbletea)
+- **webui/** - Web UI dashboard (Go/Templ/HTMX)
 - **mcp/** - MCP server for AI assistants (Python)
 - **macos/** - Native macOS timer app (Swift/AppKit)
 
@@ -139,6 +140,60 @@ The TUI connects to the backend API. Configure the URL via:
 | `s` | Stop timer (creates entry) |
 | `d` | Delete timer |
 | `t` / `Esc` | Close panel |
+
+## Web UI
+
+A browser-based dashboard built with Go, Templ templates, and HTMX for a responsive, server-rendered experience.
+
+### Build & Run
+
+```bash
+# Build binary
+make webui-build
+
+# Run directly (connects to API at http://localhost:2100)
+make webui-run
+
+# Run with explicit API URL
+make webui-dev
+```
+
+### Docker
+
+```bash
+# Build the Docker image
+docker build -t tact-webui ./webui
+
+# Run with docker-compose
+docker compose up webui
+```
+
+### Configuration
+
+The Web UI connects to the backend API. Configure the URL via:
+
+1. `--api` flag: `./webui/tact-webui --api http://localhost:2100`
+2. `TACT_API_URL` env var: `TACT_API_URL=http://server:2100 ./webui/tact-webui`
+3. Default: `http://localhost:2100`
+
+The Web UI runs on port **2200** by default.
+
+### Features
+
+- **Entries**: View and manage time entries with filtering by status and date range
+- **Timer**: Track time with start/pause/resume/stop controls, live elapsed time display via SSE
+- **Projects**: Create and manage projects with search/filter functionality
+- **Time Codes**: Manage billing codes with project associations
+- **Work Types**: Manage categories of work
+- **Context Management**: Add RAG context documents to projects and time codes
+
+### Technology Stack
+
+- **Go** - Backend server
+- **Templ** - Type-safe HTML templating
+- **HTMX** - Dynamic interactions without JavaScript frameworks
+- **Pico CSS** - Minimal, classless CSS framework
+- **SSE** - Server-Sent Events for real-time timer updates
 
 ## macOS App (Tact Timer)
 
