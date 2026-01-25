@@ -15,6 +15,7 @@ templ EntryFilter(status string, dateFrom string, dateTo string) {
 					<option value="" selected?={ status == "" }>All</option>
 					<option value="parsed" selected?={ status == "parsed" }>Parsed</option>
 					<option value="pending" selected?={ status == "pending" }>Pending</option>
+					<option value="needs_review" selected?={ status == "needs_review" }>Needs Review</option>
 					<option value="failed" selected?={ status == "failed" }>Failed</option>
 				</select>
 			</label>
@@ -28,7 +29,10 @@ templ EntryFilter(status string, dateFrom string, dateTo string) {
 			</label>
 			<label>
 				&nbsp;
-				<button type="button" class="outline secondary" hx-get="/entries/list" hx-target="#entry-list-content" hx-swap="innerHTML">Clear</button>
+				<div class="btn-group">
+					<button type="button" hx-get="/entries/list" hx-include="#entry-filters" hx-target="#entry-list-content" hx-swap="innerHTML">Refresh</button>
+					<button type="button" class="outline secondary" hx-get="/entries/list" hx-target="#entry-list-content" hx-swap="innerHTML">Clear</button>
+				</div>
 			</label>
 		</div>
 	</form>

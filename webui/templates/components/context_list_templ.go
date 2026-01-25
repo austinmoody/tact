@@ -31,7 +31,7 @@ func ContextList(docs []model.ContextDocument, entityType string, entityID strin
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<dialog open id=\"context-modal\"><article><header><button aria-label=\"Close\" rel=\"prev\" onclick=\"this.closest('dialog').close()\"></button><h3>Context Documents</h3></header><form")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<dialog open id=\"context-modal\"><article><header><h3>Context Documents</h3><button class=\"win31-close-btn\" aria-label=\"Close\" onclick=\"this.closest('dialog').close()\">X</button></header><form")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

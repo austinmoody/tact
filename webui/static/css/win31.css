@@ -1,0 +1,879 @@
+/* Windows 3.1 Theme for TACT Web UI */
+
+/* ========================================
+   Color Variables (Windows 3.1 Palette)
+   ======================================== */
+:root {
+    /* Primary colors */
+    --win31-gray: #C0C0C0;
+    --win31-dark-gray: #808080;
+    --win31-light-gray: #DFDFDF;
+    --win31-white: #FFFFFF;
+    --win31-black: #000000;
+
+    /* Title bar colors */
+    --win31-title-active: #000080;
+    --win31-title-inactive: #808080;
+    --win31-title-text: #FFFFFF;
+
+    /* Button colors */
+    --win31-button-face: #C0C0C0;
+    --win31-button-highlight: #FFFFFF;
+    --win31-button-shadow: #808080;
+    --win31-button-dark-shadow: #000000;
+
+    /* Input colors */
+    --win31-input-bg: #FFFFFF;
+    --win31-input-border: #808080;
+
+    /* Status colors */
+    --win31-success: #008000;
+    --win31-warning: #808000;
+    --win31-error: #FF0000;
+    --win31-link: #000080;
+
+    /* Spacing */
+    --win31-spacing-xs: 2px;
+    --win31-spacing-sm: 4px;
+    --win31-spacing-md: 8px;
+    --win31-spacing-lg: 16px;
+    --win31-spacing-xl: 24px;
+}
+
+/* ========================================
+   Reset and Base Styles
+   ======================================== */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: unset;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+    background-color: #008080; /* Classic teal desktop */
+    color: var(--win31-black);
+    min-height: 100vh;
+}
+
+/* ========================================
+   3D Beveled Border Utilities
+   ======================================== */
+
+/* Raised effect (buttons, windows) */
+.win31-raised {
+    border: 2px solid;
+    border-color: var(--win31-button-highlight) var(--win31-button-dark-shadow) var(--win31-button-dark-shadow) var(--win31-button-highlight);
+    box-shadow: inset 1px 1px 0 var(--win31-light-gray), inset -1px -1px 0 var(--win31-button-shadow);
+}
+
+/* Sunken effect (inputs, inset panels) */
+.win31-sunken {
+    border: 2px solid;
+    border-color: var(--win31-button-shadow) var(--win31-button-highlight) var(--win31-button-highlight) var(--win31-button-shadow);
+    box-shadow: inset 1px 1px 0 var(--win31-button-dark-shadow), inset -1px -1px 0 var(--win31-light-gray);
+}
+
+/* Window frame (outer border) */
+.win31-window {
+    background-color: var(--win31-gray);
+    border: 2px solid;
+    border-color: var(--win31-button-highlight) var(--win31-button-dark-shadow) var(--win31-button-dark-shadow) var(--win31-button-highlight);
+    box-shadow: inset 1px 1px 0 var(--win31-light-gray), inset -1px -1px 0 var(--win31-button-shadow);
+    padding: 2px;
+}
+
+/* ========================================
+   Title Bar Styles
+   ======================================== */
+.win31-titlebar {
+    background: var(--win31-title-active);
+    color: var(--win31-title-text);
+    font-weight: bold;
+    padding: 2px 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+    font-size: 12px;
+}
+
+.win31-titlebar-inactive {
+    background: var(--win31-title-inactive);
+}
+
+.win31-titlebar-text {
+    flex-grow: 1;
+    padding-left: 4px;
+}
+
+.win31-titlebar-buttons {
+    display: flex;
+    gap: 2px;
+}
+
+.win31-titlebar-btn {
+    width: 18px;
+    height: 16px;
+    background: var(--win31-gray);
+    border: 2px solid;
+    border-color: var(--win31-button-highlight) var(--win31-button-dark-shadow) var(--win31-button-dark-shadow) var(--win31-button-highlight);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0;
+}
+
+.win31-titlebar-btn:active {
+    border-color: var(--win31-button-dark-shadow) var(--win31-button-highlight) var(--win31-button-highlight) var(--win31-button-dark-shadow);
+}
+
+/* ========================================
+   Button Styles
+   ======================================== */
+button,
+input[type="submit"],
+input[type="button"],
+input[type="reset"],
+.btn {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    background-color: var(--win31-button-face);
+    color: var(--win31-black);
+    border: 2px solid;
+    border-color: var(--win31-button-highlight) var(--win31-button-dark-shadow) var(--win31-button-dark-shadow) var(--win31-button-highlight);
+    box-shadow: inset 1px 1px 0 var(--win31-light-gray), inset -1px -1px 0 var(--win31-button-shadow);
+    padding: 4px 16px;
+    cursor: pointer;
+    min-width: 75px;
+    text-align: center;
+}
+
+button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover,
+.btn:hover {
+    background-color: var(--win31-light-gray);
+}
+
+button:active,
+input[type="submit"]:active,
+input[type="button"]:active,
+.btn:active {
+    border-color: var(--win31-button-dark-shadow) var(--win31-button-highlight) var(--win31-button-highlight) var(--win31-button-dark-shadow);
+    box-shadow: inset 1px 1px 0 var(--win31-button-shadow), inset -1px -1px 0 var(--win31-light-gray);
+    padding: 5px 15px 3px 17px;
+}
+
+button:disabled,
+input[type="submit"]:disabled,
+.btn:disabled {
+    color: var(--win31-dark-gray);
+    cursor: not-allowed;
+    text-shadow: 1px 1px 0 var(--win31-white);
+}
+
+button[aria-busy="true"]::before {
+    content: "";
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 6px;
+    border: 2px solid var(--win31-dark-gray);
+    border-top-color: var(--win31-black);
+    border-radius: 50%;
+    animation: win31-spin 1s linear infinite;
+}
+
+@keyframes win31-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Primary/default button with dotted focus */
+button.primary,
+button[type="submit"] {
+    outline: 1px dotted var(--win31-black);
+    outline-offset: -4px;
+}
+
+/* ========================================
+   Form Input Styles
+   ======================================== */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+textarea,
+select {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    background-color: var(--win31-input-bg);
+    color: var(--win31-black);
+    border: 2px solid;
+    border-color: var(--win31-button-shadow) var(--win31-button-highlight) var(--win31-button-highlight) var(--win31-button-shadow);
+    box-shadow: inset 1px 1px 0 var(--win31-button-dark-shadow), inset -1px -1px 0 var(--win31-light-gray);
+    padding: 4px 6px;
+    outline: none;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="search"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="datetime-local"]:focus,
+textarea:focus,
+select:focus {
+    outline: 1px dotted var(--win31-black);
+    outline-offset: 2px;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--win31-dark-gray);
+}
+
+select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23000' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 4px center;
+    padding-right: 24px;
+}
+
+/* Checkbox and Radio */
+input[type="checkbox"],
+input[type="radio"] {
+    appearance: none;
+    width: 13px;
+    height: 13px;
+    background-color: var(--win31-input-bg);
+    border: 2px solid;
+    border-color: var(--win31-button-shadow) var(--win31-button-highlight) var(--win31-button-highlight) var(--win31-button-shadow);
+    box-shadow: inset 1px 1px 0 var(--win31-button-dark-shadow);
+    cursor: pointer;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+input[type="radio"] {
+    border-radius: 50%;
+}
+
+input[type="checkbox"]:checked {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 9 9'%3E%3Cpath fill='%23000' d='M1 4l2 2 5-5v2l-5 5-4-4z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+input[type="radio"]:checked {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='7' viewBox='0 0 7 7'%3E%3Ccircle cx='3.5' cy='3.5' r='2.5' fill='%23000'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+label {
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/* Field groups */
+fieldset {
+    border: 1px solid var(--win31-button-shadow);
+    padding: var(--win31-spacing-md);
+    margin: var(--win31-spacing-md) 0;
+    background: var(--win31-gray);
+}
+
+fieldset[role="group"] {
+    display: flex;
+    gap: 0;
+    padding: 0;
+    border: none;
+    background: none;
+}
+
+fieldset[role="group"] input {
+    flex: 1;
+}
+
+fieldset[role="group"] button {
+    flex-shrink: 0;
+}
+
+legend {
+    font-size: 12px;
+    padding: 0 4px;
+    background: var(--win31-gray);
+}
+
+/* ========================================
+   Layout - Container
+   ======================================== */
+.container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 var(--win31-spacing-md);
+}
+
+/* ========================================
+   Navigation Header (Title Bar Style)
+   ======================================== */
+header.container {
+    background: var(--win31-gray);
+    padding: var(--win31-spacing-xs);
+    max-width: 100%;
+    border-bottom: 2px solid;
+    border-color: var(--win31-button-highlight) var(--win31-button-dark-shadow) var(--win31-button-dark-shadow) var(--win31-button-highlight);
+}
+
+header nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--win31-spacing-sm);
+    padding: 2px;
+    background: var(--win31-title-active);
+}
+
+header nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+header nav ul li {
+    margin: 0;
+}
+
+header nav ul li a {
+    display: block;
+    color: var(--win31-title-text);
+    text-decoration: none;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+header nav ul li a:hover {
+    background: var(--win31-dark-gray);
+}
+
+header nav ul li a strong {
+    font-weight: bold;
+}
+
+/* Active nav state */
+header nav ul li a.active {
+    background: var(--win31-gray);
+    color: var(--win31-black);
+}
+
+/* ========================================
+   Main Content Area (Window Style)
+   ======================================== */
+main.container {
+    background: var(--win31-gray);
+    margin: var(--win31-spacing-lg) auto;
+    padding: var(--win31-spacing-md);
+    border: 2px solid;
+    border-color: var(--win31-button-highlight) var(--win31-button-dark-shadow) var(--win31-button-dark-shadow) var(--win31-button-highlight);
+    box-shadow: inset 1px 1px 0 var(--win31-light-gray), inset -1px -1px 0 var(--win31-button-shadow);
+    min-height: 400px;
+}
+
+/* ========================================
+   Footer (Status Bar Style)
+   ======================================== */
+footer.container {
+    background: var(--win31-gray);
+    padding: var(--win31-spacing-xs) var(--win31-spacing-md);
+    max-width: 100%;
+    border-top: 2px solid;
+    border-color: var(--win31-button-shadow) var(--win31-button-highlight) var(--win31-button-highlight) var(--win31-button-shadow);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+footer.container small {
+    font-size: 11px;
+    color: var(--win31-black);
+}
+
+/* ========================================
+   Headings
+   ======================================== */
+h1, h2, h3, h4, h5, h6 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    margin: var(--win31-spacing-md) 0;
+    color: var(--win31-black);
+}
+
+h1 { font-size: 18px; }
+h2 { font-size: 16px; }
+h3 { font-size: 14px; }
+h4, h5, h6 { font-size: 12px; }
+
+/* ========================================
+   Tables (Grid Style)
+   ======================================== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--win31-input-bg);
+    border: 2px solid;
+    border-color: var(--win31-button-shadow) var(--win31-button-highlight) var(--win31-button-highlight) var(--win31-button-shadow);
+    box-shadow: inset 1px 1px 0 var(--win31-button-dark-shadow);
+    margin: var(--win31-spacing-md) 0;
+    font-size: 12px;
+}
+
+table th {
+    background: var(--win31-gray);
+    font-weight: bold;
+    text-align: left;
+    padding: 4px 8px;
+    border: 1px solid var(--win31-button-shadow);
+}
+
+table td {
+    padding: 4px 8px;
+    border: 1px solid var(--win31-light-gray);
+    vertical-align: middle;
+}
+
+table tr:hover td {
+    background: var(--win31-light-gray);
+}
+
+table tbody tr:nth-child(even) td {
+    background: #F0F0F0;
+}
+
+table tbody tr:nth-child(even):hover td {
+    background: var(--win31-light-gray);
+}
+
+/* CSS Tooltip for parsed descriptions */
+.tooltip {
+    position: relative;
+    border-bottom: 1px dotted var(--win31-dark-gray);
+    cursor: help;
+    display: inline-block;
+}
+
+.tooltip::before {
+    content: "Parsed: " attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    background: #FFFFCC;
+    color: var(--win31-black);
+    padding: 4px 8px;
+    font-size: 11px;
+    max-width: 280px;
+    width: max-content;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    border: 1px solid var(--win31-black);
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+}
+
+.tooltip:hover::before {
+    opacity: 1;
+}
+
+/* ========================================
+   Cards/Articles (Window Style)
+   ======================================== */
+article {
+    background: var(--win31-gray);
+    border: 2px solid;
+    border-color: var(--win31-button-highlight) var(--win31-button-dark-shadow) var(--win31-button-dark-shadow) var(--win31-button-highlight);
+    box-shadow: inset 1px 1px 0 var(--win31-light-gray), inset -1px -1px 0 var(--win31-button-shadow);
+    margin: var(--win31-spacing-md) 0;
+    padding: 2px;
+}
+
+article > header {
+    background: var(--win31-title-active);
+    color: var(--win31-title-text);
+    padding: 2px 4px;
+    font-weight: bold;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: none;
+    max-width: 100%;
+}
+
+article > header h1,
+article > header h2,
+article > header h3,
+article > header h4 {
+    margin: 0;
+    font-size: 12px;
+    color: var(--win31-title-text);
+}
+
+article > section,
+article > div:not(:first-child) {
+    padding: var(--win31-spacing-md);
+}
+
+article > footer {
+    padding: var(--win31-spacing-sm) var(--win31-spacing-md);
+    border-top: 1px solid var(--win31-button-shadow);
+    background: var(--win31-gray);
+    position: static;
+}
+
+/* ========================================
+   Dialog/Modal (Popup Window Style)
+   ======================================== */
+dialog {
+    background: var(--win31-gray);
+    border: 2px solid;
+    border-color: var(--win31-button-highlight) var(--win31-button-dark-shadow) var(--win31-button-dark-shadow) var(--win31-button-highlight);
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3), inset 1px 1px 0 var(--win31-light-gray), inset -1px -1px 0 var(--win31-button-shadow);
+    padding: 2px;
+    max-width: 500px;
+}
+
+dialog::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+dialog article {
+    border: none;
+    box-shadow: none;
+    margin: 0;
+}
+
+dialog article header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Windows 3.1 style close button for title bars */
+.win31-close-btn {
+    width: 18px;
+    height: 16px;
+    min-width: 18px;
+    background: var(--win31-gray);
+    border: 2px solid;
+    border-color: var(--win31-button-highlight) var(--win31-button-dark-shadow) var(--win31-button-dark-shadow) var(--win31-button-highlight);
+    box-shadow: inset 1px 1px 0 var(--win31-light-gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0;
+    color: var(--win31-black);
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.win31-close-btn:hover {
+    background: var(--win31-light-gray);
+}
+
+.win31-close-btn:active {
+    border-color: var(--win31-button-dark-shadow) var(--win31-button-highlight) var(--win31-button-highlight) var(--win31-button-dark-shadow);
+    box-shadow: inset 1px 1px 0 var(--win31-button-shadow);
+    padding: 1px 0 0 1px;
+}
+
+dialog article > section {
+    padding: var(--win31-spacing-md);
+}
+
+/* ========================================
+   Timer Display (Retro LCD Style)
+   ======================================== */
+#timer-display {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 48px;
+    font-weight: bold;
+    text-align: center;
+    padding: var(--win31-spacing-lg);
+    margin: var(--win31-spacing-md) 0;
+    background: #000000;
+    color: #00FF00;
+    border: 2px solid;
+    border-color: var(--win31-button-shadow) var(--win31-button-highlight) var(--win31-button-highlight) var(--win31-button-shadow);
+    box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.5);
+    letter-spacing: 4px;
+}
+
+/* Timer indicator in nav */
+.timer-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    background: var(--win31-gray);
+    color: var(--win31-black);
+    text-decoration: none;
+    font-size: 11px;
+    font-family: 'Courier New', Courier, monospace;
+    border: 1px solid;
+    border-color: var(--win31-button-highlight) var(--win31-button-shadow) var(--win31-button-shadow) var(--win31-button-highlight);
+}
+
+.timer-indicator:hover {
+    background: var(--win31-light-gray);
+}
+
+.timer-icon {
+    color: var(--win31-success);
+}
+
+/* ========================================
+   Loading Indicators
+   ======================================== */
+.htmx-indicator {
+    display: none;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+    display: inline-block;
+}
+
+.htmx-request {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--win31-dark-gray);
+    border-top-color: var(--win31-black);
+    animation: win31-spin 1s linear infinite;
+}
+
+/* Hourglass cursor during loading */
+.htmx-request,
+.htmx-request * {
+    cursor: wait !important;
+}
+
+/* ========================================
+   Status Colors
+   ======================================== */
+.success {
+    color: var(--win31-success);
+}
+
+.warning {
+    color: var(--win31-warning);
+}
+
+.error {
+    color: var(--win31-error);
+}
+
+.secondary {
+    color: var(--win31-dark-gray);
+}
+
+/* ========================================
+   Links
+   ======================================== */
+a {
+    color: var(--win31-link);
+    text-decoration: underline;
+}
+
+a:hover {
+    color: var(--win31-title-active);
+}
+
+a:visited {
+    color: #800080;
+}
+
+/* ========================================
+   Button Groups
+   ======================================== */
+.btn-group {
+    display: flex;
+    gap: var(--win31-spacing-sm);
+    flex-wrap: wrap;
+}
+
+.btn-group button {
+    margin: 0;
+    min-width: auto;
+    padding: 2px 8px;
+    font-size: 11px;
+}
+
+/* ========================================
+   Entry Detail Row
+   ======================================== */
+.entry-detail-row article {
+    margin: 0;
+}
+
+.entry-detail-row article header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.entry-detail-row .close-btn {
+    margin: 0;
+    padding: 2px 8px;
+    min-width: auto;
+}
+
+/* ========================================
+   Context Modal Items
+   ======================================== */
+#context-modal article article {
+    margin-bottom: var(--win31-spacing-md);
+    padding: var(--win31-spacing-md);
+}
+
+#context-modal article article footer {
+    display: flex;
+    gap: var(--win31-spacing-sm);
+    align-items: center;
+    margin-top: var(--win31-spacing-sm);
+    position: static;
+    border-top: none;
+    padding: var(--win31-spacing-sm) 0 0 0;
+}
+
+#context-modal article article footer small {
+    flex-grow: 1;
+}
+
+#context-modal article article footer button {
+    min-width: auto;
+    padding: 2px 8px;
+    font-size: 11px;
+}
+
+/* ========================================
+   SSE Connection Status
+   ======================================== */
+.sse-disconnected {
+    border-color: var(--win31-error) !important;
+}
+
+.sse-reconnecting::after {
+    content: " (reconnecting...)";
+    color: var(--win31-warning);
+    font-size: 11px;
+}
+
+/* ========================================
+   Responsive Adjustments
+   ======================================== */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+
+    header nav {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    header nav ul {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    main.container {
+        margin: var(--win31-spacing-sm);
+        padding: var(--win31-spacing-sm);
+    }
+
+    .btn-group {
+        flex-direction: column;
+    }
+
+    .btn-group button {
+        width: 100%;
+    }
+
+    #timer-display {
+        font-size: 32px;
+        padding: var(--win31-spacing-md);
+    }
+
+    table {
+        font-size: 11px;
+    }
+
+    table th,
+    table td {
+        padding: 2px 4px;
+    }
+
+    footer.container {
+        position: static;
+    }
+}
+
+@media (max-width: 480px) {
+    #timer-display {
+        font-size: 24px;
+        letter-spacing: 2px;
+    }
+
+    header nav ul li a {
+        padding: 4px 6px;
+    }
+
+    button,
+    input[type="submit"],
+    .btn {
+        min-width: 60px;
+        padding: 4px 8px;
+    }
+}
+
+/* ========================================
+   Utility Classes
+   ======================================== */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.mt-0 { margin-top: 0; }
+.mb-0 { margin-bottom: 0; }
+.hidden { display: none; }

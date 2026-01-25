@@ -81,12 +81,16 @@ templ EntryList(entries []model.Entry, timeCodes []model.TimeCode, workTypes []m
 	}
 }
 
+func hasParsedDescription(entry model.Entry) bool {
+	return entry.ParsedDescription != nil && *entry.ParsedDescription != "" && *entry.ParsedDescription != entry.UserInput
+}
+
 templ EntryRow(entry model.Entry, timeCodes []model.TimeCode, workTypes []model.WorkType) {
 	<tr id={ "entry-" + entry.ID }>
 		<td>{ entry.EntryDate }</td>
 		<td>
-			if entry.ParsedDescription != nil {
-				{ *entry.ParsedDescription }
+			if hasParsedDescription(entry) {
+				<span data-tooltip={ *entry.ParsedDescription } class="tooltip">{ entry.UserInput }</span>
 			} else {
 				{ entry.UserInput }
 			}
