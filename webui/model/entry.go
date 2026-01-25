@@ -32,6 +32,8 @@ func (e Entry) StatusColor() string {
 		return "success"
 	case "pending":
 		return "warning"
+	case "needs_review":
+		return "warning"
 	case "failed":
 		return "error"
 	default:

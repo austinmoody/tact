@@ -181,10 +181,10 @@ func (c *Client) FetchEntriesFiltered(filter EntryFilter) ([]model.Entry, error)
 		path += "&status=" + filter.Status
 	}
 	if filter.DateFrom != "" {
-		path += "&date_from=" + filter.DateFrom
+		path += "&from_date=" + filter.DateFrom
 	}
 	if filter.DateTo != "" {
-		path += "&date_to=" + filter.DateTo
+		path += "&to_date=" + filter.DateTo
 	}
 	err := c.get(path, &entries)
 	return entries, err
