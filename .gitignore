@@ -45,3 +45,11 @@ DerivedData/
 
 # Project
 data/
+
+# Go binaries
+webui/tact-webui
+webui/webui
+tui/tact
+
+# Playwright
+.playwright-mcp/
