@@ -1,0 +1,41 @@
+# OpenSpec Configuration for Tact
+
+context: |
+  Time tracking tool with natural language entry parsing.
+
+  Stack: Python 3.12+, FastAPI, SQLite, Docker Compose, HTMX+Jinja2 (no JS frameworks)
+
+  CRITICAL: No JavaScript/TypeScript/Node.js anywhere in this project.
+
+  Parsing Architecture:
+  - Async background processing (entry saved immediately as 'pending', parsed later)
+  - Local RAG using sentence-transformers (all-MiniLM-L6-v2, 384-dim vectors)
+  - Brute-force cosine similarity in SQLite - no external vector DB
+  - Context documents improve parsing; user corrections become new context
+
+  Entry Statuses: pending → parsed | needs_review | failed
+  Required for 'parsed': time_code_id + duration_minutes (both above confidence threshold)
+
+  Time codes use soft-delete only (never hard delete - entries reference them).
+  Original entry text is immutable (preserved for re-parsing if mappings change).
+
+rules:
+  spec:
+    description: Behavioral specifications for features
+    guidance: |
+      Use Given/When/Then format for behavior descriptions.
+      Focus on user-observable outcomes, not implementation details.
+      Include confidence threshold edge cases (parsed vs needs_review).
+
+  delta-spec:
+    description: Changes to existing specs
+    guidance: |
+      Show only what changes - don't repeat unchanged behavior.
+      Specify which status transitions are affected.
+
+  tasks:
+    description: Implementation tasks
+    guidance: |
+      Service layer for business logic, repository pattern for DB access.
+      All DB access through SQLAlchemy async sessions.
+      Test with in-memory SQLite.
